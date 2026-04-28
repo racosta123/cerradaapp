@@ -728,7 +728,7 @@ function seedDemo(){
       {ts:new Date().toISOString(),type:'income',amount:60,category:'Cuota mensual',desc:'Casas 1, 2 y 3'},
       {ts:new Date(Date.now()-86400000).toISOString(),type:'expense',amount:25,category:'Mantenimiento',desc:'Aceite para portón'},
     ],
-    jsonbin:{},createdAt:new Date().toISOString()
+    jsonbin:{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'},createdAt:new Date().toISOString()
   };
   save();
 }
@@ -1111,7 +1111,7 @@ function createCerrada(){
   if(S.cerradas[code]){toast('⚠️ Código ya existe');return;}
   if(!ncP.length){toast('⚠️ Agrega al menos 1 portón');return;}
   ncP.forEach((p,i)=>{p.label=document.getElementById('npl-'+i)?.value.trim()||'Portón '+(i+1);p.icon=document.getElementById('npi-'+i)?.value||p.icon;});
-  S.cerradas[code]={name,code,houses,adminPin:apin,adminName:aname,adminPhone:aphone,price,active:true,suspended:false,portones:JSON.parse(JSON.stringify(ncP)),residents:[],history:[],movements:[],jsonbin:{},createdAt:new Date().toISOString()};
+  S.cerradas[code]={name,code,houses,adminPin:apin,adminName:aname,adminPhone:aphone,price,active:true,suspended:false,portones:JSON.parse(JSON.stringify(ncP)),residents:[],history:[],movements:[],jsonbin:{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'},createdAt:new Date().toISOString()};
   save();ncP=[];renderNcP();closeModal('modal-nueva');
   ['nc-name','nc-code','nc-houses','nc-price','nc-aname','nc-apin','nc-aphone'].forEach(id=>document.getElementById(id).value='');
   renderMstList();renderNegocio();toast(`✅ "${name}" creada`);
