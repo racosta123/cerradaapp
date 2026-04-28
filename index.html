@@ -557,12 +557,21 @@ function fd(iso){return new Date(iso).toLocaleString('es',{day:'2-digit',month:'
 function emH(i,t){return`<div class="empty"><div class="empty-ico">${i}</div>${t}</div>`;}
 
 function seedDemo(){
-  if(S.cerradas['DEMO-002'])return;
+  // Siempre actualizar IP del portón demo
+  if(S.cerradas['DEMO-002']){
+    // Actualizar IP real aunque ya exista el seed
+    if(S.cerradas['DEMO-002'].portones?.[0]){
+      S.cerradas['DEMO-002'].portones[0].ip='http://192.168.1.18';
+      S.cerradas['DEMO-002'].portones[0].time=5;
+    }
+    save();
+    return;
+  }
   S.cerradas['DEMO-002']={
     name:'Mi Cerrada',code:'DEMO-002',houses:20,
     adminPin:'1234',adminName:'Pedro González',adminPhone:'+502 9999 0000',
     price:20,active:true,suspended:false,
-    portones:[{id:'v1',label:'Portón Principal',icon:'🚗',ip:'http://192.168.1.101',time:10}],
+    portones:[{id:'v1',label:'Portón Principal',icon:'🚗',ip:'http://192.168.1.18',time:5}],
     residents:[
       {house:'Casa 1',pin:'5678',name:'Juan Pérez',phone:'+502 1111 0001',active:true,mora:false,moraNote:''},
       {house:'Casa 2',pin:'9999',name:'María López',phone:'+502 1111 0002',active:true,mora:false,moraNote:''},
