@@ -393,6 +393,12 @@ select option{background:var(--sur)}
       </div>
     </div>
     <div id="rp-finanzas" class="panel">
+      <!-- MI CUENTA -->
+      <div class="card" style="background:linear-gradient(135deg,var(--blue-lt),var(--sky-lt));border:1.5px solid rgba(59,130,196,.2)">
+        <div class="ch"><div class="ct" style="color:var(--blue)">🏠 Mi Estado de Cuenta</div></div>
+        <div id="rf-micuenta"><div class="empty"><div class="empty-ico">🏦</div>Sin cuotas registradas</div></div>
+      </div>
+
       <div class="trans-hdr"><h3>💡 Transparencia Financiera</h3><p>Cómo se administra el dinero de tu cerrada</p></div>
       <div class="fbar">
         <div class="fc"><div class="fl">Cobrado</div><div class="fv fi" id="rf-i">$0</div></div>
@@ -424,6 +430,7 @@ select option{background:var(--sur)}
     <button class="ntab" onclick="admP('vecinos',this)">👥 Vecinos</button>
     <button class="ntab" onclick="admP('historial',this)">📋 Historial</button>
     <button class="ntab" onclick="admP('finanzas',this)">💰 Finanzas</button>
+    <button class="ntab" onclick="admP('cuotas',this)">🏦 Cuotas</button>
     <button class="ntab" onclick="admP('portones',this)">🚪 Portones</button>
     <button class="ntab" onclick="admP('config',this)">⚙️ Config</button>
   </div>
@@ -477,6 +484,48 @@ select option{background:var(--sur)}
       <div class="sh"><h3>Movimientos</h3><button class="btn bg2 sm" onclick="genPDF()">📄 Reporte PDF</button></div>
       <div id="adm-fin-list"><div class="empty"><div class="empty-ico">💰</div>Sin movimientos</div></div>
     </div>
+    <div id="ap-cuotas" class="panel">
+      <!-- RESUMEN DE CUOTAS -->
+      <div class="card">
+        <div class="ch">
+          <div class="ct">🏦 Registro de Cuotas</div>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <select id="cuota-mes" onchange="renderCuotas()" style="margin:0;font-size:.75rem;padding:.3rem .6rem;width:auto">
+            </select>
+          </div>
+        </div>
+        <!-- Stats cuotas -->
+        <div class="fbar" style="margin-bottom:.75rem">
+          <div class="fc"><div class="fl">Pagadas</div><div class="fv fi" id="cq-pagadas">0</div></div>
+          <div class="fc"><div class="fl">Pendientes</div><div class="fv fe" id="cq-pendientes">0</div></div>
+          <div class="fc"><div class="fl">Recaudado</div><div class="fv fb2" id="cq-total">$0</div></div>
+        </div>
+        <div id="cuotas-list"></div>
+      </div>
+
+      <!-- CONFIGURAR MONTO DE CUOTA -->
+      <div class="card">
+        <div class="ch"><div class="ct">⚙️ Configurar Cuota</div></div>
+        <div class="frow">
+          <div>
+            <label>Monto mensual ($)</label>
+            <input id="cuota-monto" type="number" placeholder="200" min="1">
+          </div>
+          <div>
+            <label>Día de vencimiento</label>
+            <input id="cuota-dia" type="number" placeholder="5" min="1" max="28">
+          </div>
+        </div>
+        <button class="btn bp" onclick="saveCuotaConfig()">💾 Guardar Configuración</button>
+      </div>
+
+      <!-- HISTORIAL 3 MESES -->
+      <div class="card">
+        <div class="ch"><div class="ct">📊 Historial de Pagos</div></div>
+        <div id="cuotas-historial"></div>
+      </div>
+    </div>
+
     <div id="ap-portones" class="panel">
       <div class="card"><div class="ch"><div class="ct">Configurar Portones</div></div>
         <p style="font-size:.75rem;color:var(--t2);margin-bottom:.85rem">Puedes personalizar el nombre e icono de cada portón.</p>
@@ -808,15 +857,15 @@ function logout(){
 
 // ── JSONBIN
 function setSI(r,st){const m={syncing:'🔄',ok:'☁️',err:'⚠️',off:'💾'};const el=document.getElementById('sync-'+r);if(el)el.textContent=m[st]||'☁️';}
-async function jbPush(c){if(!c?.jsonbin?.binId||!c?.jsonbin?.apiKey)return false;const p={name:c.name,code:c.code,houses:c.houses,adminPin:c.adminPin,adminName:c.adminName,adminPhone:c.adminPhone,price:c.price,active:c.active,suspended:c.suspended,portones:c.portones||[],residents:c.residents||[],history:(c.history||[]).slice(-500),movements:c.movements||[],updatedAt:new Date().toISOString()};try{const r=await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':c.jsonbin.apiKey},body:JSON.stringify(p)});return r.ok;}catch(e){return false;}}
+async function jbPush(c){if(!c?.jsonbin?.binId||!c?.jsonbin?.apiKey)return false;const p={name:c.name,code:c.code,houses:c.houses,adminPin:c.adminPin,adminName:c.adminName,adminPhone:c.adminPhone,price:c.price,active:c.active,suspended:c.suspended,portones:c.portones||[],residents:c.residents||[],history:(c.history||[]).slice(-500),movements:c.movements||[],cuotas:c.cuotas||{},cuotaConfig:c.cuotaConfig||{},updatedAt:new Date().toISOString()};try{const r=await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':c.jsonbin.apiKey},body:JSON.stringify(p)});return r.ok;}catch(e){return false;}}
 async function push(role){const c=C();if(!c?.jsonbin?.binId)return;setSI(role,'syncing');setSI(role,await jbPush(c)?'ok':'err');}
 
 // ── NAV
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('scr-'+id)?.classList.add('active');}
 function setPanels(pre,list,act){list.forEach(p=>{const el=document.getElementById(pre+p);if(el)el.classList.toggle('on',p===act);});}
 function setTabs(scope,el){document.querySelectorAll(scope+' .ntab').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
-function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);setTabs('#scr-res',el);const c=C();if(!c)return;if(id==='finanzas')renderResFin(c);if(id==='historial')renderResHist(c);}
-function admP(id,el){setPanels('ap-',['dashboard','vecinos','historial','finanzas','portones','config'],id);setTabs('#scr-adm',el);const c=C();if(!c)return;if(id==='dashboard')updateDash();if(id==='vecinos')renderVec();if(id==='historial')renderAdmHist();if(id==='finanzas')renderAdmFin();if(id==='portones')renderAdmPortones();if(id==='config')loadCfg();}
+function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);setTabs('#scr-res',el);const c=C();if(!c)return;if(id==='finanzas'){renderResFin(c);renderMiCuenta(c,U?.house);}if(id==='historial')renderResHist(c);}
+function admP(id,el){setPanels('ap-',['dashboard','vecinos','historial','finanzas','portones','config'],id);setTabs('#scr-adm',el);const c=C();if(!c)return;if(id==='dashboard')updateDash();if(id==='vecinos')renderVec();if(id==='historial')renderAdmHist();if(id==='finanzas')renderAdmFin();if(id==='cuotas')initCuotasMes();if(id==='portones')renderAdmPortones();if(id==='config')loadCfg();}
 function mstP(id,el){setPanels('mp-',['cerradas','negocio','config'],id);setTabs('#scr-mst',el);if(id==='cerradas')renderMstList();if(id==='negocio')renderNegocio();if(id==='config'){document.getElementById('mc-price').value=S.defaultPrice;populateMstJsonbinSelect();}}
 
 // ── RESIDENT
@@ -830,6 +879,7 @@ function enterRes(c, res, member) {
   renderGates(c,'res','gate-res');
   renderResFin(c);
   renderResHist(c);
+  renderMiCuenta(c, res.house);
 
   // Mostrar botón de invitar familiares solo al jefe de familia
   const invBtn = document.getElementById('res-invite-btn');
@@ -1419,6 +1469,196 @@ async function submitRegister() {
   setTimeout(() => {
     enterRes(c, c.residents[resIdx], c.residents[resIdx].members[memberIdx]);
   }, 1200);
+}
+
+// ── MÓDULO DE CUOTAS
+function getMeses() {
+  const meses = [];
+  const now = new Date();
+  for (let i = 0; i < 3; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    meses.push({
+      key: `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,
+      label: d.toLocaleString('es', {month:'long', year:'numeric'})
+    });
+  }
+  return meses;
+}
+
+function initCuotasMes() {
+  const sel = document.getElementById('cuota-mes');
+  if (!sel) return;
+  const meses = getMeses();
+  sel.innerHTML = meses.map(m => `<option value="${m.key}">${m.label}</option>`).join('');
+  renderCuotas();
+}
+
+function saveCuotaConfig() {
+  const c = C(); if (!c) return;
+  const monto = parseFloat(document.getElementById('cuota-monto').value);
+  const dia = parseInt(document.getElementById('cuota-dia').value) || 5;
+  if (!monto || monto < 1) { toast('⚠️ Ingresa un monto válido'); return; }
+  c.cuotaConfig = { monto, dia };
+  save(); push('adm');
+  toast('✅ Configuración guardada — $' + monto + ' vence el día ' + dia);
+  renderCuotas();
+}
+
+function renderCuotas() {
+  const c = C(); if (!c) return;
+  const sel = document.getElementById('cuota-mes');
+  if (!sel) return;
+  const mesKey = sel.value;
+  const monto = c.cuotaConfig?.monto || 0;
+  const dia = c.cuotaConfig?.dia || 5;
+  const res = c.residents || [];
+  if (!c.cuotas) c.cuotas = {};
+  if (!c.cuotas[mesKey]) c.cuotas[mesKey] = {};
+
+  // Cargar config en campos
+  if (c.cuotaConfig) {
+    const montoEl = document.getElementById('cuota-monto');
+    const diaEl = document.getElementById('cuota-dia');
+    if (montoEl) montoEl.value = c.cuotaConfig.monto;
+    if (diaEl) diaEl.value = c.cuotaConfig.dia;
+  }
+
+  const pagadas = res.filter(r => c.cuotas[mesKey][r.house]?.pagado).length;
+  const pendientes = res.length - pagadas;
+  const total = pagadas * monto;
+
+  document.getElementById('cq-pagadas').textContent = pagadas;
+  document.getElementById('cq-pendientes').textContent = pendientes;
+  document.getElementById('cq-total').textContent = '$' + total.toFixed(2);
+
+  const list = document.getElementById('cuotas-list');
+  if (!list) return;
+
+  if (!res.length) { list.innerHTML = emH('👥', 'Sin vecinos registrados'); return; }
+  if (!monto) { list.innerHTML = emH('⚙️', 'Configura el monto de la cuota abajo'); return; }
+
+  list.innerHTML = res.map(r => {
+    const cuota = c.cuotas[mesKey][r.house] || {};
+    const pagado = cuota.pagado || false;
+    const fechaPago = cuota.fecha ? new Date(cuota.fecha).toLocaleDateString('es') : '';
+    const hn = r.house.replace(/\D/g,'').slice(0,2) || '?';
+    return `<div class="li">
+      <div class="lil">
+        <div class="av ${pagado ? 'ag' : 'ar'}">${esc(hn)}</div>
+        <div>
+          <div class="in">${esc(r.name)}</div>
+          <div class="is">${esc(r.house)} · ${pagado ? '✅ Pagó el '+fechaPago : '⏳ Pendiente — $'+monto}</div>
+        </div>
+      </div>
+      <button class="btn ${pagado ? 'bd' : 'bp'} sm" 
+        onclick="toggleCuota('${mesKey}','${r.house}')" style="min-width:80px">
+        ${pagado ? '↩ Revertir' : '✓ Marcar Pago'}
+      </button>
+    </div>`;
+  }).join('');
+
+  // Historial 3 meses
+  renderCuotasHistorial();
+}
+
+async function toggleCuota(mesKey, house) {
+  const c = C(); if (!c) return;
+  if (!c.cuotas) c.cuotas = {};
+  if (!c.cuotas[mesKey]) c.cuotas[mesKey] = {};
+
+  const cuota = c.cuotas[mesKey][house];
+  const monto = c.cuotaConfig?.monto || 0;
+
+  if (cuota?.pagado) {
+    // Revertir pago
+    c.cuotas[mesKey][house] = { pagado: false };
+    // Eliminar el movimiento de ingreso correspondiente
+    if (cuota.movId && c.movements) {
+      c.movements = c.movements.filter(m => m.id !== cuota.movId);
+    }
+    toast('↩ Pago revertido — ' + house);
+  } else {
+    // Marcar como pagado
+    const movId = 'cq-' + Date.now();
+    c.cuotas[mesKey][house] = {
+      pagado: true,
+      fecha: new Date().toISOString(),
+      monto,
+      movId
+    };
+    // Agregar automáticamente como ingreso en finanzas
+    if (!c.movements) c.movements = [];
+    const [year, month] = mesKey.split('-');
+    c.movements.push({
+      id: movId,
+      ts: new Date(parseInt(year), parseInt(month)-1, c.cuotaConfig?.dia || 5).toISOString(),
+      type: 'income',
+      amount: monto,
+      category: 'Cuota mensual',
+      desc: house + ' — ' + new Date(parseInt(year), parseInt(month)-1).toLocaleString('es',{month:'long',year:'numeric'})
+    });
+    toast('✅ Cuota registrada — ' + house);
+  }
+
+  save(); push('adm');
+  renderCuotas();
+  updateDash();
+}
+
+function renderCuotasHistorial() {
+  const c = C(); if (!c) return;
+  const list = document.getElementById('cuotas-historial');
+  if (!list) return;
+  const meses = getMeses();
+  const res = c.residents || [];
+  const monto = c.cuotaConfig?.monto || 0;
+
+  if (!monto) { list.innerHTML = emH('⚙️', 'Configura primero el monto de la cuota'); return; }
+
+  list.innerHTML = meses.map(mes => {
+    const cuotas = c.cuotas?.[mes.key] || {};
+    const pagadas = res.filter(r => cuotas[r.house]?.pagado).length;
+    const total = pagadas * monto;
+    const pct = res.length ? Math.round(pagadas/res.length*100) : 0;
+    return `<div style="padding:.65rem 0;border-bottom:1.5px solid var(--brd)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+        <span style="font-size:.82rem;font-weight:700;color:var(--t);text-transform:capitalize">${mes.label}</span>
+        <span style="font-size:.78rem;font-weight:700;color:${pct===100?'var(--green)':'var(--t2)'}">
+          ${pagadas}/${res.length} · $${total.toFixed(2)}
+        </span>
+      </div>
+      <!-- Barra de progreso -->
+      <div style="background:var(--brd);border-radius:4px;height:6px;overflow:hidden">
+        <div style="background:${pct===100?'var(--green)':pct>50?'var(--ocre)':'var(--rose)'};
+          height:100%;width:${pct}%;border-radius:4px;transition:width .3s"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Estado de cuenta del residente
+function renderMiCuenta(c, house) {
+  const el = document.getElementById('rf-micuenta');
+  if (!el) return;
+  const meses = getMeses();
+  const monto = c.cuotaConfig?.monto || 0;
+  if (!monto) { el.innerHTML = emH('🏦', 'Sin cuotas configuradas aún'); return; }
+
+  el.innerHTML = meses.map(mes => {
+    const cuota = c.cuotas?.[mes.key]?.[house];
+    const pagado = cuota?.pagado || false;
+    const fecha = cuota?.fecha ? new Date(cuota.fecha).toLocaleDateString('es') : '';
+    return `<div class="li">
+      <div class="lil">
+        <div class="av ${pagado ? 'ag' : 'ar'}">${pagado ? '✓' : '!'}</div>
+        <div>
+          <div class="in" style="text-transform:capitalize">${mes.label}</div>
+          <div class="is">${pagado ? '✅ Pagado el ' + fecha : '⏳ Pendiente — $' + monto}</div>
+        </div>
+      </div>
+      <span class="bge ${pagado ? 'gr-b' : 'r-b'}">${pagado ? 'Al corriente' : 'Debe $'+monto}</span>
+    </div>`;
+  }).join('');
 }
 
 // ── UTILS
