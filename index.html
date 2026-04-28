@@ -562,6 +562,7 @@ function seedDemo(){
     // Actualizar IP real aunque ya exista el seed
     if(S.cerradas['DEMO-002'].portones?.[0]){
       S.cerradas['DEMO-002'].portones[0].ip='http://192.168.1.18';
+      S.cerradas['DEMO-002'].portones[0].shellyId='e4b063eb85a4';
       S.cerradas['DEMO-002'].portones[0].time=5;
     }
     save();
@@ -571,7 +572,7 @@ function seedDemo(){
     name:'Mi Cerrada',code:'DEMO-002',houses:20,
     adminPin:'1234',adminName:'Pedro González',adminPhone:'+502 9999 0000',
     price:20,active:true,suspended:false,
-    portones:[{id:'v1',label:'Portón Principal',icon:'🚗',ip:'http://192.168.1.18',time:5}],
+    portones:[{id:'v1',label:'Portón Principal',icon:'🚗',ip:'http://192.168.1.18',shellyId:'e4b063eb85a4',time:5}],
     residents:[
       {house:'Casa 1',pin:'5678',name:'Juan Pérez',phone:'+502 1111 0001',active:true,mora:false,moraNote:''},
       {house:'Casa 2',pin:'9999',name:'María López',phone:'+502 1111 0002',active:true,mora:false,moraNote:''},
@@ -727,7 +728,8 @@ async function openPorton(pid,role){
   if(!c.history)c.history=[];
   c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label});
   save();push(role);
-  if(pt.ip){fetch(`${pt.ip}/rpc/Switch.Set?id=0&on=true`).catch(()=>{});setTimeout(()=>fetch(`${pt.ip}/rpc/Switch.Set?id=0&on=false`).catch(()=>{}),(pt.time||10)*1000);}
+  // Control via Shelly Cloud (funciona desde cualquier red)
+  shellyOpen(pt);
   toast(`✅ ${pt.label} abierto`);
   // Vibración de éxito: patrón largo-corto
   if(navigator.vibrate) navigator.vibrate([80,40,80]);
@@ -738,6 +740,40 @@ async function openPorton(pid,role){
     setTimeout(()=>btn.classList.remove('ok'),2500);
   }
   if(role==='res')renderResHist(c);
+}
+
+// ── SHELLY CLOUD CONTROL
+async function shellyOpen(pt) {
+  // Datos Shelly Cloud
+  const SERVER  = 'shelly-258-eu.shelly.cloud';
+  const AUTH    = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388D6B4B15BC5295B801F11A2A689C37770CE435132';
+  // Device ID: usa el del portón si está configurado, sino el default
+  const DEVICE  = pt.shellyId || 'e4b063eb85a4';
+  const SECONDS = pt.time || 5;
+
+  try {
+    // Encender
+    const r = await fetch(`https://${SERVER}/device/relay/control`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: `id=${DEVICE}&auth_key=${AUTH}&turn=on&channel=0`
+    });
+    const data = await r.json();
+    if (!data.isok) { toast('⚠️ Error Shelly Cloud'); return; }
+
+    // Apagar después del tiempo configurado
+    setTimeout(async () => {
+      await fetch(`https://${SERVER}/device/relay/control`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `id=${DEVICE}&auth_key=${AUTH}&turn=off&channel=0`
+      });
+    }, SECONDS * 1000);
+
+  } catch(e) {
+    toast('⚠️ Sin conexión a Shelly Cloud');
+    console.error(e);
+  }
 }
 
 // ── ADMIN
