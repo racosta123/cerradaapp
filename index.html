@@ -270,36 +270,44 @@ select option{background:var(--sur)}
       <p>Control de Acceso Comunitario</p>
     </div>
 
-    <!-- ACCESO RÁPIDO -->
-    <p style="font-size:.74rem;font-weight:700;color:var(--t2);text-align:center;margin-bottom:.65rem;text-transform:uppercase;letter-spacing:.5px">Acceso Demo Directo</p>
-    <div class="quick-access">
-      <div class="qa-btn res" onclick="quickLogin('resident')">
-        <div class="qa-ico">🏠</div>
-        <div class="qa-lbl">Residente</div>
-        <div class="qa-sub">Casa 1</div>
-      </div>
-      <div class="qa-btn adm" onclick="quickLogin('admin')">
-        <div class="qa-ico">⚙️</div>
-        <div class="qa-lbl">Admin</div>
-        <div class="qa-sub">Sub-Admin</div>
-      </div>
-      <div class="qa-btn mst" onclick="quickLogin('master')">
-        <div class="qa-ico">🛡️</div>
-        <div class="qa-lbl">Master</div>
-        <div class="qa-sub">Proveedor</div>
-      </div>
+    <!-- SOLO RESIDENTE -->
+    <div id="tab-res-only">
+      <label>Código de tu Cerrada</label>
+      <input id="m-code" placeholder="Ej: SMARK-001" oninput="this.value=this.value.toUpperCase()">
+      <label>Tu PIN</label>
+      <input id="m-pin" type="password" placeholder="••••••" maxlength="8">
+      <div class="err" id="m-err"></div>
+      <button class="btn bp" onclick="loginManual()" style="margin-bottom:.75rem">Entrar →</button>
     </div>
 
-    <div class="divider">o ingresa manualmente</div>
-
-    <!-- LOGIN MANUAL -->
-    <div style="display:flex;gap:.5rem;margin-bottom:.85rem">
-      <input id="m-code" placeholder="Código (DEMO-002)" oninput="this.value=this.value.toUpperCase()" style="margin:0;flex:1">
-      <input id="m-pin" type="password" placeholder="PIN" maxlength="8" style="margin:0;width:90px">
+    <!-- ACCESO DISCRETO PARA ADMIN/MASTER -->
+    <div style="text-align:center">
+      <span onclick="toggleStaff()" style="font-size:.68rem;color:var(--t3);cursor:pointer;
+        padding:.3rem .6rem;border-radius:6px;user-select:none">
+        ⚙️ Acceso personal
+      </span>
     </div>
-    <div class="err" id="m-err"></div>
-    <button class="btn bp" onclick="loginManual()" style="margin-bottom:.5rem">Entrar →</button>
-    <p style="text-align:center;font-size:.7rem;color:var(--t3)">Master: código vacío + PIN <b>MASTER2025</b></p>
+    <div id="staff-access" style="display:none;margin-top:.75rem">
+      <div style="display:flex;gap:.5rem">
+        <div class="qa-btn adm" onclick="quickLogin('admin')" style="flex:1">
+          <div class="qa-ico">⚙️</div>
+          <div class="qa-lbl">Admin</div>
+        </div>
+        <div class="qa-btn mst" onclick="quickLogin('master')" style="flex:1">
+          <div class="qa-ico">🛡️</div>
+          <div class="qa-lbl">Master</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-top:.65rem">
+        <input id="staff-code" placeholder="Código" oninput="this.value=this.value.toUpperCase()" 
+          style="margin:0;flex:1;font-size:.82rem;padding:.5rem .75rem">
+        <input id="staff-pin" type="password" placeholder="PIN" maxlength="8"
+          style="margin:0;width:85px;font-size:.82rem;padding:.5rem .65rem">
+      </div>
+      <button class="btn bg2 wf" onclick="loginStaff()" style="margin-top:.5rem;font-size:.82rem;padding:.55rem">
+        Entrar como Staff →
+      </button>
+    </div>
   </div>
 </div>
 
@@ -630,18 +638,18 @@ function emH(i,t){return`<div class="empty"><div class="empty-ico">${i}</div>${t
 
 function seedDemo(){
   // Siempre actualizar IP del portón demo
-  if(S.cerradas['DEMO-002']){
+  if(S.cerradas['SMARK-001']){
     // Actualizar IP real aunque ya exista el seed
-    if(S.cerradas['DEMO-002'].portones?.[0]){
-      S.cerradas['DEMO-002'].portones[0].ip='http://192.168.1.18';
-      S.cerradas['DEMO-002'].portones[0].shellyId='e4b063eb85a4';
-      S.cerradas['DEMO-002'].portones[0].time=5;
+    if(S.cerradas['SMARK-001'].portones?.[0]){
+      S.cerradas['SMARK-001'].portones[0].ip='http://192.168.1.18';
+      S.cerradas['SMARK-001'].portones[0].shellyId='e4b063eb85a4';
+      S.cerradas['SMARK-001'].portones[0].time=5;
     }
     save();
     return;
   }
-  S.cerradas['DEMO-002']={
-    name:'Mi Cerrada',code:'DEMO-002',houses:20,
+  S.cerradas['SMARK-001']={
+    name:'Cerrada Samarkanda',code:'SMARK-001',houses:20,
     adminPin:'1234',adminName:'Pedro González',adminPhone:'+502 9999 0000',
     price:20,active:true,suspended:false,
     portones:[{id:'v1',label:'Portón Principal',icon:'🚗',ip:'http://192.168.1.18',shellyId:'e4b063eb85a4',time:5}],
@@ -666,13 +674,15 @@ function seedDemo(){
 // ── ACCESO RÁPIDO
 function quickLogin(role){
   if(role==='resident'){
-    U={role:'resident',cerradaCode:'DEMO-002',house:'Casa 1'};
-    const c=S.cerradas['DEMO-002'];
+    U={role:'resident',cerradaCode:'SMARK-001',house:'Casa 1'};
+    const c=S.cerradas['SMARK-001'];
     const res=c.residents[0];
     enterRes(c,res);
   } else if(role==='admin'){
-    U={role:'subadmin',cerradaCode:'DEMO-002'};
-    enterAdm(S.cerradas['DEMO-002']);
+    const code=document.getElementById('staff-code')?.value.trim()||'SMARK-001';
+    const c=S.cerradas[code]||S.cerradas['SMARK-001'];
+    if(!c){showErr('m-err','Cerrada no encontrada.');return;}
+    U={role:'subadmin',cerradaCode:c.code};enterAdm(c);
   } else {
     U={role:'master'};
     showScreen('mst');renderMstList();renderNegocio();
@@ -682,21 +692,37 @@ function quickLogin(role){
 function loginManual(){
   const code=document.getElementById('m-code').value.trim();
   const pin=document.getElementById('m-pin').value.trim();
-  // Master sin código
-  if(!code && pin===S.masterKey){U={role:'master'};showScreen('mst');renderMstList();renderNegocio();return;}
-  const c=code?S.cerradas[code]:null;
+  if(!code){showErr('m-err','Ingresa el código de tu cerrada.');return;}
+  const c=S.cerradas[code];
   if(!c){showErr('m-err','Cerrada no encontrada.');return;}
-  // Admin
+  if(c.suspended||!c.active){document.getElementById('susp-msg').textContent='Esta cerrada está suspendida.';showScreen('susp');return;}
+  const res=c.residents.find(r=>r.pin===pin);
+  if(!res){showErr('m-err','PIN incorrecto.');return;}
+  if(!res.active||res.mora){
+    document.getElementById('susp-msg').textContent=res.mora?`Acceso suspendido por mora. ${res.moraNote}`:'Tu acceso fue suspendido.';
+    showScreen('susp');return;
+  }
+  U={role:'resident',cerradaCode:code,house:res.house};enterRes(c,res);
+}
+
+function loginStaff(){
+  const code=document.getElementById('staff-code').value.trim();
+  const pin=document.getElementById('staff-pin').value.trim();
+  // Master
+  if(!code && pin===S.masterKey){U={role:'master'};showScreen('mst');renderMstList();renderNegocio();return;}
+  if(!code){showErr('m-err','Ingresa el código.');return;}
+  const c=S.cerradas[code];
+  if(!c){showErr('m-err','Cerrada no encontrada.');return;}
   if(c.adminPin===pin){
     if(c.suspended){showErr('m-err','Cerrada suspendida.');return;}
     U={role:'subadmin',cerradaCode:code};enterAdm(c);return;
   }
-  // Residente
-  const res=c.residents.find(r=>r.pin===pin);
-  if(!res){showErr('m-err','PIN incorrecto.');return;}
-  if(c.suspended||!c.active){document.getElementById('susp-msg').textContent='Cerrada suspendida.';showScreen('susp');return;}
-  if(!res.active||res.mora){document.getElementById('susp-msg').textContent=res.mora?`Mora: ${res.moraNote}`:'Acceso suspendido.';showScreen('susp');return;}
-  U={role:'resident',cerradaCode:code,house:res.house};enterRes(c,res);
+  showErr('m-err','PIN incorrecto.');
+}
+
+function toggleStaff(){
+  const el=document.getElementById('staff-access');
+  el.style.display=el.style.display==='none'?'block':'none';
 }
 
 function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',3200);}
