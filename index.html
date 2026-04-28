@@ -563,10 +563,10 @@ select option{background:var(--sur)}
 <!-- BANNER INSTALAR APP -->
 <div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;
   background:var(--blue);color:#fff;padding:.85rem 1.15rem;z-index:10000;
-  display:none;align-items:center;justify-content:space-between;gap:.75rem;
+  align-items:center;justify-content:space-between;gap:.75rem;
   box-shadow:0 -4px 20px rgba(59,130,196,.4)">
   <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="font-size:1.6rem">🏘️</div>
+    <img src="icon-192.png" style="width:38px;height:38px;border-radius:10px">
     <div>
       <div style="font-family:var(--fd);font-weight:800;font-size:.9rem">Instalar CerradaApp</div>
       <div style="font-size:.72rem;opacity:.85">Agregar a tu pantalla de inicio</div>
@@ -575,10 +575,10 @@ select option{background:var(--sur)}
   <div style="display:flex;gap:.5rem;flex-shrink:0">
     <button onclick="dismissInstall()" style="background:rgba(255,255,255,.2);border:none;
       color:#fff;padding:.4rem .8rem;border-radius:8px;font-family:var(--fd);
-      font-weight:700;font-size:.75rem;cursor:pointer">Ahora no</button>
+      font-weight:700;font-size:.75rem;cursor:pointer">✕</button>
     <button id="btn-instalar" onclick="installApp()" style="background:#fff;border:none;
       color:var(--blue);padding:.4rem .9rem;border-radius:8px;font-family:var(--fd);
-      font-weight:800;font-size:.75rem;cursor:pointer">✓ Instalar</button>
+      font-weight:800;font-size:.75rem;cursor:pointer">📲 Instalar</button>
   </div>
 </div>
 
@@ -1081,88 +1081,74 @@ load();seedDemo();renderNcP();
 
 // ── PWA INSTALL
 let deferredPrompt = null;
-
-// Ocultar banners si ya está instalada como app standalone
-if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-  document.addEventListener('DOMContentLoaded', () => {
-    const b1 = document.getElementById('install-banner');
-    const b2 = document.getElementById('ios-banner');
-    if(b1) b1.style.display = 'none';
-    if(b2) b2.style.display = 'none';
-  });
-}
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
 // Registrar Service Worker
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/cerradaapp/sw.js')
-      .then(() => console.log('SW registrado'))
-      .catch(e => console.log('SW error:', e));
+  navigator.serviceWorker.register('/cerradaapp/sw.js').catch(()=>{});
+}
+
+// Limpiar "dismissed" expirado (dura solo 24 horas)
+const _d = localStorage.getItem('pwa-dismissed');
+if (_d && !isNaN(_d) && Date.now() > parseInt(_d)) {
+  localStorage.removeItem('pwa-dismissed');
+}
+
+if (!isStandalone) {
+
+  // ── ANDROID: capturar prompt nativo del navegador
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!localStorage.getItem('pwa-dismissed')) {
+      const btn = document.getElementById('btn-instalar');
+      btn.textContent = '📲 Instalar';
+      btn.onclick = installApp;
+      document.getElementById('install-banner').style.display = 'flex';
+    }
   });
-}
 
-// Android — capturar evento de instalación
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  // Mostrar banner si no fue descartado
-  if (!localStorage.getItem('pwa-dismissed')) {
-    const banner = document.getElementById('install-banner');
-    banner.style.display = 'flex';
+  // ── ANDROID sin prompt: mostrar banner con instrucciones manuales
+  if (!isIOS) {
+    setTimeout(() => {
+      if (!deferredPrompt && !localStorage.getItem('pwa-dismissed')) {
+        const btn = document.getElementById('btn-instalar');
+        btn.textContent = '📲 Instalar';
+        btn.onclick = () => {
+          document.getElementById('install-banner').style.display = 'none';
+          toast('Toca ⋮ arriba → "Agregar a pantalla de inicio"');
+        };
+        document.getElementById('install-banner').style.display = 'flex';
+      }
+    }, 2500);
   }
-});
 
-// Si no hay evento PWA en 4s, mostrar banner manual con instrucciones
-setTimeout(() => {
-  const banner = document.getElementById('install-banner');
-  const dismissed = localStorage.getItem('pwa-dismissed');
-  const installed = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-  
-  if (!dismissed && !installed && !deferredPrompt) {
-    // Mostrar banner manual (para navegadores que no soportan beforeinstallprompt)
-    banner.style.display = 'flex';
-    // Cambiar botón instalar a instrucciones manuales
-    banner.querySelector('#btn-instalar').textContent = '📲 Cómo instalar';
-    banner.querySelector('#btn-instalar').onclick = showManualInstall;
+  // ── iOS: mostrar instrucciones
+  if (isIOS && !localStorage.getItem('ios-dismissed')) {
+    setTimeout(() => {
+      document.getElementById('ios-banner').style.display = 'block';
+    }, 2500);
   }
-}, 4000);
-
-function showManualInstall() {
-  closeModal('install-banner');
-  // Detectar sistema
-  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  if (isIos) {
-    document.getElementById('ios-banner').style.display = 'block';
-  } else {
-    // Android sin soporte PWA — instrucciones manuales
-    toast('Toca ⋮ → "Agregar a pantalla de inicio"');
-  }
-}
-
-// Detectar iOS
-function isIOS() {
-  return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone;
-}
-
-// Mostrar instrucciones iOS después de 3 segundos
-if (isIOS() && !localStorage.getItem('ios-dismissed')) {
-  setTimeout(() => {
-    document.getElementById('ios-banner').style.display = 'block';
-  }, 3000);
 }
 
 async function installApp() {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  document.getElementById('install-banner').style.display = 'none';
-  if (outcome === 'accepted') toast('✅ ¡App instalada!');
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    document.getElementById('install-banner').style.display = 'none';
+    if (outcome === 'accepted') toast('🎉 ¡CerradaApp instalada!');
+  } else {
+    document.getElementById('install-banner').style.display = 'none';
+    toast('Toca ⋮ arriba → "Agregar a pantalla de inicio"');
+  }
 }
 
 function dismissInstall() {
   document.getElementById('install-banner').style.display = 'none';
-  localStorage.setItem('pwa-dismissed', '1');
+  // Expira en 24 horas — volverá a aparecer mañana
+  localStorage.setItem('pwa-dismissed', Date.now() + 24*60*60*1000);
 }
 
 function dismissIOS() {
@@ -1170,9 +1156,8 @@ function dismissIOS() {
   localStorage.setItem('ios-dismissed', '1');
 }
 
-// Detectar cuando se instala
 window.addEventListener('appinstalled', () => {
-  toast('🎉 CerradaApp instalada correctamente');
+  toast('🎉 CerradaApp instalada');
   document.getElementById('install-banner').style.display = 'none';
 });
 </script>
