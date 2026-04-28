@@ -1344,47 +1344,57 @@ function showRegisterScreen(code, house, token, role) {
 }
 
 async function submitRegister() {
-  const code = document.getElementById('reg-code').value;
-  const house = document.getElementById('reg-house').value;
-  const token = document.getElementById('reg-token').value;
-  const role = document.getElementById('reg-role').value;
-  const name = document.getElementById('reg-name').value.trim();
+  const code    = document.getElementById('reg-code').value;
+  const house   = document.getElementById('reg-house').value;
+  const token   = document.getElementById('reg-token').value;
+  const role    = document.getElementById('reg-role').value;
+  const name    = document.getElementById('reg-name').value.trim();
   const address = document.getElementById('reg-address').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const pin = document.getElementById('reg-pin').value.trim();
-  const pin2 = document.getElementById('reg-pin2').value.trim();
+  const email   = document.getElementById('reg-email').value.trim();
+  const pin     = document.getElementById('reg-pin').value.trim();
+  const pin2    = document.getElementById('reg-pin2').value.trim();
 
-  if (!name || !address || !email) { toast('⚠️ Completa todos los campos'); return; }
-  if (!pin || pin.length < 4) { toast('⚠️ PIN mínimo 4 dígitos'); return; }
-  if (pin !== pin2) { toast('⚠️ Los PINs no coinciden'); return; }
+  if (!name||!address||!email){ toast('⚠️ Completa todos los campos'); return; }
+  if (!pin||pin.length<4){ toast('⚠️ PIN mínimo 4 dígitos'); return; }
+  if (pin!==pin2){ toast('⚠️ Los PINs no coinciden'); return; }
+
+  // Verificar email básico
+  if (!email.includes('@')){ toast('⚠️ Correo electrónico inválido'); return; }
 
   const c = S.cerradas[code];
-  if (!c) { toast('⚠️ Error al registrar'); return; }
+  if (!c) { toast('⚠️ Error: cerrada no encontrada. Pide al admin que reenvíe la invitación.'); return; }
+
   const resIdx = c.residents.findIndex(r => r.house === house);
   if (resIdx < 0) { toast('⚠️ Casa no encontrada'); return; }
-  if (c.residents[resIdx].inviteToken !== token) { toast('⚠️ Invitación expirada'); return; }
+  if (c.residents[resIdx].inviteToken !== token) { toast('⚠️ Invitación expirada. Pide al admin una nueva.'); return; }
 
   // Agregar miembro
   if (!c.residents[resIdx].members) c.residents[resIdx].members = [];
   const memberIdx = c.residents[resIdx].members.length;
-  c.residents[resIdx].members.push({ name, address, email, role, pin, registeredAt: new Date().toISOString() });
+  c.residents[resIdx].members.push({
+    name, address, email, role, pin,
+    registeredAt: new Date().toISOString()
+  });
 
-  // Si es el jefe, actualizar nombre principal del residente
+  // Si es el jefe actualizar datos principales
   if (role === 'head') {
-    c.residents[resIdx].name = name;
+    c.residents[resIdx].name  = name;
     c.residents[resIdx].email = email;
-    c.residents[resIdx].pin = pin;
+    c.residents[resIdx].pin   = pin;
   }
 
   save();
   if (c.jsonbin?.binId) jbPush(c);
 
-  toast('✅ ¡Registro exitoso! Ya puedes abrir el portón');
-
-  // Auto login tras registro
+  // Guardar sesión
   U = { role:'resident', cerradaCode:code, house, memberIdx, memberName:name };
   localStorage.setItem('cerrada_session', JSON.stringify(U));
-  setTimeout(() => enterRes(c, c.residents[resIdx], c.residents[resIdx].members[memberIdx]), 1200);
+
+  toast('✅ ¡Registro exitoso! Bienvenido a ' + c.name);
+
+  setTimeout(() => {
+    enterRes(c, c.residents[resIdx], c.residents[resIdx].members[memberIdx]);
+  }, 1200);
 }
 
 // ── UTILS
@@ -1396,26 +1406,71 @@ function mbg(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 
 load();seedDemo();renderNcP();
 
-// ── VERIFICAR INVITACIÓN (antes del auto login)
-// Revisar invitación pendiente en localStorage (por si PWA recargó)
-const _pendingInvite = localStorage.getItem('pending_invite');
-if (_pendingInvite) {
-  try {
-    const {invite, code, house} = JSON.parse(_pendingInvite);
-    localStorage.removeItem('pending_invite');
-    if (processInvite(invite, code, house)) {
-      // no continuar con autologin
-    } else {
-      // continuar normal
-    }
-  } catch(e) { localStorage.removeItem('pending_invite'); }
-}
+// ── INIT: Verificar invitación → Auto Login
+(async function init() {
 
-if (!checkInvite()) {
-  // ── AUTO LOGIN — recordar sesión
-(function autoLogin(){
+  // 1. Detectar hash de invitación en la URL
+  const hash = window.location.hash.substring(1);
+  if (hash && hash.includes('invite=')) {
+    const params = new URLSearchParams(hash);
+    const invite = params.get('invite');
+    const code   = params.get('code');
+    const house  = decodeURIComponent(params.get('house') || '');
+
+    // Limpiar hash de URL
+    window.history.replaceState({}, '', window.location.pathname);
+
+    if (invite && code && house) {
+      // Si la cerrada no está en localStorage, intentar cargarla desde JSONBin
+      // Por ahora mostrar pantalla de registro directamente
+      // (el token se valida contra los datos locales o se acepta si viene de un link válido)
+      const c = S.cerradas[code];
+
+      if (c) {
+        // Cerrada encontrada localmente — validar token
+        const res = c.residents.find(r => r.house === house);
+        if (res && res.inviteToken === invite) {
+          const members = res.members || [];
+          if (members.length < 5) {
+            const role = members.length === 0 ? 'head' : 'family';
+            showRegisterScreen(code, house, invite, role);
+            return; // No continuar con autologin
+          }
+        }
+      } else {
+        // Cerrada no encontrada localmente — mostrar registro igualmente
+        // El admin habrá compartido el código correcto
+        // Guardar datos de invitación para procesar después del registro
+        localStorage.setItem('pending_invite', JSON.stringify({invite, code, house}));
+        showRegisterScreenNew(code, house, invite);
+        return;
+      }
+    }
+  }
+
+  // 2. Revisar invitación pendiente guardada
+  const _pi = localStorage.getItem('pending_invite');
+  if (_pi) {
+    try {
+      const {invite, code, house} = JSON.parse(_pi);
+      localStorage.removeItem('pending_invite');
+      const c = S.cerradas[code];
+      if (c) {
+        const res = c.residents.find(r => r.house === house);
+        if (res && res.inviteToken === invite) {
+          const members = res.members || [];
+          if (members.length < 5) {
+            showRegisterScreen(code, house, invite, members.length === 0 ? 'head' : 'family');
+            return;
+          }
+        }
+      }
+    } catch(e) { localStorage.removeItem('pending_invite'); }
+  }
+
+  // 3. Auto Login — recordar sesión
   const saved = localStorage.getItem('cerrada_session');
-  if (!saved) return;
+  if (!saved) return; // Mostrar login normal
   try {
     const sess = JSON.parse(saved);
     const { role, cerradaCode, house, memberIdx } = sess;
@@ -1431,18 +1486,29 @@ if (!checkInvite()) {
       enterAdm(c); return;
     }
     if (role === 'resident') {
-      // Buscar miembro por índice guardado
       const res = c.residents.find(r => r.house === house);
       if (!res || !res.active || res.mora) return;
-      // Encontrar miembro específico
       const mi = memberIdx !== undefined ? memberIdx : -1;
       const member = mi >= 0 && res.members ? res.members[mi] : null;
       U = { role:'resident', cerradaCode, house, memberIdx: mi, memberName: member?.name || res.name };
       enterRes(c, res, member);
     }
   } catch(e) { localStorage.removeItem('cerrada_session'); }
-  })();
-} // fin checkInvite
+
+})();
+
+// Pantalla de registro cuando la cerrada no está en localStorage del nuevo usuario
+function showRegisterScreenNew(code, house, token) {
+  showScreen('register');
+  document.getElementById('reg-title').textContent = '👤 Registro de Jefe de Familia';
+  document.getElementById('reg-subtitle').textContent = house;
+  document.getElementById('reg-code').value = code;
+  document.getElementById('reg-house').value = house;
+  document.getElementById('reg-token').value = token;
+  document.getElementById('reg-role').value = 'head';
+  const famInfo = document.getElementById('reg-family-info');
+  if (famInfo) famInfo.style.display = 'block';
+}
 
 // ── PWA INSTALL
 let deferredPrompt = null;
