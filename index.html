@@ -1409,7 +1409,7 @@ load();seedDemo();renderNcP();
 // ── INIT: Verificar invitación → Auto Login
 (async function init() {
 
-  // 1. Detectar hash de invitación en la URL
+  // 1. Detectar hash de invitación en la URL — SIEMPRE tiene prioridad
   const hash = window.location.hash.substring(1);
   if (hash && hash.includes('invite=')) {
     const params = new URLSearchParams(hash);
@@ -1417,34 +1417,52 @@ load();seedDemo();renderNcP();
     const code   = params.get('code');
     const house  = decodeURIComponent(params.get('house') || '');
 
-    // Limpiar hash de URL
+    // Limpiar hash de URL inmediatamente
     window.history.replaceState({}, '', window.location.pathname);
 
     if (invite && code && house) {
-      // Si la cerrada no está en localStorage, intentar cargarla desde JSONBin
-      // Por ahora mostrar pantalla de registro directamente
-      // (el token se valida contra los datos locales o se acepta si viene de un link válido)
-      const c = S.cerradas[code];
+      // Cerrar cualquier sesión activa — la invitación tiene prioridad
+      U = null;
 
+      const c = S.cerradas[code];
       if (c) {
-        // Cerrada encontrada localmente — validar token
+        // Cerrada encontrada — intentar pull de JSONBin para datos frescos
+        if (c.jsonbin?.binId) {
+          try {
+            const r = await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}/latest`,
+              {headers:{'X-Master-Key': c.jsonbin.apiKey}});
+            if (r.ok) {
+              const data = await r.json();
+              if (data.record) {
+                const jb = c.jsonbin;
+                Object.assign(c, data.record);
+                c.jsonbin = jb;
+                save();
+              }
+            }
+          } catch(e) {}
+        }
+
         const res = c.residents.find(r => r.house === house);
         if (res && res.inviteToken === invite) {
           const members = res.members || [];
           if (members.length < 5) {
             const role = members.length === 0 ? 'head' : 'family';
             showRegisterScreen(code, house, invite, role);
-            return; // No continuar con autologin
+            return;
+          } else {
+            // Ya tiene 5 miembros
+            showScreen('login');
+            setTimeout(() => toast('⚠️ Esta casa ya tiene el máximo de miembros'), 500);
+            return;
           }
         }
-      } else {
-        // Cerrada no encontrada localmente — mostrar registro igualmente
-        // El admin habrá compartido el código correcto
-        // Guardar datos de invitación para procesar después del registro
-        localStorage.setItem('pending_invite', JSON.stringify({invite, code, house}));
-        showRegisterScreenNew(code, house, invite);
-        return;
       }
+
+      // Cerrada no encontrada localmente — guardar y mostrar registro
+      localStorage.setItem('pending_invite', JSON.stringify({invite, code, house}));
+      showRegisterScreenNew(code, house, invite);
+      return;
     }
   }
 
