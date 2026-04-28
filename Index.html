@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>CerradaApp</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --blue:#3B82C4;--blue-dark:#2d6aad;--blue-lt:#EBF4FF;
+  --green:#3BBF6E;--green-lt:#E8F8EE;
+  --ocre:#C99B2E;--ocre-lt:#FEF8E6;
+  --sky:#5BADE0;--sky-lt:#E5F3FB;
+  --rose:#E86060;--rose-lt:#FEF0F0;
+  --bg:#EEF2F8;--sur:#FFFFFF;--sur2:#F5F8FC;
+  --brd:#DDE4EF;--brd2:#C8D4E4;
+  --t:#1A2640;--t2:#5A6A82;--t3:#9BAABB;
+  --fd:'Nunito',sans-serif;--fb:'Nunito Sans',sans-serif;
+  --rad:16px;--rad-sm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--fb);background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden}
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* LOGIN */
+#scr-login{align-items:center;justify-content:center;padding:1.5rem;
+  background:linear-gradient(155deg,#c5dcf5 0%,#daeef8 35%,#fef6dc 70%,#e8f5ed 100%)}
+.lcard{width:100%;max-width:420px;background:rgba(255,255,255,.97);border-radius:24px;
+  padding:1.75rem 1.75rem 1.5rem;box-shadow:0 8px 40px rgba(59,130,196,.14);border:1px solid rgba(255,255,255,.9)}
+.brand{text-align:center;margin-bottom:1.25rem}
+.brand-ico{width:62px;height:62px;background:linear-gradient(135deg,var(--blue),var(--sky));border-radius:18px;
+  display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;font-size:1.8rem;
+  box-shadow:0 6px 20px rgba(59,130,196,.3)}
+.brand h1{font-family:var(--fd);font-size:1.75rem;font-weight:900;color:var(--blue)}
+.brand p{color:var(--t2);font-size:.8rem;margin-top:.2rem}
+
+/* ACCESO RAPIDO */
+.quick-access{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin-bottom:1rem}
+.qa-btn{background:var(--sur2);border:1.5px solid var(--brd);border-radius:14px;
+  padding:1rem .75rem;display:flex;flex-direction:column;align-items:center;gap:.4rem;
+  cursor:pointer;transition:all .2s;text-align:center}
+.qa-btn:hover{border-color:var(--blue);background:var(--blue-lt);transform:translateY(-2px)}
+.qa-btn:active{transform:scale(.97)}
+.qa-ico{font-size:1.6rem;line-height:1}
+.qa-lbl{font-family:var(--fd);font-size:.75rem;font-weight:800;color:var(--t)}
+.qa-sub{font-size:.65rem;color:var(--t2);font-family:var(--fb)}
+.qa-btn.res{border-color:rgba(59,191,110,.4);background:var(--green-lt)}
+.qa-btn.res:hover{border-color:var(--green);background:#d4f5e4}
+.qa-btn.adm{border-color:rgba(91,173,224,.4);background:var(--sky-lt)}
+.qa-btn.adm:hover{border-color:var(--sky);background:#c8e8f8}
+.qa-btn.mst{border-color:rgba(201,155,46,.4);background:var(--ocre-lt)}
+.qa-btn.mst:hover{border-color:var(--ocre);background:#fef0c0}
+
+.divider{display:flex;align-items:center;gap:.75rem;margin:.75rem 0;color:var(--t3);font-size:.72rem;font-weight:600}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--brd)}
+
+/* FORMS */
+label{display:block;font-size:.71rem;font-weight:700;color:var(--t2);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.5px}
+input,select,textarea{width:100%;background:var(--sur2);border:1.5px solid var(--brd);border-radius:var(--rad-sm);padding:.65rem .9rem;color:var(--t);font-family:var(--fb);font-size:.9rem;margin-bottom:.8rem;transition:border-color .18s,box-shadow .18s;outline:none;-webkit-appearance:none}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,196,.1);background:var(--sur)}
+textarea{resize:vertical;min-height:70px}
+select option{background:var(--sur)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.68rem 1.1rem;border:none;border-radius:var(--rad-sm);font-family:var(--fd);font-weight:700;font-size:.87rem;cursor:pointer;transition:all .18s;white-space:nowrap}
+.bp{background:var(--blue);color:#fff;width:100%;box-shadow:0 3px 12px rgba(59,130,196,.3)}
+.bp:hover{background:var(--blue-dark);transform:translateY(-1px)}
+.bp:active{transform:scale(.97)}
+.bg2{background:var(--sur2);border:1.5px solid var(--brd);color:var(--t2)}
+.bg2:hover{border-color:var(--blue);color:var(--blue)}
+.bd{background:var(--rose-lt);border:1.5px solid #f0a0a0;color:var(--rose)}
+.bw{background:var(--ocre-lt);border:1.5px solid #dbb85a;color:var(--ocre)}
+.bb2{background:var(--sky-lt);border:1.5px solid #90ccee;color:var(--sky)}
+.sm{padding:.32rem .7rem;font-size:.74rem;border-radius:8px}
+.xs{padding:.22rem .48rem;font-size:.68rem;border-radius:6px}
+.wf{width:100%}
+.err{background:var(--rose-lt);border:1.5px solid #f0b0b0;color:#b03030;padding:.52rem .9rem;border-radius:8px;font-size:.79rem;margin-bottom:.8rem;display:none;font-weight:600}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.15rem;background:var(--blue);position:sticky;top:0;z-index:100;gap:.6rem;box-shadow:0 2px 12px rgba(59,130,196,.3)}
+.t-brand{display:flex;align-items:center;gap:.5rem;min-width:0;flex:1}
+.t-brand-main{font-family:var(--fd);font-size:1.05rem;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-brand-sub{font-size:.72rem;color:rgba(255,255,255,.78);margin-top:.03rem}
+.t-right{display:flex;align-items:center;gap:.4rem;flex-shrink:0}
+
+/* BADGES */
+.bge{display:inline-flex;align-items:center;padding:.18rem .55rem;border-radius:20px;font-size:.68rem;font-weight:700;font-family:var(--fd);white-space:nowrap}
+.g-b{background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.38)}
+.b-b{background:var(--sky-lt);color:#1a6a95;border:1px solid rgba(91,173,224,.35)}
+.y-b{background:var(--ocre-lt);color:#7a5c00;border:1px solid rgba(201,155,46,.38)}
+.r-b{background:var(--rose-lt);color:#b02020;border:1px solid rgba(232,96,96,.35)}
+.gr-b{background:var(--green-lt);color:#1a6a35;border:1px solid rgba(59,191,110,.35)}
+
+/* NAV */
+.nav{display:flex;overflow-x:auto;background:var(--sur);border-bottom:2px solid var(--brd);padding:0 1rem;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.ntab{padding:.72rem .9rem;border:none;background:transparent;color:var(--t2);font-family:var(--fd);font-size:.79rem;font-weight:700;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:all .18s;margin-bottom:-2px}
+.ntab.on{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* CONTENT */
+.content{padding:1.1rem;flex:1;background:var(--bg)}
+.panel{display:none}.panel.on{display:block}
+.card{background:var(--sur);border-radius:var(--rad);padding:1.05rem;margin-bottom:.8rem;box-shadow:0 2px 12px rgba(59,130,196,.07);border:1px solid var(--brd)}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;gap:.5rem}
+.ct{font-family:var(--fd);font-size:.95rem;font-weight:800;color:var(--t)}
+.sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin-bottom:.85rem}
+.sc{background:var(--sur);border-radius:var(--rad);padding:1rem;box-shadow:0 2px 12px rgba(59,130,196,.07);border:1px solid var(--brd)}
+.sl{font-size:.7rem;color:var(--t2);font-weight:600;margin-bottom:.22rem}
+.sv{font-family:var(--fd);font-size:1.5rem;font-weight:900;color:var(--t)}
+
+/* GATES */
+.gate-grid{display:grid;gap:.5rem;margin-bottom:.8rem}
+.g1{grid-template-columns:1fr}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g4{grid-template-columns:1fr 1fr}
+.gbtn{
+  background:var(--sur);border:2px solid var(--brd);border-radius:var(--rad);
+  padding:1rem 1.1rem;display:flex;align-items:center;gap:.9rem;
+  cursor:pointer;position:relative;overflow:hidden;
+  transition:transform .15s,box-shadow .15s,border-color .15s,background .15s;
+  user-select:none;-webkit-user-select:none;touch-action:none;
+  box-shadow:0 4px 14px rgba(59,130,196,.12), 0 1px 3px rgba(59,130,196,.08);
+  /* Aspecto clicable: borde inferior más grueso */
+  border-bottom:3px solid var(--brd2);
+}
+.gbtn:hover{
+  border-color:var(--blue);border-bottom-color:var(--blue-dark);
+  background:var(--blue-lt);
+  box-shadow:0 6px 20px rgba(59,130,196,.18),0 2px 6px rgba(59,130,196,.1);
+  transform:translateY(-1px);
+}
+/* Estado presionado: hunde el botón */
+.gbtn.pressing{
+  transform:translateY(2px) scale(.98);
+  box-shadow:0 2px 6px rgba(59,130,196,.15);
+  border-color:var(--blue);
+  border-bottom-width:1px;
+  background:var(--blue-lt);
+}
+/* Icono pulsando */
+@keyframes pulse-ico{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.12)}
+}
+.gbtn.pressing .gico-wrap{
+  animation:pulse-ico .5s ease-in-out infinite;
+  background:rgba(59,130,196,.25);
+}
+/* Ripple */
+@keyframes ripple{
+  from{transform:scale(0);opacity:.35}
+  to{transform:scale(4);opacity:0}
+}
+.gbtn-ripple{
+  position:absolute;width:60px;height:60px;border-radius:50%;
+  background:var(--blue);pointer-events:none;
+  transform:scale(0);animation:ripple .6s ease-out forwards;
+}
+.gico-wrap{
+  width:46px;height:46px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;pointer-events:none;background:var(--blue-lt);
+  font-size:1.4rem;transition:background .2s;
+  box-shadow:0 2px 6px rgba(59,130,196,.15);
+}
+.gbtn-info{flex:1;pointer-events:none}
+.glbl{font-size:.9rem;font-weight:800;color:var(--t);font-family:var(--fd);pointer-events:none}
+.ghint{font-size:.69rem;color:var(--t2);pointer-events:none;margin-top:.12rem}
+.gbtn-arrow{
+  color:var(--blue);font-size:1.3rem;flex-shrink:0;pointer-events:none;
+  font-weight:800;transition:transform .2s;
+}
+.gbtn:hover .gbtn-arrow{transform:translateX(3px)}
+.gbtn.pressing .gbtn-arrow{transform:translateX(2px) scale(.9);color:var(--blue-dark)}
+/* Barra de progreso más visible */
+.gprog{
+  position:absolute;bottom:0;left:0;height:4px;width:0%;
+  background:linear-gradient(90deg,var(--sky),var(--blue));
+  transition:width linear;border-radius:0 0 16px 16px;
+  box-shadow:0 0 6px rgba(59,130,196,.5);
+}
+.gbtn.ok{border-color:var(--green);border-bottom-color:#1e7a35;background:var(--green-lt)}
+.gbtn.ok .glbl{color:var(--green)}
+.gbtn.ok .gico-wrap{background:var(--green-lt);box-shadow:0 2px 6px rgba(59,191,110,.2)}
+.gbtn.ok .gbtn-arrow{color:var(--green)}
+
+/* LIST */
+.li{display:flex;align-items:center;justify-content:space-between;padding:.68rem 0;border-bottom:1.5px solid var(--brd);gap:.6rem}
+.li:last-child{border-bottom:none}
+.lil{display:flex;align-items:center;gap:.62rem;flex:1;min-width:0}
+.av{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;flex-shrink:0;font-family:var(--fd)}
+.ag{background:var(--green-lt);color:#1a6a35}.ab{background:var(--sky-lt);color:#1a6a95}
+.ar{background:var(--rose-lt);color:#b02020}.ay{background:var(--ocre-lt);color:#7a5c00}
+.ax{background:var(--sur2);color:var(--t3)}
+.in{font-size:.84rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t)}
+.is{font-size:.69rem;color:var(--t2)}
+.ia{display:flex;gap:.32rem;align-items:center;flex-shrink:0}
+
+/* FINANCE */
+.fbar{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:.85rem}
+.fc{background:var(--sur);border-radius:12px;padding:.8rem .6rem;text-align:center;border:1px solid var(--brd)}
+.fl{font-size:.62rem;color:var(--t2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.25rem;font-weight:700}
+.fv{font-family:var(--fd);font-size:.95rem;font-weight:800}
+.fi{color:var(--green)}.fe{color:var(--rose)}.fb2{color:var(--blue)}
+
+/* HISTORY */
+.hi{display:flex;align-items:center;gap:.62rem;padding:.55rem 0;border-bottom:1.5px solid var(--brd)}
+.hi:last-child{border-bottom:none}
+.hd{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.hinfo{flex:1;min-width:0}
+.hdesc{font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t)}
+.htime{font-size:.65rem;color:var(--t3);margin-top:.08rem}
+
+/* MASTER CARD */
+.mcard{background:var(--sur);border-radius:var(--rad);padding:.9rem 1.05rem;margin-bottom:.65rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;box-shadow:0 2px 10px rgba(59,130,196,.07);border:1px solid var(--brd)}
+.mn{font-weight:800;font-size:.88rem;color:var(--t)}
+.mm{font-size:.69rem;color:var(--t2);margin-top:.18rem}
+
+/* MODAL */
+.mover{display:none;position:fixed;inset:0;background:rgba(26,38,64,.4);backdrop-filter:blur(4px);z-index:500;align-items:flex-end;justify-content:center;padding:1rem}
+.mover.open{display:flex;animation:fi .2s}
+@keyframes fi{from{opacity:0}}
+.mdl{background:var(--sur);border-radius:22px 22px 16px 16px;padding:1.5rem 1.35rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;animation:su .24s cubic-bezier(.34,1.56,.64,1);box-shadow:0 -4px 40px rgba(59,130,196,.16);border:1px solid var(--brd)}
+@keyframes su{from{transform:translateY(32px);opacity:0}}
+.mtitle{font-family:var(--fd);font-size:1.15rem;font-weight:900;margin-bottom:1.1rem;color:var(--t)}
+
+/* MISC */
+.trans-hdr{background:linear-gradient(135deg,var(--ocre-lt),var(--sky-lt));border:1.5px solid rgba(201,155,46,.28);border-radius:var(--rad);padding:1rem;margin-bottom:.9rem;text-align:center}
+.trans-hdr h3{font-family:var(--fd);font-size:1rem;font-weight:900;color:var(--ocre);margin-bottom:.2rem}
+.trans-hdr p{font-size:.74rem;color:var(--t2)}
+.mora{display:inline-flex;align-items:center;gap:.2rem;padding:.15rem .48rem;border-radius:6px;font-size:.64rem;font-weight:800;background:var(--rose-lt);color:var(--rose);border:1px solid rgba(232,96,96,.28)}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.sh h3{font-family:var(--fd);font-size:1rem;font-weight:800;color:var(--t)}
+.prw{display:flex;align-items:center;gap:.5rem;padding:.55rem 0;border-bottom:1.5px solid var(--brd)}
+.prw:last-child{border-bottom:none}
+#toast{position:fixed;bottom:1.3rem;left:50%;transform:translateX(-50%) translateY(120px);background:var(--t);color:#fff;padding:.65rem 1.15rem;border-radius:50px;font-size:.8rem;font-weight:700;z-index:9999;transition:transform .28s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;max-width:88vw;box-shadow:0 6px 24px rgba(26,38,64,.3);font-family:var(--fd)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;padding:1.75rem;color:var(--t3);font-size:.82rem;font-weight:600}
+.empty-ico{font-size:2rem;margin-bottom:.4rem;opacity:.4}
+#scr-susp{background:linear-gradient(160deg,#fde0e0 0%,#fff5f5 100%)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="scr-login" class="screen active">
+  <div class="lcard">
+    <div class="brand">
+      <div class="brand-ico">🏘️</div>
+      <h1>CerradaApp</h1>
+      <p>Control de Acceso Comunitario</p>
+    </div>
+
+    <!-- ACCESO RÁPIDO -->
+    <p style="font-size:.74rem;font-weight:700;color:var(--t2);text-align:center;margin-bottom:.65rem;text-transform:uppercase;letter-spacing:.5px">Acceso Demo Directo</p>
+    <div class="quick-access">
+      <div class="qa-btn res" onclick="quickLogin('resident')">
+        <div class="qa-ico">🏠</div>
+        <div class="qa-lbl">Residente</div>
+        <div class="qa-sub">Casa 1</div>
+      </div>
+      <div class="qa-btn adm" onclick="quickLogin('admin')">
+        <div class="qa-ico">⚙️</div>
+        <div class="qa-lbl">Admin</div>
+        <div class="qa-sub">Sub-Admin</div>
+      </div>
+      <div class="qa-btn mst" onclick="quickLogin('master')">
+        <div class="qa-ico">🛡️</div>
+        <div class="qa-lbl">Master</div>
+        <div class="qa-sub">Proveedor</div>
+      </div>
+    </div>
+
+    <div class="divider">o ingresa manualmente</div>
+
+    <!-- LOGIN MANUAL -->
+    <div style="display:flex;gap:.5rem;margin-bottom:.85rem">
+      <input id="m-code" placeholder="Código (DEMO-002)" oninput="this.value=this.value.toUpperCase()" style="margin:0;flex:1">
+      <input id="m-pin" type="password" placeholder="PIN" maxlength="8" style="margin:0;width:90px">
+    </div>
+    <div class="err" id="m-err"></div>
+    <button class="btn bp" onclick="loginManual()" style="margin-bottom:.5rem">Entrar →</button>
+    <p style="text-align:center;font-size:.7rem;color:var(--t3)">Master: código vacío + PIN <b>MASTER2025</b></p>
+  </div>
+</div>
+
+<!-- SUSPENDED -->
+<div id="scr-susp" class="screen">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center">
+    <div style="font-size:3rem;margin-bottom:1rem">🔒</div>
+    <h2 style="font-family:var(--fd);font-size:1.35rem;margin-bottom:.65rem">Acceso Suspendido</h2>
+    <p id="susp-msg" style="color:var(--t2);font-size:.8rem;max-width:260px;line-height:1.6"></p>
+    <button class="btn bg2" style="margin-top:1.25rem;width:auto;padding:.6rem 1.5rem" onclick="logout()">← Volver</button>
+  </div>
+</div>
+
+<!-- RESIDENTE -->
+<div id="scr-res" class="screen">
+  <div class="topbar">
+    <div class="t-brand"><div><div class="t-brand-main" id="res-cname">Mi Cerrada</div><div class="t-brand-sub" id="res-sub">Residente</div></div></div>
+    <div class="t-right">
+      <span id="sync-res" style="font-size:.9rem">☁️</span>
+      <span class="bge g-b" id="res-house">Casa</span>
+      <button class="btn bg2 sm" onclick="logout()">Salir</button>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="ntab on" onclick="resP('portones',this)">🚗 Portones</button>
+    <button class="ntab" onclick="resP('finanzas',this)">💰 Finanzas</button>
+    <button class="ntab" onclick="resP('historial',this)">📋 Historial</button>
+  </div>
+  <div class="content">
+    <div id="rp-portones" class="panel on">
+      <p style="font-size:.76rem;color:var(--t2);margin-bottom:.8rem;font-weight:600">Mantén presionado 1 segundo para abrir 🔓</p>
+      <div id="gate-res" class="gate-grid g1"></div>
+    </div>
+    <div id="rp-finanzas" class="panel">
+      <div class="trans-hdr"><h3>💡 Transparencia Financiera</h3><p>Cómo se administra el dinero de tu cerrada</p></div>
+      <div class="fbar">
+        <div class="fc"><div class="fl">Cobrado</div><div class="fv fi" id="rf-i">$0</div></div>
+        <div class="fc"><div class="fl">Gastos</div><div class="fv fe" id="rf-e">$0</div></div>
+        <div class="fc"><div class="fl">Caja</div><div class="fv fb2" id="rf-b">$0</div></div>
+      </div>
+      <div class="card"><div class="ch"><div class="ct">Movimientos del Mes</div></div>
+        <div id="rf-list"><div class="empty"><div class="empty-ico">💰</div>Sin movimientos</div></div></div>
+    </div>
+    <div id="rp-historial" class="panel">
+      <div class="card"><div class="ch"><div class="ct">Mis Accesos</div></div>
+        <div id="rh-list"><div class="empty"><div class="empty-ico">📋</div>Sin registros</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBADMIN -->
+<div id="scr-adm" class="screen">
+  <div class="topbar">
+    <div class="t-brand"><div><div class="t-brand-main" id="adm-cname">Mi Cerrada</div><div class="t-brand-sub">Administrador</div></div></div>
+    <div class="t-right">
+      <span id="sync-adm" style="font-size:.9rem">☁️</span>
+      <span class="bge b-b">Sub-Admin</span>
+      <button class="btn bg2 sm" onclick="logout()">Salir</button>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="ntab on" onclick="admP('dashboard',this)">📊 Panel</button>
+    <button class="ntab" onclick="admP('vecinos',this)">👥 Vecinos</button>
+    <button class="ntab" onclick="admP('historial',this)">📋 Historial</button>
+    <button class="ntab" onclick="admP('finanzas',this)">💰 Finanzas</button>
+    <button class="ntab" onclick="admP('portones',this)">🚪 Portones</button>
+    <button class="ntab" onclick="admP('config',this)">⚙️ Config</button>
+  </div>
+  <div class="content">
+    <div id="ap-dashboard" class="panel on">
+      <div class="sgrid">
+        <div class="sc"><div class="sl">Vecinos</div><div class="sv" id="ds-tot">0</div></div>
+        <div class="sc"><div class="sl">Activos</div><div class="sv" style="color:var(--green)" id="ds-act">0</div></div>
+        <div class="sc"><div class="sl">En Mora</div><div class="sv" style="color:var(--rose)" id="ds-mora">0</div></div>
+        <div class="sc"><div class="sl">Aperturas Hoy</div><div class="sv" style="color:var(--sky)" id="ds-open">0</div></div>
+      </div>
+      <div class="card"><div class="ch"><div class="ct">Actividad Reciente</div></div>
+        <div id="ds-recent"><div class="empty"><div class="empty-ico">📋</div>Sin actividad</div></div></div>
+      <div class="card"><div class="ch"><div class="ct">Finanzas del Mes</div>
+        <button class="btn bg2 sm" onclick="genPDF()">📄 PDF</button></div>
+        <div class="fbar">
+          <div class="fc"><div class="fl">Cobrado</div><div class="fv fi" id="af-i">$0</div></div>
+          <div class="fc"><div class="fl">Gastos</div><div class="fv fe" id="af-e">$0</div></div>
+          <div class="fc"><div class="fl">Caja</div><div class="fv fb2" id="af-b">$0</div></div>
+        </div>
+      </div>
+    </div>
+    <div id="ap-vecinos" class="panel">
+      <div class="card"><div class="ch"><div class="ct">Agregar Vecino</div></div>
+        <div class="frow">
+          <div><label>Casa / Lote</label><input id="nv-h" placeholder="Casa 12"></div>
+          <div><label>PIN (4-8 dígitos)</label><input id="nv-p" type="password" maxlength="8" placeholder="••••••"></div>
+        </div>
+        <label>Nombre completo</label><input id="nv-n" placeholder="Juan Pérez">
+        <label>Teléfono (opcional)</label><input id="nv-t" placeholder="+502 1234 5678">
+        <button class="btn bp" onclick="addVec()">+ Agregar Vecino</button>
+      </div>
+      <div class="sh"><h3>Vecinos Registrados</h3><span class="bge b-b" id="vec-cnt">0</span></div>
+      <div id="vec-list"><div class="empty"><div class="empty-ico">👥</div>Sin vecinos</div></div>
+    </div>
+    <div id="ap-historial" class="panel">
+      <div class="sh"><h3>Historial de Accesos</h3><button class="btn bd sm" onclick="clearHist()">🗑 Limpiar</button></div>
+      <div id="adm-hist"><div class="empty"><div class="empty-ico">📋</div>Sin registros</div></div>
+    </div>
+    <div id="ap-finanzas" class="panel">
+      <div class="card"><div class="ch"><div class="ct">Registrar Movimiento</div></div>
+        <div class="frow">
+          <div><label>Tipo</label><select id="fn-t"><option value="income">+ Ingreso</option><option value="expense">- Gasto</option></select></div>
+          <div><label>Monto ($)</label><input id="fn-a" type="number" placeholder="0.00" min="0"></div>
+        </div>
+        <label>Categoría</label>
+        <select id="fn-c"><option>Cuota mensual</option><option>Mantenimiento</option><option>Limpieza</option><option>Seguridad</option><option>Servicios</option><option>Reparaciones</option><option>Otro</option></select>
+        <label>Descripción</label><input id="fn-d" placeholder="Descripción del movimiento">
+        <button class="btn bp" onclick="addMov()">+ Registrar</button>
+      </div>
+      <div class="sh"><h3>Movimientos</h3><button class="btn bg2 sm" onclick="genPDF()">📄 Reporte PDF</button></div>
+      <div id="adm-fin-list"><div class="empty"><div class="empty-ico">💰</div>Sin movimientos</div></div>
+    </div>
+    <div id="ap-portones" class="panel">
+      <div class="card"><div class="ch"><div class="ct">Configurar Portones</div></div>
+        <p style="font-size:.75rem;color:var(--t2);margin-bottom:.85rem">Puedes personalizar el nombre e icono de cada portón.</p>
+        <div id="adm-plist"></div>
+        <button class="btn bp" style="margin-top:.6rem" onclick="savePortones()">💾 Guardar</button>
+      </div>
+      <div class="card"><div class="ch"><div class="ct">Probar Portones</div></div>
+        <p style="font-size:.75rem;color:var(--t2);margin-bottom:.75rem">Solo para pruebas técnicas</p>
+        <div id="gate-test" class="gate-grid g1"></div>
+      </div>
+    </div>
+    <div id="ap-config" class="panel">
+      <div class="card">
+        <div class="ch"><div class="ct">🔑 Mi PIN de Administrador</div></div>
+        <p style="font-size:.78rem;color:var(--t2);margin-bottom:.85rem">Cambia tu PIN de acceso al sistema.</p>
+        <label>PIN actual</label>
+        <input id="cfg-pin-old" type="password" maxlength="8" placeholder="Tu PIN actual">
+        <label>Nuevo PIN (mín. 4 dígitos)</label>
+        <input id="cfg-pin" type="password" maxlength="8" placeholder="Nuevo PIN">
+        <label>Confirmar nuevo PIN</label>
+        <input id="cfg-pin2" type="password" maxlength="8" placeholder="Repite el nuevo PIN">
+        <button class="btn bp" onclick="changePin()">✓ Actualizar PIN</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MASTER -->
+<div id="scr-mst" class="screen">
+  <div class="topbar">
+    <div class="t-brand"><div><div class="t-brand-main">CerradaApp</div><div class="t-brand-sub">Panel Maestro</div></div></div>
+    <div class="t-right"><span class="bge y-b">Master</span><button class="btn bg2 sm" onclick="logout()">Salir</button></div>
+  </div>
+  <div class="nav">
+    <button class="ntab on" onclick="mstP('cerradas',this)">🏘️ Cerradas</button>
+    <button class="ntab" onclick="mstP('negocio',this)">📊 Negocio</button>
+    <button class="ntab" onclick="mstP('config',this)">⚙️ Config</button>
+  </div>
+  <div class="content">
+    <div id="mp-cerradas" class="panel on">
+      <div class="sh"><h3>Cerradas Registradas</h3><button class="btn bp sm" onclick="openModal('modal-nueva')">+ Nueva</button></div>
+      <div id="mst-list"><div class="empty"><div class="empty-ico">🏘️</div>Sin cerradas</div></div>
+    </div>
+    <div id="mp-negocio" class="panel">
+      <div class="sgrid">
+        <div class="sc"><div class="sl">Total Cerradas</div><div class="sv" id="nb-tot">0</div></div>
+        <div class="sc"><div class="sl">Activas</div><div class="sv" style="color:var(--green)" id="nb-act">0</div></div>
+        <div class="sc"><div class="sl">Ingresos/mes</div><div class="sv" style="color:var(--ocre)" id="nb-rev">$0</div></div>
+        <div class="sc"><div class="sl">Total Casas</div><div class="sv" style="color:var(--sky)" id="nb-hs">0</div></div>
+      </div>
+      <div class="card"><div class="ch"><div class="ct">Proyección de Ingresos</div></div>
+        <div class="li"><div class="lil"><div class="av ag">$</div><div><div class="in">Tarifa/cerrada</div><div class="is">Mensualidad actual</div></div></div><span class="bge gr-b" id="nb-price">$20/mes</span></div>
+        <div class="li"><div class="lil"><div class="av ab">📈</div><div><div class="in">10 cerradas</div><div class="is">Corto plazo</div></div></div><span class="bge b-b" id="nb-p10">$200/mes</span></div>
+        <div class="li"><div class="lil"><div class="av ag">🎯</div><div><div class="in">25 cerradas</div><div class="is">Meta 6 meses</div></div></div><span class="bge gr-b" id="nb-p25">$500/mes</span></div>
+        <div class="li"><div class="lil"><div class="av ay">🚀</div><div><div class="in">50 cerradas</div><div class="is">Meta 1 año</div></div></div><span class="bge y-b" id="nb-p50">$1,000/mes</span></div>
+      </div>
+    </div>
+    <div id="mp-config" class="panel">
+      <div class="card">
+        <div class="ch"><div class="ct">☁️ JSONBin por Cerrada</div></div>
+        <p style="font-size:.78rem;color:var(--t2);margin-bottom:.85rem">Conecta cada cerrada a la nube para que los datos estén disponibles en cualquier dispositivo. Selecciona la cerrada y pega sus credenciales de <b>jsonbin.io</b>.</p>
+        <label>Seleccionar Cerrada</label>
+        <select id="mc-bin-cerrada" onchange="loadMstJsonbinFields()"></select>
+        <div id="mc-bin-fields" style="display:none">
+          <label>Bin ID</label>
+          <input id="mc-bin-id" placeholder="ID del bin">
+          <label>API Key</label>
+          <input id="mc-bin-key" type="password" placeholder="$2b$...">
+          <button class="btn bp" onclick="saveMstJsonbin()">☁️ Conectar JSONBin</button>
+        </div>
+      </div>
+      <div class="card"><div class="ch"><div class="ct">🔑 Clave Maestra</div></div>
+        <label>Nueva Clave (mín. 8 caracteres)</label>
+        <input id="mc-key" type="password" placeholder="Nueva clave maestra">
+        <button class="btn bp" onclick="changeMasterKey()">Cambiar Clave</button>
+      </div>
+      <div class="card"><div class="ch"><div class="ct">💰 Tarifa por Defecto</div></div>
+        <label>Mensualidad base ($)</label>
+        <input id="mc-price" type="number" placeholder="20" min="1">
+        <button class="btn bg2 wf" onclick="saveMasterPrice()">Guardar Tarifa</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVA CERRADA -->
+<div class="mover" id="modal-nueva" onclick="mbg(event,'modal-nueva')">
+  <div class="mdl">
+    <div class="mtitle">🏘️ Nueva Cerrada</div>
+    <div class="frow">
+      <div><label>Nombre</label><input id="nc-name" placeholder="Residencial Las Palmas"></div>
+      <div><label>Código único</label><input id="nc-code" placeholder="CERR-001" oninput="this.value=this.value.toUpperCase()"></div>
+    </div>
+    <div class="frow">
+      <div><label>Nº Casas (máx 50)</label><input id="nc-houses" type="number" placeholder="40" min="1" max="50"></div>
+      <div><label>Mensualidad ($)</label><input id="nc-price" type="number" placeholder="20" min="1"></div>
+    </div>
+    <label>Nombre del Sub-Admin</label><input id="nc-aname" placeholder="Pedro González">
+    <div class="frow">
+      <div><label>PIN Sub-Admin</label><input id="nc-apin" type="password" maxlength="8" placeholder="Mín. 4 dígitos"></div>
+      <div><label>Teléfono</label><input id="nc-aphone" placeholder="+502 1234 5678"></div>
+    </div>
+    <div style="border-top:1px solid var(--brd);padding-top:.85rem;margin-top:.1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+        <span style="font-family:var(--fd);font-size:.9rem;font-weight:800">🚪 Portones</span>
+        <button class="btn bb2 xs" onclick="addPortonRow()">+ Portón</button>
+      </div>
+      <p style="font-size:.72rem;color:var(--t2);margin-bottom:.75rem">El Sub-Admin configurará las IPs después.</p>
+      <div id="nc-portones"></div>
+    </div>
+    <div class="frow" style="margin-top:.85rem">
+      <button class="btn bg2" onclick="closeModal('modal-nueva')">Cancelar</button>
+      <button class="btn bp" onclick="createCerrada()">Crear Cerrada</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MORA -->
+<div class="mover" id="modal-mora" onclick="mbg(event,'modal-mora')">
+  <div class="mdl">
+    <div class="mtitle">⚠️ Suspender por Mora</div>
+    <input type="hidden" id="mora-idx">
+    <label>Nota de mora (motivo / monto)</label>
+    <textarea id="mora-note" placeholder="Ej: Debe cuotas de enero y febrero — $40.00"></textarea>
+    <div class="frow">
+      <button class="btn bg2" onclick="closeModal('modal-mora')">Cancelar</button>
+      <button class="btn bd" onclick="applyMora()">🔒 Suspender</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER CERRADA -->
+<div class="mover" id="modal-cer" onclick="mbg(event,'modal-cer')">
+  <div class="mdl">
+    <div class="mtitle" id="mcer-title">Cerrada</div>
+    <div id="mcer-body"></div>
+    <button class="btn bg2 wf" style="margin-top:.75rem" onclick="closeModal('modal-cer')">Cerrar</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SK='cerradaapp_v4';
+const ICONS=['🚗','🚶','🚪','🏠','🔑','🚧','🛻','🏍'];
+let S={masterKey:'MASTER2025',defaultPrice:20,cerradas:{}};
+let U=null,ncP=[];
+
+function load(){try{const d=localStorage.getItem(SK);if(d)S=JSON.parse(d);}catch(e){}}
+function save(){localStorage.setItem(SK,JSON.stringify(S));}
+function C(){return S.cerradas[U?.cerradaCode];}
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+function fd(iso){return new Date(iso).toLocaleString('es',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+function emH(i,t){return`<div class="empty"><div class="empty-ico">${i}</div>${t}</div>`;}
+
+function seedDemo(){
+  if(S.cerradas['DEMO-002'])return;
+  S.cerradas['DEMO-002']={
+    name:'Mi Cerrada',code:'DEMO-002',houses:20,
+    adminPin:'1234',adminName:'Pedro González',adminPhone:'+502 9999 0000',
+    price:20,active:true,suspended:false,
+    portones:[{id:'v1',label:'Portón Principal',icon:'🚗',ip:'http://192.168.1.101',time:10}],
+    residents:[
+      {house:'Casa 1',pin:'5678',name:'Juan Pérez',phone:'+502 1111 0001',active:true,mora:false,moraNote:''},
+      {house:'Casa 2',pin:'9999',name:'María López',phone:'+502 1111 0002',active:true,mora:false,moraNote:''},
+      {house:'Casa 3',pin:'1111',name:'Carlos Ruiz',phone:'+502 1111 0003',active:true,mora:true,moraNote:'Debe 2 cuotas — $40'},
+    ],
+    history:[
+      {ts:new Date(Date.now()-3600000).toISOString(),house:'Casa 1',portonId:'v1',label:'Portón Principal'},
+      {ts:new Date(Date.now()-7200000).toISOString(),house:'Casa 2',portonId:'v1',label:'Portón Principal'},
+    ],
+    movements:[
+      {ts:new Date().toISOString(),type:'income',amount:60,category:'Cuota mensual',desc:'Casas 1, 2 y 3'},
+      {ts:new Date(Date.now()-86400000).toISOString(),type:'expense',amount:25,category:'Mantenimiento',desc:'Aceite para portón'},
+    ],
+    jsonbin:{},createdAt:new Date().toISOString()
+  };
+  save();
+}
+
+// ── ACCESO RÁPIDO
+function quickLogin(role){
+  if(role==='resident'){
+    U={role:'resident',cerradaCode:'DEMO-002',house:'Casa 1'};
+    const c=S.cerradas['DEMO-002'];
+    const res=c.residents[0];
+    enterRes(c,res);
+  } else if(role==='admin'){
+    U={role:'subadmin',cerradaCode:'DEMO-002'};
+    enterAdm(S.cerradas['DEMO-002']);
+  } else {
+    U={role:'master'};
+    showScreen('mst');renderMstList();renderNegocio();
+  }
+}
+
+function loginManual(){
+  const code=document.getElementById('m-code').value.trim();
+  const pin=document.getElementById('m-pin').value.trim();
+  // Master sin código
+  if(!code && pin===S.masterKey){U={role:'master'};showScreen('mst');renderMstList();renderNegocio();return;}
+  const c=code?S.cerradas[code]:null;
+  if(!c){showErr('m-err','Cerrada no encontrada.');return;}
+  // Admin
+  if(c.adminPin===pin){
+    if(c.suspended){showErr('m-err','Cerrada suspendida.');return;}
+    U={role:'subadmin',cerradaCode:code};enterAdm(c);return;
+  }
+  // Residente
+  const res=c.residents.find(r=>r.pin===pin);
+  if(!res){showErr('m-err','PIN incorrecto.');return;}
+  if(c.suspended||!c.active){document.getElementById('susp-msg').textContent='Cerrada suspendida.';showScreen('susp');return;}
+  if(!res.active||res.mora){document.getElementById('susp-msg').textContent=res.mora?`Mora: ${res.moraNote}`:'Acceso suspendido.';showScreen('susp');return;}
+  U={role:'resident',cerradaCode:code,house:res.house};enterRes(c,res);
+}
+
+function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',3200);}
+function logout(){U=null;showScreen('login');}
+
+// ── JSONBIN
+function setSI(r,st){const m={syncing:'🔄',ok:'☁️',err:'⚠️',off:'💾'};const el=document.getElementById('sync-'+r);if(el)el.textContent=m[st]||'☁️';}
+async function jbPush(c){if(!c?.jsonbin?.binId||!c?.jsonbin?.apiKey)return false;const p={name:c.name,code:c.code,houses:c.houses,adminPin:c.adminPin,adminName:c.adminName,adminPhone:c.adminPhone,price:c.price,active:c.active,suspended:c.suspended,portones:c.portones||[],residents:c.residents||[],history:(c.history||[]).slice(-500),movements:c.movements||[],updatedAt:new Date().toISOString()};try{const r=await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':c.jsonbin.apiKey},body:JSON.stringify(p)});return r.ok;}catch(e){return false;}}
+async function push(role){const c=C();if(!c?.jsonbin?.binId)return;setSI(role,'syncing');setSI(role,await jbPush(c)?'ok':'err');}
+
+// ── NAV
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('scr-'+id)?.classList.add('active');}
+function setPanels(pre,list,act){list.forEach(p=>{const el=document.getElementById(pre+p);if(el)el.classList.toggle('on',p===act);});}
+function setTabs(scope,el){document.querySelectorAll(scope+' .ntab').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
+function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);setTabs('#scr-res',el);const c=C();if(!c)return;if(id==='finanzas')renderResFin(c);if(id==='historial')renderResHist(c);}
+function admP(id,el){setPanels('ap-',['dashboard','vecinos','historial','finanzas','portones','config'],id);setTabs('#scr-adm',el);const c=C();if(!c)return;if(id==='dashboard')updateDash();if(id==='vecinos')renderVec();if(id==='historial')renderAdmHist();if(id==='finanzas')renderAdmFin();if(id==='portones')renderAdmPortones();if(id==='config')loadCfg();}
+function mstP(id,el){setPanels('mp-',['cerradas','negocio','config'],id);setTabs('#scr-mst',el);if(id==='cerradas')renderMstList();if(id==='negocio')renderNegocio();if(id==='config'){document.getElementById('mc-price').value=S.defaultPrice;populateMstJsonbinSelect();}}
+
+// ── RESIDENT
+function enterRes(c,res){
+  document.getElementById('res-cname').textContent=c.name;
+  document.getElementById('res-house').textContent=res.house;
+  const sub=document.getElementById('res-sub');if(sub)sub.textContent=res.name+' · '+res.house;
+  setSI('res','ok');renderGates(c,'res','gate-res');renderDevInfo(c);renderResFin(c);renderResHist(c);showScreen('res');
+}
+function renderGates(c,role,cid){
+  const pts=c.portones||[];const n=pts.length;
+  const el=document.getElementById(cid);if(!el)return;
+  el.className='gate-grid '+(n===1?'g1':n===2?'g2':n===3?'g3':'g4');
+  el.innerHTML=pts.map(p=>`
+    <div class="gbtn" id="gbtn-${role}-${p.id}"
+      onmousedown="gS('${p.id}','${role}')" onmouseup="gE('${p.id}')" onmouseleave="gE('${p.id}')"
+      ontouchstart="gS('${p.id}','${role}')" ontouchend="gE('${p.id}')">
+      <div class="gico-wrap">${p.icon||'🚪'}</div>
+      <div class="gbtn-info"><div class="glbl">${esc(p.label)}</div><div class="ghint">Mantén presionado 1 segundo</div></div>
+      <div class="gbtn-arrow">›</div>
+      <div class="gprog" id="gprog-${p.id}"></div>
+    </div>`).join('');
+}
+function renderDevInfo(c){const el=document.getElementById('res-devinfo');if(!el)return;const pts=c.portones||[];if(!pts.length){el.innerHTML=emH('🔌','Sin dispositivos');return;}el.innerHTML=pts.map(p=>`<div class="li"><div class="lil"><div class="av ag">${p.icon||'🚪'}</div><div><div class="in">${esc(p.label)}</div><div class="is">${p.ip||'Sin IP configurada'} · ${p.time||10}s</div></div></div></div>`).join('');}
+function renderResFin(c){const{income,expense,mvs}=calcFin(c);document.getElementById('rf-i').textContent='$'+income.toFixed(2);document.getElementById('rf-e').textContent='$'+expense.toFixed(2);document.getElementById('rf-b').textContent='$'+(income-expense).toFixed(2);const list=document.getElementById('rf-list');if(!mvs.length){list.innerHTML=emH('💰','Sin movimientos este mes');return;}list.innerHTML=mvs.slice(-20).reverse().map(m=>`<div class="hi"><div class="hd" style="background:${m.type==='income'?'var(--green)':'var(--rose)'}"></div><div class="hinfo"><div class="hdesc">${esc(m.category)}${m.desc?' — '+esc(m.desc):''}</div><div class="htime">${fd(m.ts)}</div></div><span style="font-size:.76rem;font-weight:700;color:${m.type==='income'?'var(--green)':'var(--rose)'}">${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}</span></div>`).join('');}
+function renderResHist(c){const hist=(c.history||[]).filter(h=>h.house===U?.house).slice(-30).reverse();const list=document.getElementById('rh-list');if(!hist.length){list.innerHTML=emH('📋','Sin registros aún');return;}list.innerHTML=hist.map(h=>`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label||h.portonId)}</div><div class="htime">${fd(h.ts)}</div></div></div>`).join('');}
+
+// ── GATE HOLD
+const HOLD=1000;let gT={};
+
+function gS(pid,role){
+  const btn=document.getElementById(`gbtn-${role}-${pid}`);
+  const pg=document.getElementById('gprog-'+pid);
+  if(!pg||!btn)return;
+
+  // Clase pressing (hunde + pulso)
+  btn.classList.add('pressing');
+
+  // Vibración inmediata al presionar (patrón corto)
+  if(navigator.vibrate) navigator.vibrate(30);
+
+  // Ripple effect
+  const rect=btn.getBoundingClientRect();
+  const rip=document.createElement('div');
+  rip.className='gbtn-ripple';
+  rip.style.left=(rect.width/2-30)+'px';
+  rip.style.top=(rect.height/2-30)+'px';
+  btn.appendChild(rip);
+  setTimeout(()=>rip.remove(),700);
+
+  // Barra de progreso
+  pg.style.transition=`width ${HOLD}ms linear`;
+  pg.style.width='100%';
+
+  // Vibración sostenida cada 200ms mientras se mantiene
+  const vibInterval=setInterval(()=>{if(navigator.vibrate)navigator.vibrate(15);},200);
+
+  gT[pid]=setTimeout(()=>{
+    clearInterval(vibInterval);
+    openPorton(pid,role);
+  },HOLD);
+
+  // Guardar intervalo para cancelarlo si sueltan
+  btn._vibInterval=vibInterval;
+}
+
+function gE(pid){
+  clearTimeout(gT[pid]);
+
+  // Cancelar vibración sostenida
+  const btn=document.querySelector(`[id^="gbtn-"][id$="-${pid}"]`);
+  if(btn){
+    btn.classList.remove('pressing');
+    if(btn._vibInterval) clearInterval(btn._vibInterval);
+  }
+
+  const pg=document.getElementById('gprog-'+pid);
+  if(!pg)return;
+  pg.style.transition='width .25s ease';
+  pg.style.width='0%';
+}
+async function openPorton(pid,role){
+  const c=C();if(!c)return;const pt=c.portones.find(p=>p.id===pid);if(!pt)return;
+  const house=role==='res'?U.house:'[TEST]';
+  if(!c.history)c.history=[];
+  c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label});
+  save();push(role);
+  if(pt.ip){fetch(`${pt.ip}/rpc/Switch.Set?id=0&on=true`).catch(()=>{});setTimeout(()=>fetch(`${pt.ip}/rpc/Switch.Set?id=0&on=false`).catch(()=>{}),(pt.time||10)*1000);}
+  toast(`✅ ${pt.label} abierto`);
+  // Vibración de éxito: patrón largo-corto
+  if(navigator.vibrate) navigator.vibrate([80,40,80]);
+  const btn=document.getElementById(`gbtn-${role}-${pid}`);
+  if(btn){
+    btn.classList.remove('pressing');
+    btn.classList.add('ok');
+    setTimeout(()=>btn.classList.remove('ok'),2500);
+  }
+  if(role==='res')renderResHist(c);
+}
+
+// ── ADMIN
+function enterAdm(c){document.getElementById('adm-cname').textContent=c.name;setSI('adm','ok');updateDash();showScreen('adm');}
+function updateDash(){
+  const c=C();if(!c)return;const res=c.residents||[];
+  document.getElementById('ds-tot').textContent=res.length;
+  document.getElementById('ds-act').textContent=res.filter(r=>r.active&&!r.mora).length;
+  document.getElementById('ds-mora').textContent=res.filter(r=>r.mora).length;
+  const today=new Date().toDateString();
+  document.getElementById('ds-open').textContent=(c.history||[]).filter(h=>new Date(h.ts).toDateString()===today).length;
+  const rec=(c.history||[]).slice(-5).reverse();
+  const rl=document.getElementById('ds-recent');
+  if(!rec.length){rl.innerHTML=emH('📋','Sin actividad');}
+  else{rl.innerHTML=rec.map(h=>{const r=res.find(x=>x.house===h.house);return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${r?' — '+esc(r.name):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
+  const{income,expense}=calcFin(c);
+  document.getElementById('af-i').textContent='$'+income.toFixed(2);
+  document.getElementById('af-e').textContent='$'+expense.toFixed(2);
+  document.getElementById('af-b').textContent='$'+(income-expense).toFixed(2);
+}
+function renderVec(){
+  const c=C();if(!c)return;const res=c.residents||[];
+  document.getElementById('vec-cnt').textContent=res.length;
+  const list=document.getElementById('vec-list');
+  if(!res.length){list.innerHTML=emH('👥','Sin vecinos');return;}
+  list.innerHTML=res.map((r,i)=>{const hn=r.house.replace(/\D/g,'').slice(0,2)||'?';return`<div class="li"><div class="lil"><div class="av ${r.mora?'ar':r.active?'ag':'ar'}">${esc(hn)}</div><div><div class="in">${esc(r.name)}${r.mora?` <span class="mora">⚠️ Mora</span>`:''}</div><div class="is">${esc(r.house)}${r.phone?' · '+esc(r.phone):''}</div></div></div><div class="ia">${r.mora?`<button class="btn bg2 xs" onclick="quitarMora(${i})">✓ Pagó</button>`:`<button class="btn bw xs" onclick="openMora(${i})">⚠️</button>`}<button class="btn ${r.active&&!r.mora?'bd':'bg2'} xs" onclick="toggleVec(${i})">${r.active&&!r.mora?'🔒':'🔓'}</button><button class="btn bd xs" onclick="delVec(${i})">✕</button></div></div>`;}).join('');
+}
+async function addVec(){const c=C();if(!c)return;const house=document.getElementById('nv-h').value.trim(),pin=document.getElementById('nv-p').value.trim(),name=document.getElementById('nv-n').value.trim(),phone=document.getElementById('nv-t').value.trim();if(!house||!pin||!name){toast('⚠️ Completa casa, PIN y nombre');return;}if(pin.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}if(!c.residents)c.residents=[];if(c.residents.find(r=>r.house===house)){toast('⚠️ Esa casa ya existe');return;}if(c.residents.length>=c.houses){toast(`⚠️ Máximo ${c.houses} casas`);return;}c.residents.push({house,pin,name,phone,active:true,mora:false,moraNote:''});save();push('adm');['nv-h','nv-p','nv-n','nv-t'].forEach(id=>document.getElementById(id).value='');renderVec();updateDash();toast('✅ Vecino agregado');}
+async function toggleVec(i){const c=C();if(!c)return;const r=c.residents[i];if(r.mora){toast('⚠️ Primero registra el pago');return;}r.active=!r.active;save();push('adm');renderVec();updateDash();toast(r.active?'🔓 Acceso habilitado':'🔒 Suspendido');}
+async function delVec(i){const c=C();if(!c)return;if(!confirm('¿Eliminar?'))return;c.residents.splice(i,1);save();push('adm');renderVec();updateDash();toast('🗑 Eliminado');}
+function openMora(i){document.getElementById('mora-idx').value=i;const c=C();if(c)document.getElementById('mora-note').value=c.residents[i].moraNote||'';openModal('modal-mora');}
+async function applyMora(){const i=parseInt(document.getElementById('mora-idx').value),note=document.getElementById('mora-note').value.trim(),c=C();if(!c)return;const r=c.residents[i];r.mora=true;r.moraNote=note;r.active=false;save();push('adm');closeModal('modal-mora');renderVec();updateDash();toast('🔒 Suspendido por mora');}
+async function quitarMora(i){const c=C();if(!c)return;const r=c.residents[i];r.mora=false;r.moraNote='';r.active=true;save();push('adm');renderVec();updateDash();toast('✅ Mora levantada');}
+function renderAdmHist(){const c=C();if(!c)return;const hist=(c.history||[]).slice(-80).reverse();const list=document.getElementById('adm-hist');if(!hist.length){list.innerHTML=emH('📋','Sin registros');return;}const res=c.residents||[];list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${r?' — '+esc(r.name):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
+async function clearHist(){const c=C();if(!c)return;if(!confirm('¿Limpiar historial?'))return;c.history=[];save();push('adm');renderAdmHist();updateDash();toast('🗑 Limpiado');}
+function renderAdmFin(){const c=C();if(!c)return;const{mvs}=calcFin(c);const list=document.getElementById('adm-fin-list');if(!mvs.length){list.innerHTML=emH('💰','Sin movimientos');return;}list.innerHTML=mvs.slice(-60).reverse().map(m=>`<div class="hi"><div class="hd" style="background:${m.type==='income'?'var(--green)':'var(--rose)'}"></div><div class="hinfo"><div class="hdesc">${esc(m.category)}${m.desc?' — '+esc(m.desc):''}</div><div class="htime">${fd(m.ts)}</div></div><span style="font-size:.76rem;font-weight:700;color:${m.type==='income'?'var(--green)':'var(--rose)'}">${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}</span></div>`).join('');}
+async function addMov(){const c=C();if(!c)return;const type=document.getElementById('fn-t').value,amount=parseFloat(document.getElementById('fn-a').value),cat=document.getElementById('fn-c').value,desc=document.getElementById('fn-d').value.trim();if(!amount||isNaN(amount)){toast('⚠️ Monto inválido');return;}if(!c.movements)c.movements=[];c.movements.push({ts:new Date().toISOString(),type,amount,category:cat,desc});save();push('adm');renderAdmFin();updateDash();document.getElementById('fn-a').value='';document.getElementById('fn-d').value='';toast('✅ Registrado');}
+function renderAdmPortones(){
+  const c=C();if(!c)return;
+  renderGates(c,'test','gate-test');
+  const list=document.getElementById('adm-plist');
+  const pts=c.portones||[];
+  if(!pts.length){list.innerHTML=emH('🚪','Sin portones');return;}
+  list.innerHTML=pts.map((p,i)=>`
+    <div class="prw">
+      <select id="pi-${i}" style="margin:0;width:50px;padding:.3rem;font-size:1.1rem;border-radius:8px;border:1px solid var(--brd);background:var(--sur2);color:var(--t)">
+        ${ICONS.map(ic=>`<option value="${ic}" ${ic===p.icon?'selected':''}>${ic}</option>`).join('')}
+      </select>
+      <input value="${esc(p.label)}" id="pl-${i}" placeholder="Nombre del portón"
+        style="margin:0;flex:1;font-size:.85rem;padding:.42rem .7rem;font-weight:600">
+    </div>`).join('');
+}
+async function savePortones(){
+  const c=C();if(!c)return;
+  (c.portones||[]).forEach((p,i)=>{
+    // Solo icono y nombre — IP y tiempo los gestiona el Master
+    p.icon=document.getElementById('pi-'+i)?.value||p.icon;
+    p.label=document.getElementById('pl-'+i)?.value.trim()||p.label;
+  });
+  save();push('adm');
+  renderGates(c,'test','gate-test');
+  toast('✅ Nombre del portón actualizado');
+}
+function loadCfg(){} // JSONBin movido al Master
+// saveJsonbin movido al Master como saveMstJsonbin
+async function changePin(){
+  const c=C();if(!c)return;
+  const old=document.getElementById('cfg-pin-old').value.trim();
+  const np=document.getElementById('cfg-pin').value.trim();
+  const np2=document.getElementById('cfg-pin2').value.trim();
+  if(old!==c.adminPin){toast('⚠️ PIN actual incorrecto');return;}
+  if(np.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}
+  if(np!==np2){toast('⚠️ Los PINs no coinciden');return;}
+  c.adminPin=np;save();push('adm');
+  ['cfg-pin-old','cfg-pin','cfg-pin2'].forEach(id=>document.getElementById(id).value='');
+  toast('✅ PIN actualizado correctamente');
+}
+
+// ── MASTER
+function addPortonRow(l='',i='🚗'){ncP.push({id:'p'+Date.now()+Math.random().toString(36).slice(2),label:l,icon:i,ip:'',time:10});renderNcP();}
+function renderNcP(){const el=document.getElementById('nc-portones');if(!ncP.length){el.innerHTML=`<p style="font-size:.73rem;color:var(--t3);text-align:center;padding:.6rem">Sin portones — presiona "+ Portón"</p>`;return;}el.innerHTML=ncP.map((p,i)=>`<div style="display:flex;align-items:center;gap:.5rem;padding:.45rem 0;border-bottom:1px solid var(--brd)"><select id="npi-${i}" style="margin:0;width:50px;padding:.28rem;font-size:1rem;border-radius:8px;border:1px solid var(--brd);background:var(--sur2);color:var(--t)">${ICONS.map(ic=>`<option value="${ic}" ${ic===p.icon?'selected':''}>${ic}</option>`).join('')}</select><input value="${esc(p.label)}" id="npl-${i}" placeholder="Ej: Portón Principal" style="margin:0;flex:1;font-size:.8rem;padding:.38rem .6rem"><button class="btn bd xs" onclick="removeNcP(${i})">✕</button></div>`).join('');}
+function removeNcP(i){ncP.splice(i,1);renderNcP();}
+function createCerrada(){
+  const name=document.getElementById('nc-name').value.trim(),code=document.getElementById('nc-code').value.trim().toUpperCase(),houses=parseInt(document.getElementById('nc-houses').value)||0,price=parseFloat(document.getElementById('nc-price').value)||S.defaultPrice,aname=document.getElementById('nc-aname').value.trim(),apin=document.getElementById('nc-apin').value.trim(),aphone=document.getElementById('nc-aphone').value.trim();
+  if(!name||!code||!apin){toast('⚠️ Nombre, código y PIN obligatorios');return;}
+  if(apin.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}
+  if(houses<1||houses>50){toast('⚠️ Entre 1 y 50 casas');return;}
+  if(S.cerradas[code]){toast('⚠️ Código ya existe');return;}
+  if(!ncP.length){toast('⚠️ Agrega al menos 1 portón');return;}
+  ncP.forEach((p,i)=>{p.label=document.getElementById('npl-'+i)?.value.trim()||'Portón '+(i+1);p.icon=document.getElementById('npi-'+i)?.value||p.icon;});
+  S.cerradas[code]={name,code,houses,adminPin:apin,adminName:aname,adminPhone:aphone,price,active:true,suspended:false,portones:JSON.parse(JSON.stringify(ncP)),residents:[],history:[],movements:[],jsonbin:{},createdAt:new Date().toISOString()};
+  save();ncP=[];renderNcP();closeModal('modal-nueva');
+  ['nc-name','nc-code','nc-houses','nc-price','nc-aname','nc-apin','nc-aphone'].forEach(id=>document.getElementById(id).value='');
+  renderMstList();renderNegocio();toast(`✅ "${name}" creada`);
+}
+function renderMstList(){const list=document.getElementById('mst-list');const cerradas=Object.values(S.cerradas);if(!cerradas.length){list.innerHTML=emH('🏘️','Sin cerradas');return;}list.innerHTML=cerradas.map(c=>`<div class="mcard"><div style="flex:1;min-width:0"><div class="mn">${esc(c.name)}</div><div class="mm">${esc(c.code)} · ${c.houses} casas · ${(c.portones||[]).length} portones · ${(c.residents||[]).length} vecinos · $${c.price}/mes</div><div class="mm">Admin: ${esc(c.adminName||'—')}${c.adminPhone?' · '+esc(c.adminPhone):''}</div></div><div style="display:flex;flex-direction:column;gap:.3rem;align-items:flex-end;flex-shrink:0"><span class="bge ${c.suspended?'r-b':c.active?'gr-b':'r-b'}">${c.suspended?'Suspendida':c.active?'Activa':'Inactiva'}</span><div style="display:flex;gap:.3rem"><button class="btn ${c.suspended?'bg2':'bw'} xs" onclick="toggleSusp('${c.code}')">${c.suspended?'🔓':'⏸'}</button><button class="btn bg2 xs" onclick="viewCerrada('${c.code}')">👁</button><button class="btn bd xs" onclick="delCerrada('${c.code}')">🗑</button></div></div></div>`).join('');}
+function toggleSusp(code){const c=S.cerradas[code];if(!c)return;c.suspended=!c.suspended;save();renderMstList();renderNegocio();toast(c.suspended?'⏸ Suspendida':'✅ Reactivada');}
+function delCerrada(code){const c=S.cerradas[code];if(!c)return;if(!confirm(`¿Eliminar "${c.name}"?`))return;delete S.cerradas[code];save();renderMstList();renderNegocio();toast('🗑 Eliminada');}
+function viewCerrada(code){const c=S.cerradas[code];if(!c)return;document.getElementById('mcer-title').textContent=c.name;const{income,expense}=calcFin(c);const pts=c.portones||[];document.getElementById('mcer-body').innerHTML=`<div class="li"><div class="lil"><div class="av ab">📋</div><div><div class="in">Código</div><div class="is">${esc(c.code)}</div></div></div></div><div class="li"><div class="lil"><div class="av ag">🏠</div><div><div class="in">Casas / Vecinos</div><div class="is">${c.houses} · ${(c.residents||[]).length} registrados</div></div></div></div><div class="li"><div class="lil"><div class="av ay">💰</div><div><div class="in">Mensualidad</div><div class="is">$${c.price}/mes</div></div></div></div><div class="li"><div class="lil"><div class="av ag">📈</div><div><div class="in">Finanzas del Mes</div><div class="is">+$${income.toFixed(2)} · -$${expense.toFixed(2)}</div></div></div></div><div class="li"><div class="lil"><div class="av ab">🚪</div><div><div class="in">Portones (${pts.length})</div><div class="is">${pts.map(p=>p.icon+' '+esc(p.label)).join(' · ')||'—'}</div></div></div></div><div class="li"><div class="lil"><div class="av ${c.suspended?'ar':'ag'}">${c.suspended?'⏸':'✓'}</div><div><div class="in">Estado</div><div class="is">${c.suspended?'Suspendida':'Activa'}</div></div></div><button class="btn ${c.suspended?'bg2':'bw'} xs" onclick="toggleSusp('${c.code}');viewCerrada('${c.code}')">${c.suspended?'🔓 Reactivar':'⏸ Suspender'}</button></div>
+    <div style="border-top:1px solid var(--brd);padding-top:.85rem;margin-top:.5rem">
+      <p style="font-family:var(--fd);font-size:.88rem;font-weight:800;color:var(--t);margin-bottom:.6rem">🔌 Configuración de Portones</p>
+      <p style="font-size:.73rem;color:var(--t2);margin-bottom:.75rem">IP y tiempo de apertura de cada portón. No visible para el Sub-Admin.</p>
+      <div id="mcer-portones-cfg"></div>
+      <button class="btn bp wf" style="margin-top:.6rem" onclick="saveMstPortones('${c.code}')">💾 Guardar IPs</button>
+    </div>
+    `;
+  // Cargar campos de IP para cada portón
+  const plist = document.getElementById('mcer-portones-cfg');
+  if(plist){
+    plist.innerHTML = pts.map((p,i) => `
+      <div class="prw">
+        <span style="font-size:1.1rem;width:28px;text-align:center">${p.icon||'🚪'}</span>
+        <span style="font-size:.82rem;font-weight:700;color:var(--t);flex:1">${esc(p.label)}</span>
+        <input value="${esc(p.ip||'')}" id="mip-${i}" placeholder="http://192.168.x.x"
+          style="margin:0;width:155px;font-size:.75rem;padding:.36rem .6rem">
+        <input value="${p.time||10}" id="mpt-${i}" type="number" min="1" max="60"
+          title="Segundos abierto" style="margin:0;width:48px;font-size:.75rem;padding:.36rem .45rem">
+        <span style="font-size:.65rem;color:var(--t3)">s</span>
+      </div>`).join('');
+  }
+  openModal('modal-cer');}
+function renderNegocio(){const cerradas=Object.values(S.cerradas);const active=cerradas.filter(c=>c.active&&!c.suspended);document.getElementById('nb-tot').textContent=cerradas.length;document.getElementById('nb-act').textContent=active.length;document.getElementById('nb-rev').textContent='$'+active.reduce((s,c)=>s+c.price,0);document.getElementById('nb-hs').textContent=cerradas.reduce((s,c)=>s+c.houses,0);const p=S.defaultPrice;document.getElementById('nb-price').textContent='$'+p+'/mes';document.getElementById('nb-p10').textContent='$'+(p*10)+'/mes';document.getElementById('nb-p25').textContent='$'+(p*25)+'/mes';document.getElementById('nb-p50').textContent='$'+(p*50)+'/mes';}
+function changeMasterKey(){const k=document.getElementById('mc-key').value.trim();if(k.length<8){toast('⚠️ Mínimo 8 caracteres');return;}S.masterKey=k;save();document.getElementById('mc-key').value='';toast('✅ Clave actualizada');}
+function saveMasterPrice(){const p=parseFloat(document.getElementById('mc-price').value);if(!p||p<1){toast('⚠️ Precio inválido');return;}S.defaultPrice=p;save();renderNegocio();toast('✅ Tarifa actualizada');}
+
+// ── PDF
+function genPDF(){
+  const c=C();if(!c)return;
+  if(!window.jspdf){toast('⚠️ PDF cargando, intenta de nuevo');return;}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const now=new Date();
+  const mes=now.toLocaleString('es',{month:'long',year:'numeric'});
+  const{income,expense,mvs}=calcFin(c);
+  const res=c.residents||[];
+  const hist=(c.history||[]).filter(h=>{const d=new Date(h.ts);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const BLUE=[59,130,196],GREEN=[59,191,110],ROSE=[232,96,96],GRAY=[90,106,130],LIGHT=[238,242,248];
+
+  doc.setFillColor(...BLUE);doc.rect(0,0,210,28,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text('CerradaApp',14,12);
+  doc.setFontSize(10);doc.setFont('helvetica','normal');doc.text('Reporte Mensual de Administración',14,19);doc.text(`Generado: ${now.toLocaleString('es')}`,14,25);
+  doc.setFillColor(...LIGHT);doc.rect(0,28,210,18,'F');
+  doc.setTextColor(...GRAY);doc.setFontSize(9);doc.setFont('helvetica','bold');
+  doc.text(`Cerrada: ${c.name}`,14,36);doc.text(`Código: ${c.code}`,90,36);
+  doc.text(`Período: ${mes}`,14,43);doc.text(`Admin: ${c.adminName||'—'}`,90,43);
+  let y=56;
+
+  // Financiero
+  doc.setFillColor(...BLUE);doc.rect(14,y-5,182,7,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('RESUMEN FINANCIERO',16,y);y+=8;
+  [{label:'Total Cobrado',value:`$${income.toFixed(2)}`,color:GREEN},{label:'Total Gastos',value:`$${expense.toFixed(2)}`,color:ROSE},{label:'Balance en Caja',value:`$${(income-expense).toFixed(2)}`,color:BLUE}].forEach((b,i)=>{
+    const x=14+i*62;doc.setFillColor(240,244,250);doc.roundedRect(x,y,58,16,2,2,'F');
+    doc.setDrawColor(...b.color);doc.setLineWidth(0.8);doc.roundedRect(x,y,58,16,2,2,'S');
+    doc.setTextColor(...GRAY);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(b.label,x+4,y+6);
+    doc.setTextColor(...b.color);doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text(b.value,x+4,y+13);
+  });y+=24;
+
+  // Vecinos
+  if(y>240){doc.addPage();y=20;}
+  doc.setFillColor(...BLUE);doc.rect(14,y-5,182,7,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(`VECINOS (${res.length})`,16,y);y+=7;
+  doc.setFillColor(220,230,242);doc.rect(14,y,182,6,'F');doc.setTextColor(...GRAY);doc.setFontSize(8);doc.text('Casa',16,y+4);doc.text('Nombre',45,y+4);doc.text('Teléfono',115,y+4);doc.text('Estado',165,y+4);y+=7;
+  res.forEach((r,i)=>{if(y>270){doc.addPage();y=20;}if(i%2===0){doc.setFillColor(248,250,253);doc.rect(14,y-1,182,6,'F');}doc.setTextColor(...GRAY);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(r.house,16,y+3);doc.text(r.name,45,y+3);doc.text(r.phone||'—',115,y+3);const st=r.mora?'MORA':r.active?'Activo':'Bloqueado';doc.setTextColor(...(r.mora?ROSE:r.active?GREEN:GRAY));doc.setFont('helvetica','bold');doc.text(st,165,y+3);y+=6;});y+=6;
+
+  // Movimientos
+  if(y>230){doc.addPage();y=20;}
+  doc.setFillColor(...BLUE);doc.rect(14,y-5,182,7,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(`MOVIMIENTOS DEL MES (${mvs.length})`,16,y);y+=7;
+  if(mvs.length){doc.setFillColor(220,230,242);doc.rect(14,y,182,6,'F');doc.setTextColor(...GRAY);doc.setFontSize(8);doc.text('Fecha',16,y+4);doc.text('Categoría',55,y+4);doc.text('Descripción',105,y+4);doc.text('Monto',172,y+4);y+=7;mvs.slice().reverse().forEach((m,i)=>{if(y>270){doc.addPage();y=20;}if(i%2===0){doc.setFillColor(248,250,253);doc.rect(14,y-1,182,6,'F');}doc.setTextColor(...GRAY);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(fd(m.ts),16,y+3);doc.text(m.category,55,y+3);doc.text((m.desc||'').slice(0,28),105,y+3);doc.setTextColor(...(m.type==='income'?GREEN:ROSE));doc.setFont('helvetica','bold');doc.text(`${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}`,172,y+3);y+=6;});}else{doc.setTextColor(...GRAY);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text('Sin movimientos este mes.',16,y+4);y+=10;}
+  y+=6;
+
+  // Historial
+  if(y>230){doc.addPage();y=20;}
+  doc.setFillColor(...BLUE);doc.rect(14,y-5,182,7,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(`ACCESOS DEL MES (${hist.length})`,16,y);y+=7;
+  if(hist.length){doc.setFillColor(220,230,242);doc.rect(14,y,182,6,'F');doc.setTextColor(...GRAY);doc.setFontSize(8);doc.text('Fecha y Hora',16,y+4);doc.text('Casa',72,y+4);doc.text('Residente',100,y+4);doc.text('Portón',158,y+4);y+=7;hist.slice().reverse().forEach((h,i)=>{if(y>272){doc.addPage();y=20;}if(i%2===0){doc.setFillColor(248,250,253);doc.rect(14,y-1,182,6,'F');}const r=res.find(x=>x.house===h.house);doc.setTextColor(...GRAY);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(fd(h.ts),16,y+3);doc.text(h.house||'—',72,y+3);doc.text(r?r.name:'—',100,y+3);doc.text(h.label||'—',158,y+3);y+=6;});}else{doc.setTextColor(...GRAY);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text('Sin accesos este mes.',16,y+4);}
+
+  // Footer
+  const tp=doc.getNumberOfPages();
+  for(let i=1;i<=tp;i++){doc.setPage(i);doc.setFillColor(...LIGHT);doc.rect(0,285,210,12,'F');doc.setTextColor(...GRAY);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(`CerradaApp · ${c.name} · ${mes}`,14,291);doc.text(`Página ${i} de ${tp}`,185,291,{align:'right'});}
+
+  doc.save(`CerradaApp_${c.code}_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}.pdf`);
+  toast('📄 PDF generado correctamente');
+}
+
+// ── MASTER PORTONES IPs
+function saveMstPortones(code){
+  const c=S.cerradas[code];if(!c)return;
+  (c.portones||[]).forEach((p,i)=>{
+    const ipEl=document.getElementById('mip-'+i);
+    const tEl=document.getElementById('mpt-'+i);
+    if(ipEl) p.ip=ipEl.value.trim();
+    if(tEl) p.time=parseInt(tEl.value)||10;
+  });
+  save();
+  // Si tiene JSONBin, sincronizar
+  if(c.jsonbin?.binId) jbPush(c);
+  toast('✅ IPs guardadas para '+c.name);
+}
+
+// ── MASTER JSONBIN
+function loadMstJsonbinFields(){
+  const sel=document.getElementById('mc-bin-cerrada');
+  const code=sel.value;
+  const fields=document.getElementById('mc-bin-fields');
+  if(!code){fields.style.display='none';return;}
+  fields.style.display='block';
+  const c=S.cerradas[code];
+  document.getElementById('mc-bin-id').value=c?.jsonbin?.binId||'';
+  document.getElementById('mc-bin-key').value=c?.jsonbin?.apiKey||'';
+}
+
+function populateMstJsonbinSelect(){
+  const sel=document.getElementById('mc-bin-cerrada');
+  if(!sel)return;
+  const cerradas=Object.values(S.cerradas);
+  sel.innerHTML='<option value="">— Selecciona una cerrada —</option>'+
+    cerradas.map(c=>`<option value="${c.code}">${c.name} (${c.code}) ${c.jsonbin?.binId?'☁️':''}</option>`).join('');
+  document.getElementById('mc-bin-fields').style.display='none';
+}
+
+async function saveMstJsonbin(){
+  const code=document.getElementById('mc-bin-cerrada').value;
+  const binId=document.getElementById('mc-bin-id').value.trim();
+  const apiKey=document.getElementById('mc-bin-key').value.trim();
+  if(!code){toast('⚠️ Selecciona una cerrada');return;}
+  if(!binId||!apiKey){toast('⚠️ Completa Bin ID y API Key');return;}
+  const c=S.cerradas[code];if(!c)return;
+  c.jsonbin={binId,apiKey};save();
+  toast('🔄 Probando conexión...');
+  const ok=await jbPush(c);
+  if(ok){
+    toast('✅ JSONBin conectado para '+c.name);
+    populateMstJsonbinSelect();
+  } else {
+    toast('❌ Error — verifica las credenciales');
+  }
+}
+
+// ── UTILS
+function calcFin(c){const now=new Date();const mvs=(c.movements||[]).filter(m=>{const d=new Date(m.ts);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});return{income:mvs.filter(m=>m.type==='income').reduce((s,m)=>s+m.amount,0),expense:mvs.filter(m=>m.type==='expense').reduce((s,m)=>s+m.amount,0),mvs};}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);}
+function openModal(id){document.getElementById(id)?.classList.add('open');}
+function closeModal(id){document.getElementById(id)?.classList.remove('open');}
+function mbg(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+load();seedDemo();renderNcP();
+</script>
+</body>
+</html>
