@@ -1414,10 +1414,37 @@ async function submitRegister() {
   // Verificar email básico
   if (!email.includes('@')){ toast('⚠️ Correo electrónico inválido'); return; }
 
-  let c = S.cerradas[code];
-  if (!c) { toast('⚠️ Error: cerrada no encontrada. Pide al admin que reenvíe la invitación.'); return; }
+  const KNOWN_BINS = {
+    'SMARK-001': {
+      binId: '69f0a4b9856a6821898101f0',
+      apiKey: '$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'
+    }
+  };
 
-  // Sincronizar con JSONBin para obtener el token más reciente
+  let c = S.cerradas[code];
+  
+  // Si no existe localmente, descargar desde JSONBin
+  if (!c) {
+    const binConfig = KNOWN_BINS[code];
+    if (!binConfig) { toast('⚠️ Cerrada no encontrada. Contacta al administrador.'); return; }
+    toast('🔄 Cargando datos...');
+    try {
+      const r = await fetch(`https://api.jsonbin.io/v3/b/${binConfig.binId}/latest`,
+        {headers:{'X-Master-Key': binConfig.apiKey}});
+      if (r.ok) {
+        const data = await r.json();
+        if (data.record) {
+          S.cerradas[code] = data.record;
+          S.cerradas[code].jsonbin = binConfig;
+          save();
+          c = S.cerradas[code];
+        }
+      }
+    } catch(e) {}
+    if (!c) { toast('⚠️ Sin conexión. Intenta de nuevo.'); return; }
+  }
+
+  // Sincronizar con JSONBin para datos más recientes
   if (c.jsonbin?.binId) {
     try {
       const r = await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}/latest`,
@@ -1428,6 +1455,7 @@ async function submitRegister() {
           const jb = c.jsonbin;
           Object.assign(c, data.record);
           c.jsonbin = jb;
+          S.cerradas[code] = c;
           save();
         }
       }
@@ -1688,26 +1716,57 @@ load();seedDemo();renderNcP();
       // Cerrar cualquier sesión activa — la invitación tiene prioridad
       U = null;
 
-      const c = S.cerradas[code];
-      if (c) {
-        // Cerrada encontrada — intentar pull de JSONBin para datos frescos
-        if (c.jsonbin?.binId) {
+      let cerrada = S.cerradas[code];
+      
+      // Si la cerrada no está localmente, intentar descargar desde JSONBin
+      if (!cerrada) {
+        toast('🔄 Cargando datos...');
+        // El Bin ID y API Key están hardcodeados para SMARK-001
+        // Para otras cerradas el admin debe configurarlos
+        const KNOWN_BINS = {
+          'SMARK-001': {
+            binId: '69f0a4b9856a6821898101f0',
+            apiKey: '$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'
+          }
+        };
+        const binConfig = KNOWN_BINS[code];
+        if (binConfig) {
           try {
-            const r = await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}/latest`,
-              {headers:{'X-Master-Key': c.jsonbin.apiKey}});
+            const r = await fetch(`https://api.jsonbin.io/v3/b/${binConfig.binId}/latest`,
+              {headers:{'X-Master-Key': binConfig.apiKey}});
+            if (r.ok) {
+              const data = await r.json();
+              if (data.record && data.record.code) {
+                S.cerradas[code] = data.record;
+                S.cerradas[code].jsonbin = binConfig;
+                save();
+                cerrada = S.cerradas[code];
+              }
+            }
+          } catch(e) { console.log('Error cargando cerrada:', e); }
+        }
+      }
+
+      if (cerrada) {
+        // Cerrada encontrada — intentar pull de JSONBin para datos frescos
+        if (cerrada.jsonbin?.binId) {
+          try {
+            const r = await fetch(`https://api.jsonbin.io/v3/b/${cerrada.jsonbin.binId}/latest`,
+              {headers:{'X-Master-Key': cerrada.jsonbin.apiKey}});
             if (r.ok) {
               const data = await r.json();
               if (data.record) {
-                const jb = c.jsonbin;
-                Object.assign(c, data.record);
-                c.jsonbin = jb;
+                const jb = cerrada.jsonbin;
+                Object.assign(cerrada, data.record);
+                cerrada.jsonbin = jb;
+                S.cerradas[code] = cerrada;
                 save();
               }
             }
           } catch(e) {}
         }
 
-        const res = c.residents.find(r => r.house === house);
+        const res = cerrada.residents.find(r => r.house === house);
         if (res) {
           const members = res.members || [];
           if (members.length < 5) {
@@ -1719,10 +1778,14 @@ load();seedDemo();renderNcP();
             setTimeout(() => toast('⚠️ Esta casa ya tiene el máximo de 5 miembros'), 500);
             return;
           }
+        } else {
+          // Casa no encontrada en los datos — mostrar registro igual
+          showRegisterScreen(code, house, invite, 'head');
+          return;
         }
       }
 
-      // Cerrada no encontrada localmente — guardar y mostrar registro
+      // Sin datos disponibles — mostrar registro con datos mínimos
       localStorage.setItem('pending_invite', JSON.stringify({invite, code, house}));
       showRegisterScreenNew(code, house, invite);
       return;
