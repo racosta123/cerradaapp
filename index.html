@@ -352,6 +352,16 @@ select option{background:var(--sur)}
       <p style="text-align:center;font-size:.72rem;color:var(--t3);margin-top:.75rem;line-height:1.5">
         Al registrarte aceptas que tu información será usada únicamente para el control de acceso de tu residencia.
       </p>
+
+      <!-- Info familiares -->
+      <div id="reg-family-info" style="display:none;margin-top:.85rem;background:var(--blue-lt);
+        border:1.5px solid rgba(59,130,196,.2);border-radius:12px;padding:.85rem;text-align:center">
+        <div style="font-size:.9rem;margin-bottom:.3rem">👨‍👩‍👧‍👦</div>
+        <p style="font-size:.75rem;color:var(--blue);font-weight:700;margin-bottom:.2rem">
+          ¿Tienes familiares en tu casa?</p>
+        <p style="font-size:.72rem;color:var(--t2)">
+          Después de registrarte podrás invitar hasta 4 familiares desde tu perfil.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -385,6 +395,13 @@ select option{background:var(--sur)}
     <div id="rp-portones" class="panel on">
       <p style="font-size:.76rem;color:var(--t2);margin-bottom:.8rem;font-weight:600">Mantén presionado 1 segundo para abrir 🔓</p>
       <div id="gate-res" class="gate-grid g1"></div>
+      <!-- Botón invitar familiares (solo para jefe de familia) -->
+      <div id="res-invite-btn" style="display:none;margin-top:.5rem">
+        <button class="btn bb2 wf" onclick="invitarFamiliar()" style="font-size:.82rem">
+          👨‍👩‍👧 Invitar familiar a mi casa
+        </button>
+        <div id="res-members-list" style="margin-top:.6rem"></div>
+      </div>
     </div>
     <div id="rp-finanzas" class="panel">
       <div class="trans-hdr"><h3>💡 Transparencia Financiera</h3><p>Cómo se administra el dinero de tu cerrada</p></div>
@@ -811,7 +828,56 @@ function enterRes(c, res, member) {
   renderGates(c,'res','gate-res');
   renderResFin(c);
   renderResHist(c);
+
+  // Mostrar botón de invitar familiares solo al jefe de familia
+  const invBtn = document.getElementById('res-invite-btn');
+  const members = res.members || [];
+  const isHead = !member || member.role === 'head';
+  if (invBtn) {
+    invBtn.style.display = isHead && members.length < 5 ? 'block' : 'none';
+    // Mostrar miembros registrados
+    const mList = document.getElementById('res-members-list');
+    if (mList && members.length > 0) {
+      mList.innerHTML = `<div class="card" style="margin-top:.3rem">
+        <div class="ct" style="margin-bottom:.6rem;font-size:.82rem">👥 Miembros de tu casa</div>
+        ${members.map(m=>`<div class="hi">
+          <div class="hd" style="background:var(--sky)"></div>
+          <div class="hinfo">
+            <div class="hdesc">${esc(m.name)} ${m.role==='head'?'👑':''}</div>
+            <div class="htime">${m.email}</div>
+          </div>
+        </div>`).join('')}
+      </div>`;
+    }
+  }
+
   showScreen('res');
+}
+
+function invitarFamiliar() {
+  const c = C(); if (!c) return;
+  const res = c.residents.find(r => r.house === U.house);
+  if (!res) return;
+  const members = res.members || [];
+  if (members.length >= 5) { toast('⚠️ Ya tienes el máximo de 5 miembros'); return; }
+
+  // Generar token para el familiar
+  const token = btoa(`${c.code}|${res.house}|fam|${Date.now()}`).replace(/=/g,'');
+  res.inviteToken = token;
+  save();
+  if (c.jsonbin?.binId) jbPush(c);
+
+  const inviteUrl = `https://racosta123.github.io/cerradaapp/#invite=${token}&code=${c.code}&house=${encodeURIComponent(res.house)}`;
+  const msg = `🏘️ *${c.name}*
+
+Hola, te invito a registrarte como familiar en *${res.house}*.
+
+📲 Regístrate aquí:
+${inviteUrl}
+
+_Al registrarte podrás abrir el portón desde tu celular._`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  toast('📲 Abriendo WhatsApp...');
 }
 function renderGates(c,role,cid){
   const pts=c.portones||[];const n=pts.length;
@@ -1202,8 +1268,8 @@ function sendInvite(i) {
     save();
   }
   const inviteToken = c.residents[i].inviteToken;
-  const baseUrl = window.location.origin + window.location.pathname;
-  const inviteUrl = `${baseUrl}?invite=${inviteToken}&code=${c.code}&house=${encodeURIComponent(res.house)}`;
+  const baseUrl = 'https://racosta123.github.io/cerradaapp/';
+  const inviteUrl = `${baseUrl}#invite=${inviteToken}&code=${c.code}&house=${encodeURIComponent(res.house)}`;
 
   const msg = `🏘️ *${c.name}*
 
@@ -1219,29 +1285,44 @@ _Al registrarte podrás abrir el portón desde tu celular._`;
 
 // Verificar si hay invitación pendiente al cargar
 function checkInvite() {
-  const params = new URLSearchParams(window.location.search);
+  // Leer del hash (#invite=...&code=...&house=...)
+  const hash = window.location.hash.substring(1);
+  if (!hash || !hash.includes('invite=')) return false;
+
+  const params = new URLSearchParams(hash);
   const invite = params.get('invite');
   const code = params.get('code');
-  const house = params.get('house');
+  const house = decodeURIComponent(params.get('house') || '');
+
   if (!invite || !code || !house) return false;
 
-  const c = S.cerradas[code];
-  if (!c) { toast('⚠️ Invitación no válida'); return false; }
-  const res = c.residents.find(r => r.house === decodeURIComponent(house));
-  if (!res) { toast('⚠️ Casa no encontrada'); return false; }
+  // Limpiar hash de la URL
+  window.history.replaceState({}, '', window.location.pathname);
 
-  // Verificar que el token coincide
+  // Guardar en localStorage por si la PWA recarga
+  localStorage.setItem('pending_invite', JSON.stringify({invite, code, house}));
+
+  return processInvite(invite, code, house);
+}
+
+function processInvite(invite, code, house) {
+  const c = S.cerradas[code];
+  if (!c) { 
+    setTimeout(() => toast('⚠️ Invitación no válida — asegúrate de tener conexión'), 800);
+    return false; 
+  }
+  const res = c.residents.find(r => r.house === house);
+  if (!res) { toast('⚠️ Casa no encontrada'); return false; }
   if (res.inviteToken !== invite) { toast('⚠️ Invitación expirada'); return false; }
 
-  // Verificar límite de miembros (máx 5: 1 jefe + 4 familiares)
   const members = res.members || [];
   if (members.length >= 5) {
-    toast('⚠️ Esta casa ya tiene el máximo de miembros registrados');
+    toast('⚠️ Esta casa ya tiene el máximo de 5 miembros');
     return false;
   }
 
-  // Mostrar pantalla de registro
-  showRegisterScreen(code, decodeURIComponent(house), invite, members.length === 0 ? 'head' : 'family');
+  const role = members.length === 0 ? 'head' : 'family';
+  showRegisterScreen(code, house, invite, role);
   return true;
 }
 
@@ -1253,6 +1334,9 @@ function showRegisterScreen(code, house, token, role) {
   showScreen('register');
   document.getElementById('reg-title').textContent = role === 'head' ? '👤 Registro de Jefe de Familia' : '👤 Registro de Familiar';
   document.getElementById('reg-subtitle').textContent = house + ' · ' + (S.cerradas[code]?.name || code);
+  // Mostrar info de familiares solo si es el jefe
+  const famInfo = document.getElementById('reg-family-info');
+  if (famInfo) famInfo.style.display = role === 'head' ? 'block' : 'none';
   document.getElementById('reg-code').value = code;
   document.getElementById('reg-house').value = house;
   document.getElementById('reg-token').value = token;
@@ -1313,6 +1397,20 @@ function mbg(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 load();seedDemo();renderNcP();
 
 // ── VERIFICAR INVITACIÓN (antes del auto login)
+// Revisar invitación pendiente en localStorage (por si PWA recargó)
+const _pendingInvite = localStorage.getItem('pending_invite');
+if (_pendingInvite) {
+  try {
+    const {invite, code, house} = JSON.parse(_pendingInvite);
+    localStorage.removeItem('pending_invite');
+    if (processInvite(invite, code, house)) {
+      // no continuar con autologin
+    } else {
+      // continuar normal
+    }
+  } catch(e) { localStorage.removeItem('pending_invite'); }
+}
+
 if (!checkInvite()) {
   // ── AUTO LOGIN — recordar sesión
 (function autoLogin(){
