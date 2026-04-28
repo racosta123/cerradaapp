@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>CerradaApp</title>
+
+<!-- PWA -->
+<meta name="application-name" content="CerradaApp">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CerradaApp">
+<meta name="theme-color" content="#3B82C4">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Control de acceso comunitario">
+
+<!-- Ícono para iPhone (Apple Touch Icon) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%233B82C4'/%3E%3Ctext y='340' x='256' text-anchor='middle' font-size='280' font-family='Arial'%3E%F0%9F%98%8F%EF%B8%8F%3C/text%3E%3C/svg%3E">
+
+<!-- Manifest PWA -->
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
@@ -543,6 +558,61 @@ select option{background:var(--sur)}
 
 <div id="toast"></div>
 
+<!-- BANNER INSTALAR APP -->
+<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;
+  background:var(--blue);color:#fff;padding:.85rem 1.15rem;z-index:10000;
+  display:none;align-items:center;justify-content:space-between;gap:.75rem;
+  box-shadow:0 -4px 20px rgba(59,130,196,.4)">
+  <div style="display:flex;align-items:center;gap:.75rem">
+    <div style="font-size:1.6rem">🏘️</div>
+    <div>
+      <div style="font-family:var(--fd);font-weight:800;font-size:.9rem">Instalar CerradaApp</div>
+      <div style="font-size:.72rem;opacity:.85">Agregar a tu pantalla de inicio</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:.5rem;flex-shrink:0">
+    <button onclick="dismissInstall()" style="background:rgba(255,255,255,.2);border:none;
+      color:#fff;padding:.4rem .8rem;border-radius:8px;font-family:var(--fd);
+      font-weight:700;font-size:.75rem;cursor:pointer">Ahora no</button>
+    <button onclick="installApp()" style="background:#fff;border:none;
+      color:var(--blue);padding:.4rem .9rem;border-radius:8px;font-family:var(--fd);
+      font-weight:800;font-size:.75rem;cursor:pointer">✓ Instalar</button>
+  </div>
+</div>
+
+<!-- INSTRUCCIONES iOS -->
+<div id="ios-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;
+  background:var(--sur);border-top:2px solid var(--brd);padding:1rem 1.15rem;
+  z-index:10000;box-shadow:0 -4px 20px rgba(59,130,196,.15)">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+    <div style="font-family:var(--fd);font-weight:800;font-size:.9rem;color:var(--t)">
+      🏘️ Instalar CerradaApp
+    </div>
+    <button onclick="dismissIOS()" style="background:none;border:none;color:var(--t2);
+      font-size:1.2rem;cursor:pointer;padding:.2rem .4rem">✕</button>
+  </div>
+  <p style="font-size:.78rem;color:var(--t2);margin-bottom:.75rem">
+    Para instalar como app en tu iPhone:
+  </p>
+  <div style="display:flex;flex-direction:column;gap:.5rem">
+    <div style="display:flex;align-items:center;gap:.75rem;font-size:.8rem;color:var(--t)">
+      <div style="width:28px;height:28px;background:var(--blue-lt);border-radius:8px;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem">1</div>
+      Toca el botón <b style="margin:0 .3rem">⬆️ Compartir</b> en Safari
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem;font-size:.8rem;color:var(--t)">
+      <div style="width:28px;height:28px;background:var(--blue-lt);border-radius:8px;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem">2</div>
+      Selecciona <b style="margin:0 .3rem">"Agregar a pantalla de inicio"</b>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem;font-size:.8rem;color:var(--t)">
+      <div style="width:28px;height:28px;background:var(--blue-lt);border-radius:8px;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem">3</div>
+      Toca <b style="margin:0 .3rem">"Agregar"</b> y listo 🎉
+    </div>
+  </div>
+</div>
+
 <script>
 const SK='cerradaapp_v4';
 const ICONS=['🚗','🚶','🚪','🏠','🔑','🚧','🛻','🏍'];
@@ -1006,6 +1076,67 @@ function closeModal(id){document.getElementById(id)?.classList.remove('open');}
 function mbg(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 
 load();seedDemo();renderNcP();
+
+// ── PWA INSTALL
+let deferredPrompt = null;
+
+// Registrar Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/cerradaapp/sw.js')
+      .then(() => console.log('SW registrado'))
+      .catch(e => console.log('SW error:', e));
+  });
+}
+
+// Android — capturar evento de instalación
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostrar banner solo si no fue descartado antes
+  if (!localStorage.getItem('pwa-dismissed')) {
+    setTimeout(() => {
+      document.getElementById('install-banner').style.display = 'flex';
+    }, 3000);
+  }
+});
+
+// Detectar iOS
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone;
+}
+
+// Mostrar instrucciones iOS después de 3 segundos
+if (isIOS() && !localStorage.getItem('ios-dismissed')) {
+  setTimeout(() => {
+    document.getElementById('ios-banner').style.display = 'block';
+  }, 3000);
+}
+
+async function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('install-banner').style.display = 'none';
+  if (outcome === 'accepted') toast('✅ ¡App instalada!');
+}
+
+function dismissInstall() {
+  document.getElementById('install-banner').style.display = 'none';
+  localStorage.setItem('pwa-dismissed', '1');
+}
+
+function dismissIOS() {
+  document.getElementById('ios-banner').style.display = 'none';
+  localStorage.setItem('ios-dismissed', '1');
+}
+
+// Detectar cuando se instala
+window.addEventListener('appinstalled', () => {
+  toast('🎉 CerradaApp instalada correctamente');
+  document.getElementById('install-banner').style.display = 'none';
+});
 </script>
 </body>
 </html>
