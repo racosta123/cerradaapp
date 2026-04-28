@@ -311,6 +311,51 @@ select option{background:var(--sur)}
   </div>
 </div>
 
+<!-- PANTALLA DE REGISTRO -->
+<div id="scr-register" class="screen">
+  <div style="flex:1;background:linear-gradient(155deg,#c5dcf5 0%,#daeef8 35%,#fef6dc 100%);
+    display:flex;align-items:center;justify-content:center;padding:1.5rem">
+    <div style="width:100%;max-width:390px;background:rgba(255,255,255,.97);border-radius:24px;
+      padding:2rem 1.75rem;box-shadow:0 8px 40px rgba(59,130,196,.14)">
+
+      <div style="text-align:center;margin-bottom:1.5rem">
+        <div style="width:58px;height:58px;background:linear-gradient(135deg,var(--blue),var(--sky));
+          border-radius:16px;display:flex;align-items:center;justify-content:center;
+          margin:0 auto .75rem;font-size:1.6rem;box-shadow:0 6px 20px rgba(59,130,196,.3)">🏘️</div>
+        <h2 id="reg-title" style="font-family:var(--fd);font-size:1.3rem;font-weight:900;color:var(--blue)">
+          Registro</h2>
+        <p id="reg-subtitle" style="font-size:.8rem;color:var(--t2);margin-top:.25rem"></p>
+      </div>
+
+      <input type="hidden" id="reg-code">
+      <input type="hidden" id="reg-house">
+      <input type="hidden" id="reg-token">
+      <input type="hidden" id="reg-role">
+
+      <label>Nombre completo</label>
+      <input id="reg-name" placeholder="Juan Pérez García" autocomplete="name">
+
+      <label>Dirección dentro de la cerrada</label>
+      <input id="reg-address" placeholder="Casa 5, Calle Principal #12">
+
+      <label>Correo electrónico</label>
+      <input id="reg-email" type="email" placeholder="juan@correo.com" autocomplete="email">
+
+      <label>Crea tu PIN de acceso (4-8 dígitos)</label>
+      <input id="reg-pin" type="password" placeholder="••••••" maxlength="8">
+
+      <label>Confirma tu PIN</label>
+      <input id="reg-pin2" type="password" placeholder="••••••" maxlength="8">
+
+      <button class="btn bp" onclick="submitRegister()">✓ Registrarme y Entrar</button>
+
+      <p style="text-align:center;font-size:.72rem;color:var(--t3);margin-top:.75rem;line-height:1.5">
+        Al registrarte aceptas que tu información será usada únicamente para el control de acceso de tu residencia.
+      </p>
+    </div>
+  </div>
+</div>
+
 <!-- SUSPENDED -->
 <div id="scr-susp" class="screen">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center">
@@ -682,7 +727,9 @@ function quickLogin(role){
     const code=document.getElementById('staff-code')?.value.trim()||'SMARK-001';
     const c=S.cerradas[code]||S.cerradas['SMARK-001'];
     if(!c){showErr('m-err','Cerrada no encontrada.');return;}
-    U={role:'subadmin',cerradaCode:c.code};enterAdm(c);
+    U={role:'subadmin',cerradaCode:c.code};
+    localStorage.setItem('cerrada_session', JSON.stringify(U));
+    enterAdm(c);
   } else {
     U={role:'master'};
     showScreen('mst');renderMstList();renderNegocio();
@@ -702,20 +749,28 @@ function loginManual(){
     document.getElementById('susp-msg').textContent=res.mora?`Acceso suspendido por mora. ${res.moraNote}`:'Tu acceso fue suspendido.';
     showScreen('susp');return;
   }
-  U={role:'resident',cerradaCode:code,house:res.house};enterRes(c,res);
+  U={role:'resident',cerradaCode:code,house:res.house,memberIdx:-1,memberName:res.name};
+  localStorage.setItem('cerrada_session', JSON.stringify(U));
+  enterRes(c,res,null);
 }
 
 function loginStaff(){
   const code=document.getElementById('staff-code').value.trim();
   const pin=document.getElementById('staff-pin').value.trim();
   // Master
-  if(!code && pin===S.masterKey){U={role:'master'};showScreen('mst');renderMstList();renderNegocio();return;}
+  if(!code && pin===S.masterKey){
+    U={role:'master'};
+    localStorage.setItem('cerrada_session', JSON.stringify({role:'master'}));
+    showScreen('mst');renderMstList();renderNegocio();return;
+  }
   if(!code){showErr('m-err','Ingresa el código.');return;}
   const c=S.cerradas[code];
   if(!c){showErr('m-err','Cerrada no encontrada.');return;}
   if(c.adminPin===pin){
     if(c.suspended){showErr('m-err','Cerrada suspendida.');return;}
-    U={role:'subadmin',cerradaCode:code};enterAdm(c);return;
+    U={role:'subadmin',cerradaCode:code};
+    localStorage.setItem('cerrada_session', JSON.stringify(U));
+    enterAdm(c);return;
   }
   showErr('m-err','PIN incorrecto.');
 }
@@ -726,7 +781,11 @@ function toggleStaff(){
 }
 
 function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',3200);}
-function logout(){U=null;showScreen('login');}
+function logout(){
+  U=null;
+  localStorage.removeItem('cerrada_session');
+  showScreen('login');
+}
 
 // ── JSONBIN
 function setSI(r,st){const m={syncing:'🔄',ok:'☁️',err:'⚠️',off:'💾'};const el=document.getElementById('sync-'+r);if(el)el.textContent=m[st]||'☁️';}
@@ -742,11 +801,17 @@ function admP(id,el){setPanels('ap-',['dashboard','vecinos','historial','finanza
 function mstP(id,el){setPanels('mp-',['cerradas','negocio','config'],id);setTabs('#scr-mst',el);if(id==='cerradas')renderMstList();if(id==='negocio')renderNegocio();if(id==='config'){document.getElementById('mc-price').value=S.defaultPrice;populateMstJsonbinSelect();}}
 
 // ── RESIDENT
-function enterRes(c,res){
-  document.getElementById('res-cname').textContent=c.name;
-  document.getElementById('res-house').textContent=res.house;
-  const sub=document.getElementById('res-sub');if(sub)sub.textContent=res.name+' · '+res.house;
-  setSI('res','ok');renderGates(c,'res','gate-res');renderDevInfo(c);renderResFin(c);renderResHist(c);showScreen('res');
+function enterRes(c, res, member) {
+  const displayName = member ? member.name : res.name;
+  document.getElementById('res-cname').textContent = c.name;
+  document.getElementById('res-house').textContent = res.house;
+  const sub = document.getElementById('res-sub');
+  if (sub) sub.textContent = displayName + ' · ' + res.house;
+  setSI('res','ok');
+  renderGates(c,'res','gate-res');
+  renderResFin(c);
+  renderResHist(c);
+  showScreen('res');
 }
 function renderGates(c,role,cid){
   const pts=c.portones||[];const n=pts.length;
@@ -824,7 +889,8 @@ async function openPorton(pid,role){
   const c=C();if(!c)return;const pt=c.portones.find(p=>p.id===pid);if(!pt)return;
   const house=role==='res'?U.house:'[TEST]';
   if(!c.history)c.history=[];
-  c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label});
+  const memberName = U.memberName || house;
+  c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label,who:memberName});
   save();push(role);
   // Control via Shelly Cloud (funciona desde cualquier red)
   shellyOpen(pt);
@@ -875,7 +941,7 @@ function updateDash(){
   const rec=(c.history||[]).slice(-5).reverse();
   const rl=document.getElementById('ds-recent');
   if(!rec.length){rl.innerHTML=emH('📋','Sin actividad');}
-  else{rl.innerHTML=rec.map(h=>{const r=res.find(x=>x.house===h.house);return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${r?' — '+esc(r.name):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
+  else{rl.innerHTML=rec.map(h=>{const r=res.find(x=>x.house===h.house);const who = h.who || (r?r.name:''); return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${who?' — 👤 '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
   const{income,expense}=calcFin(c);
   document.getElementById('af-i').textContent='$'+income.toFixed(2);
   document.getElementById('af-e').textContent='$'+expense.toFixed(2);
@@ -886,7 +952,35 @@ function renderVec(){
   document.getElementById('vec-cnt').textContent=res.length;
   const list=document.getElementById('vec-list');
   if(!res.length){list.innerHTML=emH('👥','Sin vecinos');return;}
-  list.innerHTML=res.map((r,i)=>{const hn=r.house.replace(/\D/g,'').slice(0,2)||'?';return`<div class="li"><div class="lil"><div class="av ${r.mora?'ar':r.active?'ag':'ar'}">${esc(hn)}</div><div><div class="in">${esc(r.name)}${r.mora?` <span class="mora">⚠️ Mora</span>`:''}</div><div class="is">${esc(r.house)}${r.phone?' · '+esc(r.phone):''}</div></div></div><div class="ia">${r.mora?`<button class="btn bg2 xs" onclick="quitarMora(${i})">✓ Pagó</button>`:`<button class="btn bw xs" onclick="openMora(${i})">⚠️</button>`}<button class="btn ${r.active&&!r.mora?'bd':'bg2'} xs" onclick="toggleVec(${i})">${r.active&&!r.mora?'🔒':'🔓'}</button><button class="btn bd xs" onclick="delVec(${i})">✕</button></div></div>`;}).join('');
+  list.innerHTML=res.map((r,i)=>{
+  const hn=r.house.replace(/\D/g,'').slice(0,2)||'?';
+  const members=r.members||[];
+  const membersHtml = members.length ? `
+    <div style="margin-top:.35rem;padding-left:.5rem;border-left:2px solid var(--brd)">
+      ${members.map((m,mi)=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.25rem 0;font-size:.72rem">
+          <span style="color:var(--t2)">👤 ${esc(m.name)} <span style="color:var(--t3)">${m.role==='head'?'Jefe':'Familiar'}</span></span>
+          <span style="color:var(--t3)">${m.email||''}</span>
+        </div>`).join('')}
+    </div>` : '';
+  return`<div class="li" style="flex-direction:column;align-items:stretch">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem">
+      <div class="lil">
+        <div class="av ${r.mora?'ar':r.active?'ag':'ar'}">${esc(hn)}</div>
+        <div>
+          <div class="in">${esc(r.name)}${r.mora?` <span class="mora">⚠️ Mora</span>`:''}</div>
+          <div class="is">${esc(r.house)} · ${members.length} miembro${members.length!==1?'s':''} registrado${members.length!==1?'s':''}</div>
+        </div>
+      </div>
+      <div class="ia">
+        <button class="btn bb2 xs" onclick="sendInvite(${i})" title="Invitar por WhatsApp">📲</button>
+        ${r.mora?`<button class="btn bg2 xs" onclick="quitarMora(${i})">✓ Pagó</button>`:`<button class="btn bw xs" onclick="openMora(${i})">⚠️</button>`}
+        <button class="btn ${r.active&&!r.mora?'bd':'bg2'} xs" onclick="toggleVec(${i})">${r.active&&!r.mora?'🔒':'🔓'}</button>
+        <button class="btn bd xs" onclick="delVec(${i})">✕</button>
+      </div>
+    </div>
+    ${membersHtml}
+  </div>`;}).join('');
 }
 async function addVec(){const c=C();if(!c)return;const house=document.getElementById('nv-h').value.trim(),pin=document.getElementById('nv-p').value.trim(),name=document.getElementById('nv-n').value.trim(),phone=document.getElementById('nv-t').value.trim();if(!house||!pin||!name){toast('⚠️ Completa casa, PIN y nombre');return;}if(pin.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}if(!c.residents)c.residents=[];if(c.residents.find(r=>r.house===house)){toast('⚠️ Esa casa ya existe');return;}if(c.residents.length>=c.houses){toast(`⚠️ Máximo ${c.houses} casas`);return;}c.residents.push({house,pin,name,phone,active:true,mora:false,moraNote:''});save();push('adm');['nv-h','nv-p','nv-n','nv-t'].forEach(id=>document.getElementById(id).value='');renderVec();updateDash();toast('✅ Vecino agregado');}
 async function toggleVec(i){const c=C();if(!c)return;const r=c.residents[i];if(r.mora){toast('⚠️ Primero registra el pago');return;}r.active=!r.active;save();push('adm');renderVec();updateDash();toast(r.active?'🔓 Acceso habilitado':'🔒 Suspendido');}
@@ -894,7 +988,7 @@ async function delVec(i){const c=C();if(!c)return;if(!confirm('¿Eliminar?'))ret
 function openMora(i){document.getElementById('mora-idx').value=i;const c=C();if(c)document.getElementById('mora-note').value=c.residents[i].moraNote||'';openModal('modal-mora');}
 async function applyMora(){const i=parseInt(document.getElementById('mora-idx').value),note=document.getElementById('mora-note').value.trim(),c=C();if(!c)return;const r=c.residents[i];r.mora=true;r.moraNote=note;r.active=false;save();push('adm');closeModal('modal-mora');renderVec();updateDash();toast('🔒 Suspendido por mora');}
 async function quitarMora(i){const c=C();if(!c)return;const r=c.residents[i];r.mora=false;r.moraNote='';r.active=true;save();push('adm');renderVec();updateDash();toast('✅ Mora levantada');}
-function renderAdmHist(){const c=C();if(!c)return;const hist=(c.history||[]).slice(-80).reverse();const list=document.getElementById('adm-hist');if(!hist.length){list.innerHTML=emH('📋','Sin registros');return;}const res=c.residents||[];list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${r?' — '+esc(r.name):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
+function renderAdmHist(){const c=C();if(!c)return;const hist=(c.history||[]).slice(-80).reverse();const list=document.getElementById('adm-hist');if(!hist.length){list.innerHTML=emH('📋','Sin registros');return;}const res=c.residents||[];list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who = h.who || (r?r.name:''); return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${who?' — 👤 '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
 async function clearHist(){const c=C();if(!c)return;if(!confirm('¿Limpiar historial?'))return;c.history=[];save();push('adm');renderAdmHist();updateDash();toast('🗑 Limpiado');}
 function renderAdmFin(){const c=C();if(!c)return;const{mvs}=calcFin(c);const list=document.getElementById('adm-fin-list');if(!mvs.length){list.innerHTML=emH('💰','Sin movimientos');return;}list.innerHTML=mvs.slice(-60).reverse().map(m=>`<div class="hi"><div class="hd" style="background:${m.type==='income'?'var(--green)':'var(--rose)'}"></div><div class="hinfo"><div class="hdesc">${esc(m.category)}${m.desc?' — '+esc(m.desc):''}</div><div class="htime">${fd(m.ts)}</div></div><span style="font-size:.76rem;font-weight:700;color:${m.type==='income'?'var(--green)':'var(--rose)'}">${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}</span></div>`).join('');}
 async function addMov(){const c=C();if(!c)return;const type=document.getElementById('fn-t').value,amount=parseFloat(document.getElementById('fn-a').value),cat=document.getElementById('fn-c').value,desc=document.getElementById('fn-d').value.trim();if(!amount||isNaN(amount)){toast('⚠️ Monto inválido');return;}if(!c.movements)c.movements=[];c.movements.push({ts:new Date().toISOString(),type,amount,category:cat,desc});save();push('adm');renderAdmFin();updateDash();document.getElementById('fn-a').value='';document.getElementById('fn-d').value='';toast('✅ Registrado');}
@@ -1096,6 +1190,119 @@ async function saveMstJsonbin(){
   }
 }
 
+// ── SISTEMA DE INVITACIÓN
+function sendInvite(i) {
+  const c = C(); if (!c) return;
+  const res = c.residents[i];
+  // Generar token único para esta casa
+  const token = btoa(`${c.code}|${res.house}|${Date.now()}`).replace(/=/g,'');
+  // Guardar token en el residente
+  if (!c.residents[i].inviteToken) {
+    c.residents[i].inviteToken = token;
+    save();
+  }
+  const inviteToken = c.residents[i].inviteToken;
+  const baseUrl = window.location.origin + window.location.pathname;
+  const inviteUrl = `${baseUrl}?invite=${inviteToken}&code=${c.code}&house=${encodeURIComponent(res.house)}`;
+
+  const msg = `🏘️ *${c.name}*
+
+Hola, tienes acceso al control de acceso de tu residencia.
+
+📲 Regístrate aquí:
+${inviteUrl}
+
+_Al registrarte podrás abrir el portón desde tu celular._`;
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
+}
+
+// Verificar si hay invitación pendiente al cargar
+function checkInvite() {
+  const params = new URLSearchParams(window.location.search);
+  const invite = params.get('invite');
+  const code = params.get('code');
+  const house = params.get('house');
+  if (!invite || !code || !house) return false;
+
+  const c = S.cerradas[code];
+  if (!c) { toast('⚠️ Invitación no válida'); return false; }
+  const res = c.residents.find(r => r.house === decodeURIComponent(house));
+  if (!res) { toast('⚠️ Casa no encontrada'); return false; }
+
+  // Verificar que el token coincide
+  if (res.inviteToken !== invite) { toast('⚠️ Invitación expirada'); return false; }
+
+  // Verificar límite de miembros (máx 5: 1 jefe + 4 familiares)
+  const members = res.members || [];
+  if (members.length >= 5) {
+    toast('⚠️ Esta casa ya tiene el máximo de miembros registrados');
+    return false;
+  }
+
+  // Mostrar pantalla de registro
+  showRegisterScreen(code, decodeURIComponent(house), invite, members.length === 0 ? 'head' : 'family');
+  return true;
+}
+
+function showRegisterScreen(code, house, token, role) {
+  // Limpiar URL sin recargar
+  window.history.replaceState({}, '', window.location.pathname);
+
+  // Ocultar login y mostrar registro
+  showScreen('register');
+  document.getElementById('reg-title').textContent = role === 'head' ? '👤 Registro de Jefe de Familia' : '👤 Registro de Familiar';
+  document.getElementById('reg-subtitle').textContent = house + ' · ' + (S.cerradas[code]?.name || code);
+  document.getElementById('reg-code').value = code;
+  document.getElementById('reg-house').value = house;
+  document.getElementById('reg-token').value = token;
+  document.getElementById('reg-role').value = role;
+}
+
+async function submitRegister() {
+  const code = document.getElementById('reg-code').value;
+  const house = document.getElementById('reg-house').value;
+  const token = document.getElementById('reg-token').value;
+  const role = document.getElementById('reg-role').value;
+  const name = document.getElementById('reg-name').value.trim();
+  const address = document.getElementById('reg-address').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pin = document.getElementById('reg-pin').value.trim();
+  const pin2 = document.getElementById('reg-pin2').value.trim();
+
+  if (!name || !address || !email) { toast('⚠️ Completa todos los campos'); return; }
+  if (!pin || pin.length < 4) { toast('⚠️ PIN mínimo 4 dígitos'); return; }
+  if (pin !== pin2) { toast('⚠️ Los PINs no coinciden'); return; }
+
+  const c = S.cerradas[code];
+  if (!c) { toast('⚠️ Error al registrar'); return; }
+  const resIdx = c.residents.findIndex(r => r.house === house);
+  if (resIdx < 0) { toast('⚠️ Casa no encontrada'); return; }
+  if (c.residents[resIdx].inviteToken !== token) { toast('⚠️ Invitación expirada'); return; }
+
+  // Agregar miembro
+  if (!c.residents[resIdx].members) c.residents[resIdx].members = [];
+  const memberIdx = c.residents[resIdx].members.length;
+  c.residents[resIdx].members.push({ name, address, email, role, pin, registeredAt: new Date().toISOString() });
+
+  // Si es el jefe, actualizar nombre principal del residente
+  if (role === 'head') {
+    c.residents[resIdx].name = name;
+    c.residents[resIdx].email = email;
+    c.residents[resIdx].pin = pin;
+  }
+
+  save();
+  if (c.jsonbin?.binId) jbPush(c);
+
+  toast('✅ ¡Registro exitoso! Ya puedes abrir el portón');
+
+  // Auto login tras registro
+  U = { role:'resident', cerradaCode:code, house, memberIdx, memberName:name };
+  localStorage.setItem('cerrada_session', JSON.stringify(U));
+  setTimeout(() => enterRes(c, c.residents[resIdx], c.residents[resIdx].members[memberIdx]), 1200);
+}
+
 // ── UTILS
 function calcFin(c){const now=new Date();const mvs=(c.movements||[]).filter(m=>{const d=new Date(m.ts);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});return{income:mvs.filter(m=>m.type==='income').reduce((s,m)=>s+m.amount,0),expense:mvs.filter(m=>m.type==='expense').reduce((s,m)=>s+m.amount,0),mvs};}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);}
@@ -1104,6 +1311,40 @@ function closeModal(id){document.getElementById(id)?.classList.remove('open');}
 function mbg(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 
 load();seedDemo();renderNcP();
+
+// ── VERIFICAR INVITACIÓN (antes del auto login)
+if (!checkInvite()) {
+  // ── AUTO LOGIN — recordar sesión
+(function autoLogin(){
+  const saved = localStorage.getItem('cerrada_session');
+  if (!saved) return;
+  try {
+    const sess = JSON.parse(saved);
+    const { role, cerradaCode, house, memberIdx } = sess;
+    if (role === 'master') {
+      U = { role:'master' };
+      showScreen('mst'); renderMstList(); renderNegocio();
+      return;
+    }
+    const c = S.cerradas[cerradaCode];
+    if (!c || c.suspended || !c.active) return;
+    if (role === 'subadmin') {
+      U = { role:'subadmin', cerradaCode };
+      enterAdm(c); return;
+    }
+    if (role === 'resident') {
+      // Buscar miembro por índice guardado
+      const res = c.residents.find(r => r.house === house);
+      if (!res || !res.active || res.mora) return;
+      // Encontrar miembro específico
+      const mi = memberIdx !== undefined ? memberIdx : -1;
+      const member = mi >= 0 && res.members ? res.members[mi] : null;
+      U = { role:'resident', cerradaCode, house, memberIdx: mi, memberName: member?.name || res.name };
+      enterRes(c, res, member);
+    }
+  } catch(e) { localStorage.removeItem('cerrada_session'); }
+  })();
+} // fin checkInvite
 
 // ── PWA INSTALL
 let deferredPrompt = null;
