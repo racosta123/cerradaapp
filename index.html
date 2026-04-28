@@ -920,7 +920,16 @@ function invitarFamiliar() {
   save();
   if (c.jsonbin?.binId) jbPush(c);
 
-  const inviteUrl = `https://racosta123.github.io/cerradaapp/#invite=${token}&code=${c.code}&house=${encodeURIComponent(res.house)}`;
+  const payload = btoa(JSON.stringify({
+    code: c.code,
+    house: res.house,
+    cerradaName: c.name,
+    token,
+    binId: c.jsonbin?.binId || '',
+    apiKey: c.jsonbin?.apiKey || '',
+    isFamiliar: true
+  })).replace(/=/g,'');
+  const inviteUrl = `https://racosta123.github.io/cerradaapp/#reg=${payload}`;
   const msg = `🏘️ *${c.name}*
 
 Hola, te invito a registrarte como familiar en *${res.house}*.
@@ -1024,7 +1033,8 @@ async function openPorton(pid,role){
     } catch(e){}
     // Verificar si sigue activo
     const res=c.residents.find(r=>r.house===U.house);
-    if(!res||!res.active||res.mora){
+    const memberSusp = U.memberIdx >= 0 && res?.members?.[U.memberIdx]?.suspended;
+    if(!res||!res.active||res.mora||memberSusp){
       localStorage.removeItem('cerrada_session');
       document.getElementById('susp-msg').textContent=res?.mora
         ?`Acceso suspendido por mora. ${res.moraNote||''}`
@@ -1136,6 +1146,14 @@ async function toggleVec(i){
   const r=c.residents[i];
   if(r.mora){toast('⚠️ Primero registra el pago');return;}
   r.active=!r.active;
+  // Si se suspende el jefe, suspender también los familiares (members)
+  if (!r.active && r.members && r.members.length > 0) {
+    r.members.forEach(m => m.suspended = true);
+  }
+  // Si se reactiva, reactivar familiares
+  if (r.active && r.members && r.members.length > 0) {
+    r.members.forEach(m => m.suspended = false);
+  }
   save();
   // Push inmediato y forzado al JSONBin
   if(c.jsonbin?.binId){
@@ -1373,16 +1391,24 @@ async function saveMstJsonbin(){
 function sendInvite(i) {
   const c = C(); if (!c) return;
   const res = c.residents[i];
-  // Generar token único para esta casa — siempre renovar al enviar
+  // Generar token único — siempre renovar al enviar
   const token = btoa(`${c.code}|${res.house}|${Date.now()}`).replace(/=/g,'');
-  // Guardar token con expiración de 24 horas
   c.residents[i].inviteToken = token;
-  c.residents[i].inviteExpires = Date.now() + 24*60*60*1000; // 24 horas
   save();
+  // Push async sin bloquear
   if(c.jsonbin?.binId) jbPush(c);
-  const inviteToken = token;
+
   const baseUrl = 'https://racosta123.github.io/cerradaapp/';
-  const inviteUrl = `${baseUrl}#invite=${inviteToken}&code=${c.code}&house=${encodeURIComponent(res.house)}`;
+  // Empaquetar datos mínimos en el link para que funcione sin datos locales
+  const payload = btoa(JSON.stringify({
+    code: c.code,
+    house: res.house,
+    cerradaName: c.name,
+    token,
+    binId: c.jsonbin?.binId || '',
+    apiKey: c.jsonbin?.apiKey || ''
+  })).replace(/=/g,'');
+  const inviteUrl = `${baseUrl}#reg=${payload}`;
 
   const msg = `🏘️ *${c.name}*
 
@@ -1474,53 +1500,31 @@ async function submitRegister() {
   // Verificar email básico
   if (!email.includes('@')){ toast('⚠️ Correo electrónico inválido'); return; }
 
-  const KNOWN_BINS = {
-    'SMARK-001': {
-      binId: '69f0a4b9856a6821898101f0',
-      apiKey: '$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'
-    }
-  };
+  // Obtener binId y apiKey del formulario (vienen del payload del link)
+  const regCodeEl = document.getElementById('reg-code');
+  const binId  = regCodeEl.dataset.binId  || '';
+  const apiKey = regCodeEl.dataset.apiKey || '';
 
   let c = S.cerradas[code];
-  
-  // Si no existe localmente, descargar desde JSONBin
-  if (!c) {
-    const binConfig = KNOWN_BINS[code];
-    if (!binConfig) { toast('⚠️ Cerrada no encontrada. Contacta al administrador.'); return; }
-    toast('🔄 Cargando datos...');
+
+  // Si no existe o tenemos credenciales, sincronizar desde JSONBin
+  if (binId && apiKey) {
     try {
-      const r = await fetch(`https://api.jsonbin.io/v3/b/${binConfig.binId}/latest`,
-        {headers:{'X-Master-Key': binConfig.apiKey}});
+      const r = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`,
+        {headers:{'X-Master-Key': apiKey}});
       if (r.ok) {
         const data = await r.json();
         if (data.record) {
           S.cerradas[code] = data.record;
-          S.cerradas[code].jsonbin = binConfig;
+          S.cerradas[code].jsonbin = { binId, apiKey };
           save();
           c = S.cerradas[code];
         }
       }
     } catch(e) {}
-    if (!c) { toast('⚠️ Sin conexión. Intenta de nuevo.'); return; }
   }
 
-  // Sincronizar con JSONBin para datos más recientes
-  if (c.jsonbin?.binId) {
-    try {
-      const r = await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}/latest`,
-        {headers:{'X-Master-Key': c.jsonbin.apiKey}});
-      if (r.ok) {
-        const data = await r.json();
-        if (data.record) {
-          const jb = c.jsonbin;
-          Object.assign(c, data.record);
-          c.jsonbin = jb;
-          S.cerradas[code] = c;
-          save();
-        }
-      }
-    } catch(e) { console.log('Sin conexión, usando datos locales'); }
-  }
+  if (!c) { toast('⚠️ Sin conexión. Intenta de nuevo en unos segundos.'); return; }
 
   const resIdx = c.residents.findIndex(r => r.house === house);
   if (resIdx < 0) { toast('⚠️ Casa no encontrada'); return; }
@@ -1856,15 +1860,20 @@ load();seedDemo();renderNcP();
   const _pi = localStorage.getItem('pending_invite');
   if (_pi) {
     try {
-      const {invite, code, house} = JSON.parse(_pi);
+      const payload = JSON.parse(_pi);
       localStorage.removeItem('pending_invite');
-      const c = S.cerradas[code];
-      if (c) {
-        const res = c.residents.find(r => r.house === house);
-        if (res) {
-          const members = res.members || [];
-          if (members.length < 5) {
-            showRegisterScreen(code, house, invite, members.length === 0 ? 'head' : 'family');
+      if (payload.binId) {
+        // Nuevo formato con payload completo
+        await showRegisterFromPayload(payload);
+        return;
+      } else {
+        // Formato legacy
+        const {invite, code, house} = payload;
+        const c = S.cerradas[code];
+        if (c) {
+          const res = c.residents.find(r => r.house === house);
+          if (res && res.members?.length < 5) {
+            showRegisterScreen(code, house, invite, res.members.length === 0 ? 'head' : 'family');
             return;
           }
         }
