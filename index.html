@@ -1005,7 +1005,36 @@ function gE(pid){
   pg.style.width='0%';
 }
 async function openPorton(pid,role){
-  const c=C();if(!c)return;const pt=c.portones.find(p=>p.id===pid);if(!pt)return;
+  const c=C();if(!c)return;
+  
+  // Verificar suspensión en tiempo real antes de abrir
+  if(role==='res' && c.jsonbin?.binId){
+    try {
+      const r=await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}/latest`,
+        {headers:{'X-Master-Key':c.jsonbin.apiKey}});
+      if(r.ok){
+        const data=await r.json();
+        if(data.record){
+          const jb=c.jsonbin;
+          Object.assign(c,data.record);
+          c.jsonbin=jb;
+          save();
+        }
+      }
+    } catch(e){}
+    // Verificar si sigue activo
+    const res=c.residents.find(r=>r.house===U.house);
+    if(!res||!res.active||res.mora){
+      localStorage.removeItem('cerrada_session');
+      document.getElementById('susp-msg').textContent=res?.mora
+        ?`Acceso suspendido por mora. ${res.moraNote||''}`
+        :'Tu acceso fue suspendido. Contacta al administrador.';
+      showScreen('susp');
+      return;
+    }
+  }
+
+  const pt=c.portones.find(p=>p.id===pid);if(!pt)return;
   const house=role==='res'?U.house:'[TEST]';
   if(!c.history)c.history=[];
   const memberName = U.memberName || house;
@@ -1102,10 +1131,41 @@ function renderVec(){
   </div>`;}).join('');
 }
 async function addVec(){const c=C();if(!c)return;const house=document.getElementById('nv-h').value.trim(),pin=document.getElementById('nv-p').value.trim(),name=document.getElementById('nv-n').value.trim(),phone=document.getElementById('nv-t').value.trim();if(!house||!pin||!name){toast('⚠️ Completa casa, PIN y nombre');return;}if(pin.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}if(!c.residents)c.residents=[];if(c.residents.find(r=>r.house===house)){toast('⚠️ Esa casa ya existe');return;}if(c.residents.length>=c.houses){toast(`⚠️ Máximo ${c.houses} casas`);return;}c.residents.push({house,pin,name,phone,active:true,mora:false,moraNote:''});save();push('adm');['nv-h','nv-p','nv-n','nv-t'].forEach(id=>document.getElementById(id).value='');renderVec();updateDash();toast('✅ Vecino agregado');}
-async function toggleVec(i){const c=C();if(!c)return;const r=c.residents[i];if(r.mora){toast('⚠️ Primero registra el pago');return;}r.active=!r.active;save();push('adm');renderVec();updateDash();toast(r.active?'🔓 Acceso habilitado':'🔒 Suspendido');}
+async function toggleVec(i){
+  const c=C();if(!c)return;
+  const r=c.residents[i];
+  if(r.mora){toast('⚠️ Primero registra el pago');return;}
+  r.active=!r.active;
+  save();
+  // Push inmediato y forzado al JSONBin
+  if(c.jsonbin?.binId){
+    setSI('adm','syncing');
+    const ok = await jbPush(c);
+    setSI('adm', ok?'ok':'err');
+    if(ok) toast(r.active?'🔓 Acceso habilitado — sincronizado':'🔒 Suspendido — sincronizado');
+    else toast(r.active?'🔓 Habilitado (sin conexión)':'🔒 Suspendido (sin conexión)');
+  } else {
+    toast(r.active?'🔓 Acceso habilitado':'🔒 Suspendido');
+  }
+  renderVec();updateDash();
+}
 async function delVec(i){const c=C();if(!c)return;if(!confirm('¿Eliminar?'))return;c.residents.splice(i,1);save();push('adm');renderVec();updateDash();toast('🗑 Eliminado');}
 function openMora(i){document.getElementById('mora-idx').value=i;const c=C();if(c)document.getElementById('mora-note').value=c.residents[i].moraNote||'';openModal('modal-mora');}
-async function applyMora(){const i=parseInt(document.getElementById('mora-idx').value),note=document.getElementById('mora-note').value.trim(),c=C();if(!c)return;const r=c.residents[i];r.mora=true;r.moraNote=note;r.active=false;save();push('adm');closeModal('modal-mora');renderVec();updateDash();toast('🔒 Suspendido por mora');}
+async function applyMora(){
+  const i=parseInt(document.getElementById('mora-idx').value);
+  const note=document.getElementById('mora-note').value.trim();
+  const c=C();if(!c)return;
+  const r=c.residents[i];
+  r.mora=true;r.moraNote=note;r.active=false;
+  save();
+  if(c.jsonbin?.binId){
+    setSI('adm','syncing');
+    const ok=await jbPush(c);
+    setSI('adm',ok?'ok':'err');
+  }
+  closeModal('modal-mora');renderVec();updateDash();
+  toast('🔒 Suspendido por mora — sincronizado');
+}
 async function quitarMora(i){const c=C();if(!c)return;const r=c.residents[i];r.mora=false;r.moraNote='';r.active=true;save();push('adm');renderVec();updateDash();toast('✅ Mora levantada');}
 function renderAdmHist(){const c=C();if(!c)return;const hist=(c.history||[]).slice(-80).reverse();const list=document.getElementById('adm-hist');if(!hist.length){list.innerHTML=emH('📋','Sin registros');return;}const res=c.residents||[];list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who = h.who || (r?r.name:''); return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${who?' — 👤 '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
 async function clearHist(){const c=C();if(!c)return;if(!confirm('¿Limpiar historial?'))return;c.history=[];save();push('adm');renderAdmHist();updateDash();toast('🗑 Limpiado');}
@@ -1830,8 +1890,32 @@ load();seedDemo();renderNcP();
       enterAdm(c); return;
     }
     if (role === 'resident') {
+      // Siempre hacer pull de JSONBin para verificar estado actual
+      if (c.jsonbin?.binId) {
+        try {
+          const r = await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}/latest`,
+            {headers:{'X-Master-Key': c.jsonbin.apiKey}});
+          if (r.ok) {
+            const data = await r.json();
+            if (data.record) {
+              const jb = c.jsonbin;
+              Object.assign(c, data.record);
+              c.jsonbin = jb;
+              save();
+            }
+          }
+        } catch(e) {}
+      }
       const res = c.residents.find(r => r.house === house);
-      if (!res || !res.active || res.mora) return;
+      if (!res || !res.active || res.mora) {
+        // Suspendido — limpiar sesión y mostrar pantalla de suspensión
+        localStorage.removeItem('cerrada_session');
+        document.getElementById('susp-msg').textContent = res?.mora 
+          ? `Acceso suspendido por mora. ${res.moraNote || ''}` 
+          : 'Tu acceso fue suspendido. Contacta al administrador.';
+        showScreen('susp');
+        return;
+      }
       const mi = memberIdx !== undefined ? memberIdx : -1;
       const member = mi >= 0 && res.members ? res.members[mi] : null;
       U = { role:'resident', cerradaCode, house, memberIdx: mi, memberName: member?.name || res.name };
