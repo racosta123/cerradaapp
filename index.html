@@ -14,8 +14,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="description" content="Control de acceso comunitario">
 
-<!-- Ícono para iPhone (Apple Touch Icon) -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%233B82C4'/%3E%3Ctext y='340' x='256' text-anchor='middle' font-size='280' font-family='Arial'%3E%F0%9F%98%8F%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<!-- Íconos PWA -->
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 
 <!-- Manifest PWA -->
 <link rel="manifest" href="manifest.json">
@@ -574,7 +576,7 @@ select option{background:var(--sur)}
     <button onclick="dismissInstall()" style="background:rgba(255,255,255,.2);border:none;
       color:#fff;padding:.4rem .8rem;border-radius:8px;font-family:var(--fd);
       font-weight:700;font-size:.75rem;cursor:pointer">Ahora no</button>
-    <button onclick="installApp()" style="background:#fff;border:none;
+    <button id="btn-instalar" onclick="installApp()" style="background:#fff;border:none;
       color:var(--blue);padding:.4rem .9rem;border-radius:8px;font-family:var(--fd);
       font-weight:800;font-size:.75rem;cursor:pointer">✓ Instalar</button>
   </div>
@@ -1080,6 +1082,16 @@ load();seedDemo();renderNcP();
 // ── PWA INSTALL
 let deferredPrompt = null;
 
+// Ocultar banners si ya está instalada como app standalone
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+  document.addEventListener('DOMContentLoaded', () => {
+    const b1 = document.getElementById('install-banner');
+    const b2 = document.getElementById('ios-banner');
+    if(b1) b1.style.display = 'none';
+    if(b2) b2.style.display = 'none';
+  });
+}
+
 // Registrar Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -1093,13 +1105,39 @@ if ('serviceWorker' in navigator) {
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  // Mostrar banner solo si no fue descartado antes
+  // Mostrar banner si no fue descartado
   if (!localStorage.getItem('pwa-dismissed')) {
-    setTimeout(() => {
-      document.getElementById('install-banner').style.display = 'flex';
-    }, 3000);
+    const banner = document.getElementById('install-banner');
+    banner.style.display = 'flex';
   }
 });
+
+// Si no hay evento PWA en 4s, mostrar banner manual con instrucciones
+setTimeout(() => {
+  const banner = document.getElementById('install-banner');
+  const dismissed = localStorage.getItem('pwa-dismissed');
+  const installed = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+  
+  if (!dismissed && !installed && !deferredPrompt) {
+    // Mostrar banner manual (para navegadores que no soportan beforeinstallprompt)
+    banner.style.display = 'flex';
+    // Cambiar botón instalar a instrucciones manuales
+    banner.querySelector('#btn-instalar').textContent = '📲 Cómo instalar';
+    banner.querySelector('#btn-instalar').onclick = showManualInstall;
+  }
+}, 4000);
+
+function showManualInstall() {
+  closeModal('install-banner');
+  // Detectar sistema
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (isIos) {
+    document.getElementById('ios-banner').style.display = 'block';
+  } else {
+    // Android sin soporte PWA — instrucciones manuales
+    toast('Toca ⋮ → "Agregar a pantalla de inicio"');
+  }
+}
 
 // Detectar iOS
 function isIOS() {
