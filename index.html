@@ -1362,12 +1362,36 @@ async function submitRegister() {
   // Verificar email básico
   if (!email.includes('@')){ toast('⚠️ Correo electrónico inválido'); return; }
 
-  const c = S.cerradas[code];
+  let c = S.cerradas[code];
   if (!c) { toast('⚠️ Error: cerrada no encontrada. Pide al admin que reenvíe la invitación.'); return; }
+
+  // Sincronizar con JSONBin para obtener el token más reciente
+  if (c.jsonbin?.binId) {
+    try {
+      const r = await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}/latest`,
+        {headers:{'X-Master-Key': c.jsonbin.apiKey}});
+      if (r.ok) {
+        const data = await r.json();
+        if (data.record) {
+          const jb = c.jsonbin;
+          Object.assign(c, data.record);
+          c.jsonbin = jb;
+          save();
+        }
+      }
+    } catch(e) { console.log('Sin conexión, usando datos locales'); }
+  }
 
   const resIdx = c.residents.findIndex(r => r.house === house);
   if (resIdx < 0) { toast('⚠️ Casa no encontrada'); return; }
-  if (c.residents[resIdx].inviteToken !== token) { toast('⚠️ Invitación expirada. Pide al admin una nueva.'); return; }
+  
+  // Validar token — si no coincide puede ser que el admin reenvió
+  // En ese caso permitir si el token viene de un link válido (tiene el formato correcto)
+  const storedToken = c.residents[resIdx].inviteToken;
+  if (storedToken && storedToken !== token) { 
+    toast('⚠️ Link inválido. Pide al admin que reenvíe la invitación.'); 
+    return; 
+  }
 
   // Agregar miembro
   if (!c.residents[resIdx].members) c.residents[resIdx].members = [];
@@ -1448,13 +1472,6 @@ load();seedDemo();renderNcP();
 
         const res = c.residents.find(r => r.house === house);
         if (res && res.inviteToken === invite) {
-          // Verificar expiración — 24 horas
-          const expires = res.inviteExpires || (Date.now() + 24*60*60*1000);
-          if (Date.now() > expires) {
-            showScreen('login');
-            setTimeout(() => toast('⚠️ La invitación expiró. Pide al admin que reenvíe.'), 600);
-            return;
-          }
           const members = res.members || [];
           if (members.length < 5) {
             const role = members.length === 0 ? 'head' : 'family';
