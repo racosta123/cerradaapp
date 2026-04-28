@@ -4,23 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>CerradaApp</title>
-
-<!-- PWA -->
-<meta name="application-name" content="CerradaApp">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="CerradaApp">
-<meta name="theme-color" content="#3B82C4">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="description" content="Control de acceso comunitario">
-
-<!-- Íconos PWA -->
-<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-
-<!-- Manifest PWA -->
-<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
@@ -270,99 +253,36 @@ select option{background:var(--sur)}
       <p>Control de Acceso Comunitario</p>
     </div>
 
-    <!-- SOLO RESIDENTE -->
-    <div id="tab-res-only">
-      <label>Código de tu Cerrada</label>
-      <input id="m-code" placeholder="Ej: SMARK-001" oninput="this.value=this.value.toUpperCase()">
-      <label>Tu PIN</label>
-      <input id="m-pin" type="password" placeholder="••••••" maxlength="8">
-      <div class="err" id="m-err"></div>
-      <button class="btn bp" onclick="loginManual()" style="margin-bottom:.75rem">Entrar →</button>
-    </div>
-
-    <!-- ACCESO DISCRETO PARA ADMIN/MASTER -->
-    <div style="text-align:center">
-      <span onclick="toggleStaff()" style="font-size:.68rem;color:var(--t3);cursor:pointer;
-        padding:.3rem .6rem;border-radius:6px;user-select:none">
-        ⚙️ Acceso personal
-      </span>
-    </div>
-    <div id="staff-access" style="display:none;margin-top:.75rem">
-      <div style="display:flex;gap:.5rem">
-        <div class="qa-btn adm" onclick="quickLogin('admin')" style="flex:1">
-          <div class="qa-ico">⚙️</div>
-          <div class="qa-lbl">Admin</div>
-        </div>
-        <div class="qa-btn mst" onclick="quickLogin('master')" style="flex:1">
-          <div class="qa-ico">🛡️</div>
-          <div class="qa-lbl">Master</div>
-        </div>
+    <!-- ACCESO RÁPIDO -->
+    <p style="font-size:.74rem;font-weight:700;color:var(--t2);text-align:center;margin-bottom:.65rem;text-transform:uppercase;letter-spacing:.5px">Acceso Demo Directo</p>
+    <div class="quick-access">
+      <div class="qa-btn res" onclick="quickLogin('resident')">
+        <div class="qa-ico">🏠</div>
+        <div class="qa-lbl">Residente</div>
+        <div class="qa-sub">Casa 1</div>
       </div>
-      <div style="display:flex;gap:.5rem;margin-top:.65rem">
-        <input id="staff-code" placeholder="Código" oninput="this.value=this.value.toUpperCase()" 
-          style="margin:0;flex:1;font-size:.82rem;padding:.5rem .75rem">
-        <input id="staff-pin" type="password" placeholder="PIN" maxlength="8"
-          style="margin:0;width:85px;font-size:.82rem;padding:.5rem .65rem">
+      <div class="qa-btn adm" onclick="quickLogin('admin')">
+        <div class="qa-ico">⚙️</div>
+        <div class="qa-lbl">Admin</div>
+        <div class="qa-sub">Sub-Admin</div>
       </div>
-      <button class="btn bg2 wf" onclick="loginStaff()" style="margin-top:.5rem;font-size:.82rem;padding:.55rem">
-        Entrar como Staff →
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- PANTALLA DE REGISTRO -->
-<div id="scr-register" class="screen">
-  <div style="flex:1;background:linear-gradient(155deg,#c5dcf5 0%,#daeef8 35%,#fef6dc 100%);
-    display:flex;align-items:center;justify-content:center;padding:1.5rem">
-    <div style="width:100%;max-width:390px;background:rgba(255,255,255,.97);border-radius:24px;
-      padding:2rem 1.75rem;box-shadow:0 8px 40px rgba(59,130,196,.14)">
-
-      <div style="text-align:center;margin-bottom:1.5rem">
-        <div style="width:58px;height:58px;background:linear-gradient(135deg,var(--blue),var(--sky));
-          border-radius:16px;display:flex;align-items:center;justify-content:center;
-          margin:0 auto .75rem;font-size:1.6rem;box-shadow:0 6px 20px rgba(59,130,196,.3)">🏘️</div>
-        <h2 id="reg-title" style="font-family:var(--fd);font-size:1.3rem;font-weight:900;color:var(--blue)">
-          Registro</h2>
-        <p id="reg-subtitle" style="font-size:.8rem;color:var(--t2);margin-top:.25rem"></p>
-      </div>
-
-      <input type="hidden" id="reg-code">
-      <input type="hidden" id="reg-house">
-      <input type="hidden" id="reg-token">
-      <input type="hidden" id="reg-role">
-
-      <label>Nombre completo</label>
-      <input id="reg-name" placeholder="Juan Pérez García" autocomplete="name">
-
-      <label>Dirección dentro de la cerrada</label>
-      <input id="reg-address" placeholder="Casa 5, Calle Principal #12">
-
-      <label>Correo electrónico</label>
-      <input id="reg-email" type="email" placeholder="juan@correo.com" autocomplete="email">
-
-      <label>Crea tu PIN de acceso (4-8 dígitos)</label>
-      <input id="reg-pin" type="password" placeholder="••••••" maxlength="8">
-
-      <label>Confirma tu PIN</label>
-      <input id="reg-pin2" type="password" placeholder="••••••" maxlength="8">
-
-      <button class="btn bp" onclick="submitRegister()">✓ Registrarme y Entrar</button>
-
-      <p style="text-align:center;font-size:.72rem;color:var(--t3);margin-top:.75rem;line-height:1.5">
-        Al registrarte aceptas que tu información será usada únicamente para el control de acceso de tu residencia.
-      </p>
-
-      <!-- Info familiares -->
-      <div id="reg-family-info" style="display:none;margin-top:.85rem;background:var(--blue-lt);
-        border:1.5px solid rgba(59,130,196,.2);border-radius:12px;padding:.85rem;text-align:center">
-        <div style="font-size:.9rem;margin-bottom:.3rem">👨‍👩‍👧‍👦</div>
-        <p style="font-size:.75rem;color:var(--blue);font-weight:700;margin-bottom:.2rem">
-          ¿Tienes familiares en tu casa?</p>
-        <p style="font-size:.72rem;color:var(--t2)">
-          Después de registrarte podrás invitar hasta 4 familiares desde tu perfil.</p>
+      <div class="qa-btn mst" onclick="quickLogin('master')">
+        <div class="qa-ico">🛡️</div>
+        <div class="qa-lbl">Master</div>
+        <div class="qa-sub">Proveedor</div>
       </div>
     </div>
+
+    <div class="divider">o ingresa manualmente</div>
+
+    <!-- LOGIN MANUAL -->
+    <div style="display:flex;gap:.5rem;margin-bottom:.85rem">
+      <input id="m-code" placeholder="Código (DEMO-002)" oninput="this.value=this.value.toUpperCase()" style="margin:0;flex:1">
+      <input id="m-pin" type="password" placeholder="PIN" maxlength="8" style="margin:0;width:90px">
+    </div>
+    <div class="err" id="m-err"></div>
+    <button class="btn bp" onclick="loginManual()" style="margin-bottom:.5rem">Entrar →</button>
+    <p style="text-align:center;font-size:.7rem;color:var(--t3)">Master: código vacío + PIN <b>MASTER2025</b></p>
   </div>
 </div>
 
@@ -395,13 +315,6 @@ select option{background:var(--sur)}
     <div id="rp-portones" class="panel on">
       <p style="font-size:.76rem;color:var(--t2);margin-bottom:.8rem;font-weight:600">Mantén presionado 1 segundo para abrir 🔓</p>
       <div id="gate-res" class="gate-grid g1"></div>
-      <!-- Botón invitar familiares (solo para jefe de familia) -->
-      <div id="res-invite-btn" style="display:none;margin-top:.5rem">
-        <button class="btn bb2 wf" onclick="invitarFamiliar()" style="font-size:.82rem">
-          👨‍👩‍👧 Invitar familiar a mi casa
-        </button>
-        <div id="res-members-list" style="margin-top:.6rem"></div>
-      </div>
     </div>
     <div id="rp-finanzas" class="panel">
       <div class="trans-hdr"><h3>💡 Transparencia Financiera</h3><p>Cómo se administra el dinero de tu cerrada</p></div>
@@ -490,7 +403,7 @@ select option{background:var(--sur)}
     </div>
     <div id="ap-portones" class="panel">
       <div class="card"><div class="ch"><div class="ct">Configurar Portones</div></div>
-        <p style="font-size:.75rem;color:var(--t2);margin-bottom:.85rem">Puedes personalizar el nombre e icono de cada portón.</p>
+        <p style="font-size:.75rem;color:var(--t2);margin-bottom:.85rem">Edita nombre, IP y tiempo. La cantidad la define el Master.</p>
         <div id="adm-plist"></div>
         <button class="btn bp" style="margin-top:.6rem" onclick="savePortones()">💾 Guardar</button>
       </div>
@@ -500,16 +413,15 @@ select option{background:var(--sur)}
       </div>
     </div>
     <div id="ap-config" class="panel">
-      <div class="card">
-        <div class="ch"><div class="ct">🔑 Mi PIN de Administrador</div></div>
-        <p style="font-size:.78rem;color:var(--t2);margin-bottom:.85rem">Cambia tu PIN de acceso al sistema.</p>
-        <label>PIN actual</label>
-        <input id="cfg-pin-old" type="password" maxlength="8" placeholder="Tu PIN actual">
+      <div class="card"><div class="ch"><div class="ct">☁️ JSONBin (Nube)</div></div>
+        <label>Bin ID</label><input id="cfg-bin" placeholder="ID del bin de jsonbin.io">
+        <label>API Key</label><input id="cfg-key" type="password" placeholder="$2b$...">
+        <button class="btn bp" onclick="saveJsonbin()">Conectar y Sincronizar</button>
+      </div>
+      <div class="card"><div class="ch"><div class="ct">🔑 Cambiar PIN de Admin</div></div>
         <label>Nuevo PIN (mín. 4 dígitos)</label>
         <input id="cfg-pin" type="password" maxlength="8" placeholder="Nuevo PIN">
-        <label>Confirmar nuevo PIN</label>
-        <input id="cfg-pin2" type="password" maxlength="8" placeholder="Repite el nuevo PIN">
-        <button class="btn bp" onclick="changePin()">✓ Actualizar PIN</button>
+        <button class="btn bg2 wf" onclick="changePin()">Actualizar PIN</button>
       </div>
     </div>
   </div>
@@ -546,19 +458,6 @@ select option{background:var(--sur)}
       </div>
     </div>
     <div id="mp-config" class="panel">
-      <div class="card">
-        <div class="ch"><div class="ct">☁️ JSONBin por Cerrada</div></div>
-        <p style="font-size:.78rem;color:var(--t2);margin-bottom:.85rem">Conecta cada cerrada a la nube para que los datos estén disponibles en cualquier dispositivo. Selecciona la cerrada y pega sus credenciales de <b>jsonbin.io</b>.</p>
-        <label>Seleccionar Cerrada</label>
-        <select id="mc-bin-cerrada" onchange="loadMstJsonbinFields()"></select>
-        <div id="mc-bin-fields" style="display:none">
-          <label>Bin ID</label>
-          <input id="mc-bin-id" placeholder="ID del bin">
-          <label>API Key</label>
-          <input id="mc-bin-key" type="password" placeholder="$2b$...">
-          <button class="btn bp" onclick="saveMstJsonbin()">☁️ Conectar JSONBin</button>
-        </div>
-      </div>
       <div class="card"><div class="ch"><div class="ct">🔑 Clave Maestra</div></div>
         <label>Nueva Clave (mín. 8 caracteres)</label>
         <input id="mc-key" type="password" placeholder="Nueva clave maestra">
@@ -630,61 +529,6 @@ select option{background:var(--sur)}
 
 <div id="toast"></div>
 
-<!-- BANNER INSTALAR APP -->
-<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;
-  background:var(--blue);color:#fff;padding:.85rem 1.15rem;z-index:10000;
-  align-items:center;justify-content:space-between;gap:.75rem;
-  box-shadow:0 -4px 20px rgba(59,130,196,.4)">
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <img src="icon-192.png" style="width:38px;height:38px;border-radius:10px">
-    <div>
-      <div style="font-family:var(--fd);font-weight:800;font-size:.9rem">Instalar CerradaApp</div>
-      <div style="font-size:.72rem;opacity:.85">Agregar a tu pantalla de inicio</div>
-    </div>
-  </div>
-  <div style="display:flex;gap:.5rem;flex-shrink:0">
-    <button onclick="dismissInstall()" style="background:rgba(255,255,255,.2);border:none;
-      color:#fff;padding:.4rem .8rem;border-radius:8px;font-family:var(--fd);
-      font-weight:700;font-size:.75rem;cursor:pointer">✕</button>
-    <button id="btn-instalar" onclick="installApp()" style="background:#fff;border:none;
-      color:var(--blue);padding:.4rem .9rem;border-radius:8px;font-family:var(--fd);
-      font-weight:800;font-size:.75rem;cursor:pointer">📲 Instalar</button>
-  </div>
-</div>
-
-<!-- INSTRUCCIONES iOS -->
-<div id="ios-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;
-  background:var(--sur);border-top:2px solid var(--brd);padding:1rem 1.15rem;
-  z-index:10000;box-shadow:0 -4px 20px rgba(59,130,196,.15)">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
-    <div style="font-family:var(--fd);font-weight:800;font-size:.9rem;color:var(--t)">
-      🏘️ Instalar CerradaApp
-    </div>
-    <button onclick="dismissIOS()" style="background:none;border:none;color:var(--t2);
-      font-size:1.2rem;cursor:pointer;padding:.2rem .4rem">✕</button>
-  </div>
-  <p style="font-size:.78rem;color:var(--t2);margin-bottom:.75rem">
-    Para instalar como app en tu iPhone:
-  </p>
-  <div style="display:flex;flex-direction:column;gap:.5rem">
-    <div style="display:flex;align-items:center;gap:.75rem;font-size:.8rem;color:var(--t)">
-      <div style="width:28px;height:28px;background:var(--blue-lt);border-radius:8px;
-        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem">1</div>
-      Toca el botón <b style="margin:0 .3rem">⬆️ Compartir</b> en Safari
-    </div>
-    <div style="display:flex;align-items:center;gap:.75rem;font-size:.8rem;color:var(--t)">
-      <div style="width:28px;height:28px;background:var(--blue-lt);border-radius:8px;
-        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem">2</div>
-      Selecciona <b style="margin:0 .3rem">"Agregar a pantalla de inicio"</b>
-    </div>
-    <div style="display:flex;align-items:center;gap:.75rem;font-size:.8rem;color:var(--t)">
-      <div style="width:28px;height:28px;background:var(--blue-lt);border-radius:8px;
-        display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem">3</div>
-      Toca <b style="margin:0 .3rem">"Agregar"</b> y listo 🎉
-    </div>
-  </div>
-</div>
-
 <script>
 const SK='cerradaapp_v4';
 const ICONS=['🚗','🚶','🚪','🏠','🔑','🚧','🛻','🏍'];
@@ -699,22 +543,12 @@ function fd(iso){return new Date(iso).toLocaleString('es',{day:'2-digit',month:'
 function emH(i,t){return`<div class="empty"><div class="empty-ico">${i}</div>${t}</div>`;}
 
 function seedDemo(){
-  // Siempre actualizar IP del portón demo
-  if(S.cerradas['SMARK-001']){
-    // Actualizar IP real aunque ya exista el seed
-    if(S.cerradas['SMARK-001'].portones?.[0]){
-      S.cerradas['SMARK-001'].portones[0].ip='http://192.168.1.18';
-      S.cerradas['SMARK-001'].portones[0].shellyId='e4b063eb85a4';
-      S.cerradas['SMARK-001'].portones[0].time=5;
-    }
-    save();
-    return;
-  }
-  S.cerradas['SMARK-001']={
-    name:'Cerrada Samarkanda',code:'SMARK-001',houses:20,
+  if(S.cerradas['DEMO-002'])return;
+  S.cerradas['DEMO-002']={
+    name:'Mi Cerrada',code:'DEMO-002',houses:20,
     adminPin:'1234',adminName:'Pedro González',adminPhone:'+502 9999 0000',
     price:20,active:true,suspended:false,
-    portones:[{id:'v1',label:'Portón Principal',icon:'🚗',ip:'http://192.168.1.18',shellyId:'e4b063eb85a4',time:5}],
+    portones:[{id:'v1',label:'Portón Principal',icon:'🚗',ip:'http://192.168.1.101',time:10}],
     residents:[
       {house:'Casa 1',pin:'5678',name:'Juan Pérez',phone:'+502 1111 0001',active:true,mora:false,moraNote:''},
       {house:'Casa 2',pin:'9999',name:'María López',phone:'+502 1111 0002',active:true,mora:false,moraNote:''},
@@ -728,7 +562,7 @@ function seedDemo(){
       {ts:new Date().toISOString(),type:'income',amount:60,category:'Cuota mensual',desc:'Casas 1, 2 y 3'},
       {ts:new Date(Date.now()-86400000).toISOString(),type:'expense',amount:25,category:'Mantenimiento',desc:'Aceite para portón'},
     ],
-    jsonbin:{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'},createdAt:new Date().toISOString()
+    jsonbin:{},createdAt:new Date().toISOString()
   };
   save();
 }
@@ -736,17 +570,13 @@ function seedDemo(){
 // ── ACCESO RÁPIDO
 function quickLogin(role){
   if(role==='resident'){
-    U={role:'resident',cerradaCode:'SMARK-001',house:'Casa 1'};
-    const c=S.cerradas['SMARK-001'];
+    U={role:'resident',cerradaCode:'DEMO-002',house:'Casa 1'};
+    const c=S.cerradas['DEMO-002'];
     const res=c.residents[0];
     enterRes(c,res);
   } else if(role==='admin'){
-    const code=document.getElementById('staff-code')?.value.trim()||'SMARK-001';
-    const c=S.cerradas[code]||S.cerradas['SMARK-001'];
-    if(!c){showErr('m-err','Cerrada no encontrada.');return;}
-    U={role:'subadmin',cerradaCode:c.code};
-    localStorage.setItem('cerrada_session', JSON.stringify(U));
-    enterAdm(c);
+    U={role:'subadmin',cerradaCode:'DEMO-002'};
+    enterAdm(S.cerradas['DEMO-002']);
   } else {
     U={role:'master'};
     showScreen('mst');renderMstList();renderNegocio();
@@ -756,53 +586,25 @@ function quickLogin(role){
 function loginManual(){
   const code=document.getElementById('m-code').value.trim();
   const pin=document.getElementById('m-pin').value.trim();
-  if(!code){showErr('m-err','Ingresa el código de tu cerrada.');return;}
-  const c=S.cerradas[code];
+  // Master sin código
+  if(!code && pin===S.masterKey){U={role:'master'};showScreen('mst');renderMstList();renderNegocio();return;}
+  const c=code?S.cerradas[code]:null;
   if(!c){showErr('m-err','Cerrada no encontrada.');return;}
-  if(c.suspended||!c.active){document.getElementById('susp-msg').textContent='Esta cerrada está suspendida.';showScreen('susp');return;}
-  const res=c.residents.find(r=>r.pin===pin);
-  if(!res){showErr('m-err','PIN incorrecto.');return;}
-  if(!res.active||res.mora){
-    document.getElementById('susp-msg').textContent=res.mora?`Acceso suspendido por mora. ${res.moraNote}`:'Tu acceso fue suspendido.';
-    showScreen('susp');return;
-  }
-  U={role:'resident',cerradaCode:code,house:res.house,memberIdx:-1,memberName:res.name};
-  localStorage.setItem('cerrada_session', JSON.stringify(U));
-  enterRes(c,res,null);
-}
-
-function loginStaff(){
-  const code=document.getElementById('staff-code').value.trim();
-  const pin=document.getElementById('staff-pin').value.trim();
-  // Master
-  if(!code && pin===S.masterKey){
-    U={role:'master'};
-    localStorage.setItem('cerrada_session', JSON.stringify({role:'master'}));
-    showScreen('mst');renderMstList();renderNegocio();return;
-  }
-  if(!code){showErr('m-err','Ingresa el código.');return;}
-  const c=S.cerradas[code];
-  if(!c){showErr('m-err','Cerrada no encontrada.');return;}
+  // Admin
   if(c.adminPin===pin){
     if(c.suspended){showErr('m-err','Cerrada suspendida.');return;}
-    U={role:'subadmin',cerradaCode:code};
-    localStorage.setItem('cerrada_session', JSON.stringify(U));
-    enterAdm(c);return;
+    U={role:'subadmin',cerradaCode:code};enterAdm(c);return;
   }
-  showErr('m-err','PIN incorrecto.');
-}
-
-function toggleStaff(){
-  const el=document.getElementById('staff-access');
-  el.style.display=el.style.display==='none'?'block':'none';
+  // Residente
+  const res=c.residents.find(r=>r.pin===pin);
+  if(!res){showErr('m-err','PIN incorrecto.');return;}
+  if(c.suspended||!c.active){document.getElementById('susp-msg').textContent='Cerrada suspendida.';showScreen('susp');return;}
+  if(!res.active||res.mora){document.getElementById('susp-msg').textContent=res.mora?`Mora: ${res.moraNote}`:'Acceso suspendido.';showScreen('susp');return;}
+  U={role:'resident',cerradaCode:code,house:res.house};enterRes(c,res);
 }
 
 function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',3200);}
-function logout(){
-  U=null;
-  localStorage.removeItem('cerrada_session');
-  showScreen('login');
-}
+function logout(){U=null;showScreen('login');}
 
 // ── JSONBIN
 function setSI(r,st){const m={syncing:'🔄',ok:'☁️',err:'⚠️',off:'💾'};const el=document.getElementById('sync-'+r);if(el)el.textContent=m[st]||'☁️';}
@@ -815,69 +617,14 @@ function setPanels(pre,list,act){list.forEach(p=>{const el=document.getElementBy
 function setTabs(scope,el){document.querySelectorAll(scope+' .ntab').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
 function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);setTabs('#scr-res',el);const c=C();if(!c)return;if(id==='finanzas')renderResFin(c);if(id==='historial')renderResHist(c);}
 function admP(id,el){setPanels('ap-',['dashboard','vecinos','historial','finanzas','portones','config'],id);setTabs('#scr-adm',el);const c=C();if(!c)return;if(id==='dashboard')updateDash();if(id==='vecinos')renderVec();if(id==='historial')renderAdmHist();if(id==='finanzas')renderAdmFin();if(id==='portones')renderAdmPortones();if(id==='config')loadCfg();}
-function mstP(id,el){setPanels('mp-',['cerradas','negocio','config'],id);setTabs('#scr-mst',el);if(id==='cerradas')renderMstList();if(id==='negocio')renderNegocio();if(id==='config'){document.getElementById('mc-price').value=S.defaultPrice;populateMstJsonbinSelect();}}
+function mstP(id,el){setPanels('mp-',['cerradas','negocio','config'],id);setTabs('#scr-mst',el);if(id==='cerradas')renderMstList();if(id==='negocio')renderNegocio();if(id==='config')document.getElementById('mc-price').value=S.defaultPrice;}
 
 // ── RESIDENT
-function enterRes(c, res, member) {
-  const displayName = member ? member.name : res.name;
-  document.getElementById('res-cname').textContent = c.name;
-  document.getElementById('res-house').textContent = res.house;
-  const sub = document.getElementById('res-sub');
-  if (sub) sub.textContent = displayName + ' · ' + res.house;
-  setSI('res','ok');
-  renderGates(c,'res','gate-res');
-  renderResFin(c);
-  renderResHist(c);
-
-  // Mostrar botón de invitar familiares solo al jefe de familia
-  const invBtn = document.getElementById('res-invite-btn');
-  const members = res.members || [];
-  const isHead = !member || member.role === 'head';
-  if (invBtn) {
-    invBtn.style.display = isHead && members.length < 5 ? 'block' : 'none';
-    // Mostrar miembros registrados
-    const mList = document.getElementById('res-members-list');
-    if (mList && members.length > 0) {
-      mList.innerHTML = `<div class="card" style="margin-top:.3rem">
-        <div class="ct" style="margin-bottom:.6rem;font-size:.82rem">👥 Miembros de tu casa</div>
-        ${members.map(m=>`<div class="hi">
-          <div class="hd" style="background:var(--sky)"></div>
-          <div class="hinfo">
-            <div class="hdesc">${esc(m.name)} ${m.role==='head'?'👑':''}</div>
-            <div class="htime">${m.email}</div>
-          </div>
-        </div>`).join('')}
-      </div>`;
-    }
-  }
-
-  showScreen('res');
-}
-
-function invitarFamiliar() {
-  const c = C(); if (!c) return;
-  const res = c.residents.find(r => r.house === U.house);
-  if (!res) return;
-  const members = res.members || [];
-  if (members.length >= 5) { toast('⚠️ Ya tienes el máximo de 5 miembros'); return; }
-
-  // Generar token para el familiar
-  const token = btoa(`${c.code}|${res.house}|fam|${Date.now()}`).replace(/=/g,'');
-  res.inviteToken = token;
-  save();
-  if (c.jsonbin?.binId) jbPush(c);
-
-  const inviteUrl = `https://racosta123.github.io/cerradaapp/#invite=${token}&code=${c.code}&house=${encodeURIComponent(res.house)}`;
-  const msg = `🏘️ *${c.name}*
-
-Hola, te invito a registrarte como familiar en *${res.house}*.
-
-📲 Regístrate aquí:
-${inviteUrl}
-
-_Al registrarte podrás abrir el portón desde tu celular._`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-  toast('📲 Abriendo WhatsApp...');
+function enterRes(c,res){
+  document.getElementById('res-cname').textContent=c.name;
+  document.getElementById('res-house').textContent=res.house;
+  const sub=document.getElementById('res-sub');if(sub)sub.textContent=res.name+' · '+res.house;
+  setSI('res','ok');renderGates(c,'res','gate-res');renderDevInfo(c);renderResFin(c);renderResHist(c);showScreen('res');
 }
 function renderGates(c,role,cid){
   const pts=c.portones||[];const n=pts.length;
@@ -955,11 +702,9 @@ async function openPorton(pid,role){
   const c=C();if(!c)return;const pt=c.portones.find(p=>p.id===pid);if(!pt)return;
   const house=role==='res'?U.house:'[TEST]';
   if(!c.history)c.history=[];
-  const memberName = U.memberName || house;
-  c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label,who:memberName});
+  c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label});
   save();push(role);
-  // Control via Shelly Cloud (funciona desde cualquier red)
-  shellyOpen(pt);
+  if(pt.ip){fetch(`${pt.ip}/rpc/Switch.Set?id=0&on=true`).catch(()=>{});setTimeout(()=>fetch(`${pt.ip}/rpc/Switch.Set?id=0&on=false`).catch(()=>{}),(pt.time||10)*1000);}
   toast(`✅ ${pt.label} abierto`);
   // Vibración de éxito: patrón largo-corto
   if(navigator.vibrate) navigator.vibrate([80,40,80]);
@@ -970,29 +715,6 @@ async function openPorton(pid,role){
     setTimeout(()=>btn.classList.remove('ok'),2500);
   }
   if(role==='res')renderResHist(c);
-}
-
-// ── SHELLY CLOUD CONTROL
-async function shellyOpen(pt) {
-  const SERVER  = 'shelly-258-eu.shelly.cloud';
-  const AUTH    = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388D6B4B15BC5295B801F11A2A689C37770CE435132';
-  const DEVICE  = pt.shellyId || 'e4b063eb85a4';
-  const SECONDS = pt.time || 5;
-
-  // Usamos no-cors para evitar bloqueo CORS del navegador
-  // La petición se envía pero no podemos leer la respuesta — el Shelly igual la ejecuta
-  const sendCmd = (turn) => fetch(`https://${SERVER}/device/relay/control`, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-    body: `id=${DEVICE}&auth_key=${AUTH}&channel=0&turn=${turn}`
-  }).catch(e => console.warn('Shelly:', e));
-
-  // Encender
-  await sendCmd('on');
-
-  // Apagar después del tiempo configurado
-  setTimeout(() => sendCmd('off'), SECONDS * 1000);
 }
 
 // ── ADMIN
@@ -1007,7 +729,7 @@ function updateDash(){
   const rec=(c.history||[]).slice(-5).reverse();
   const rl=document.getElementById('ds-recent');
   if(!rec.length){rl.innerHTML=emH('📋','Sin actividad');}
-  else{rl.innerHTML=rec.map(h=>{const r=res.find(x=>x.house===h.house);const who = h.who || (r?r.name:''); return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${who?' — 👤 '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
+  else{rl.innerHTML=rec.map(h=>{const r=res.find(x=>x.house===h.house);return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${r?' — '+esc(r.name):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
   const{income,expense}=calcFin(c);
   document.getElementById('af-i').textContent='$'+income.toFixed(2);
   document.getElementById('af-e').textContent='$'+expense.toFixed(2);
@@ -1018,35 +740,7 @@ function renderVec(){
   document.getElementById('vec-cnt').textContent=res.length;
   const list=document.getElementById('vec-list');
   if(!res.length){list.innerHTML=emH('👥','Sin vecinos');return;}
-  list.innerHTML=res.map((r,i)=>{
-  const hn=r.house.replace(/\D/g,'').slice(0,2)||'?';
-  const members=r.members||[];
-  const membersHtml = members.length ? `
-    <div style="margin-top:.35rem;padding-left:.5rem;border-left:2px solid var(--brd)">
-      ${members.map((m,mi)=>`
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:.25rem 0;font-size:.72rem">
-          <span style="color:var(--t2)">👤 ${esc(m.name)} <span style="color:var(--t3)">${m.role==='head'?'Jefe':'Familiar'}</span></span>
-          <span style="color:var(--t3)">${m.email||''}</span>
-        </div>`).join('')}
-    </div>` : '';
-  return`<div class="li" style="flex-direction:column;align-items:stretch">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem">
-      <div class="lil">
-        <div class="av ${r.mora?'ar':r.active?'ag':'ar'}">${esc(hn)}</div>
-        <div>
-          <div class="in">${esc(r.name)}${r.mora?` <span class="mora">⚠️ Mora</span>`:''}</div>
-          <div class="is">${esc(r.house)} · ${members.length} miembro${members.length!==1?'s':''} registrado${members.length!==1?'s':''}</div>
-        </div>
-      </div>
-      <div class="ia">
-        <button class="btn bb2 xs" onclick="sendInvite(${i})" title="Invitar por WhatsApp">📲</button>
-        ${r.mora?`<button class="btn bg2 xs" onclick="quitarMora(${i})">✓ Pagó</button>`:`<button class="btn bw xs" onclick="openMora(${i})">⚠️</button>`}
-        <button class="btn ${r.active&&!r.mora?'bd':'bg2'} xs" onclick="toggleVec(${i})">${r.active&&!r.mora?'🔒':'🔓'}</button>
-        <button class="btn bd xs" onclick="delVec(${i})">✕</button>
-      </div>
-    </div>
-    ${membersHtml}
-  </div>`;}).join('');
+  list.innerHTML=res.map((r,i)=>{const hn=r.house.replace(/\D/g,'').slice(0,2)||'?';return`<div class="li"><div class="lil"><div class="av ${r.mora?'ar':r.active?'ag':'ar'}">${esc(hn)}</div><div><div class="in">${esc(r.name)}${r.mora?` <span class="mora">⚠️ Mora</span>`:''}</div><div class="is">${esc(r.house)}${r.phone?' · '+esc(r.phone):''}</div></div></div><div class="ia">${r.mora?`<button class="btn bg2 xs" onclick="quitarMora(${i})">✓ Pagó</button>`:`<button class="btn bw xs" onclick="openMora(${i})">⚠️</button>`}<button class="btn ${r.active&&!r.mora?'bd':'bg2'} xs" onclick="toggleVec(${i})">${r.active&&!r.mora?'🔒':'🔓'}</button><button class="btn bd xs" onclick="delVec(${i})">✕</button></div></div>`;}).join('');
 }
 async function addVec(){const c=C();if(!c)return;const house=document.getElementById('nv-h').value.trim(),pin=document.getElementById('nv-p').value.trim(),name=document.getElementById('nv-n').value.trim(),phone=document.getElementById('nv-t').value.trim();if(!house||!pin||!name){toast('⚠️ Completa casa, PIN y nombre');return;}if(pin.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}if(!c.residents)c.residents=[];if(c.residents.find(r=>r.house===house)){toast('⚠️ Esa casa ya existe');return;}if(c.residents.length>=c.houses){toast(`⚠️ Máximo ${c.houses} casas`);return;}c.residents.push({house,pin,name,phone,active:true,mora:false,moraNote:''});save();push('adm');['nv-h','nv-p','nv-n','nv-t'].forEach(id=>document.getElementById(id).value='');renderVec();updateDash();toast('✅ Vecino agregado');}
 async function toggleVec(i){const c=C();if(!c)return;const r=c.residents[i];if(r.mora){toast('⚠️ Primero registra el pago');return;}r.active=!r.active;save();push('adm');renderVec();updateDash();toast(r.active?'🔓 Acceso habilitado':'🔒 Suspendido');}
@@ -1054,50 +748,15 @@ async function delVec(i){const c=C();if(!c)return;if(!confirm('¿Eliminar?'))ret
 function openMora(i){document.getElementById('mora-idx').value=i;const c=C();if(c)document.getElementById('mora-note').value=c.residents[i].moraNote||'';openModal('modal-mora');}
 async function applyMora(){const i=parseInt(document.getElementById('mora-idx').value),note=document.getElementById('mora-note').value.trim(),c=C();if(!c)return;const r=c.residents[i];r.mora=true;r.moraNote=note;r.active=false;save();push('adm');closeModal('modal-mora');renderVec();updateDash();toast('🔒 Suspendido por mora');}
 async function quitarMora(i){const c=C();if(!c)return;const r=c.residents[i];r.mora=false;r.moraNote='';r.active=true;save();push('adm');renderVec();updateDash();toast('✅ Mora levantada');}
-function renderAdmHist(){const c=C();if(!c)return;const hist=(c.history||[]).slice(-80).reverse();const list=document.getElementById('adm-hist');if(!hist.length){list.innerHTML=emH('📋','Sin registros');return;}const res=c.residents||[];list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who = h.who || (r?r.name:''); return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${who?' — 👤 '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
+function renderAdmHist(){const c=C();if(!c)return;const hist=(c.history||[]).slice(-80).reverse();const list=document.getElementById('adm-hist');if(!hist.length){list.innerHTML=emH('📋','Sin registros');return;}const res=c.residents||[];list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${r?' — '+esc(r.name):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
 async function clearHist(){const c=C();if(!c)return;if(!confirm('¿Limpiar historial?'))return;c.history=[];save();push('adm');renderAdmHist();updateDash();toast('🗑 Limpiado');}
 function renderAdmFin(){const c=C();if(!c)return;const{mvs}=calcFin(c);const list=document.getElementById('adm-fin-list');if(!mvs.length){list.innerHTML=emH('💰','Sin movimientos');return;}list.innerHTML=mvs.slice(-60).reverse().map(m=>`<div class="hi"><div class="hd" style="background:${m.type==='income'?'var(--green)':'var(--rose)'}"></div><div class="hinfo"><div class="hdesc">${esc(m.category)}${m.desc?' — '+esc(m.desc):''}</div><div class="htime">${fd(m.ts)}</div></div><span style="font-size:.76rem;font-weight:700;color:${m.type==='income'?'var(--green)':'var(--rose)'}">${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}</span></div>`).join('');}
 async function addMov(){const c=C();if(!c)return;const type=document.getElementById('fn-t').value,amount=parseFloat(document.getElementById('fn-a').value),cat=document.getElementById('fn-c').value,desc=document.getElementById('fn-d').value.trim();if(!amount||isNaN(amount)){toast('⚠️ Monto inválido');return;}if(!c.movements)c.movements=[];c.movements.push({ts:new Date().toISOString(),type,amount,category:cat,desc});save();push('adm');renderAdmFin();updateDash();document.getElementById('fn-a').value='';document.getElementById('fn-d').value='';toast('✅ Registrado');}
-function renderAdmPortones(){
-  const c=C();if(!c)return;
-  renderGates(c,'test','gate-test');
-  const list=document.getElementById('adm-plist');
-  const pts=c.portones||[];
-  if(!pts.length){list.innerHTML=emH('🚪','Sin portones');return;}
-  list.innerHTML=pts.map((p,i)=>`
-    <div class="prw">
-      <select id="pi-${i}" style="margin:0;width:50px;padding:.3rem;font-size:1.1rem;border-radius:8px;border:1px solid var(--brd);background:var(--sur2);color:var(--t)">
-        ${ICONS.map(ic=>`<option value="${ic}" ${ic===p.icon?'selected':''}>${ic}</option>`).join('')}
-      </select>
-      <input value="${esc(p.label)}" id="pl-${i}" placeholder="Nombre del portón"
-        style="margin:0;flex:1;font-size:.85rem;padding:.42rem .7rem;font-weight:600">
-    </div>`).join('');
-}
-async function savePortones(){
-  const c=C();if(!c)return;
-  (c.portones||[]).forEach((p,i)=>{
-    // Solo icono y nombre — IP y tiempo los gestiona el Master
-    p.icon=document.getElementById('pi-'+i)?.value||p.icon;
-    p.label=document.getElementById('pl-'+i)?.value.trim()||p.label;
-  });
-  save();push('adm');
-  renderGates(c,'test','gate-test');
-  toast('✅ Nombre del portón actualizado');
-}
-function loadCfg(){} // JSONBin movido al Master
-// saveJsonbin movido al Master como saveMstJsonbin
-async function changePin(){
-  const c=C();if(!c)return;
-  const old=document.getElementById('cfg-pin-old').value.trim();
-  const np=document.getElementById('cfg-pin').value.trim();
-  const np2=document.getElementById('cfg-pin2').value.trim();
-  if(old!==c.adminPin){toast('⚠️ PIN actual incorrecto');return;}
-  if(np.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}
-  if(np!==np2){toast('⚠️ Los PINs no coinciden');return;}
-  c.adminPin=np;save();push('adm');
-  ['cfg-pin-old','cfg-pin','cfg-pin2'].forEach(id=>document.getElementById(id).value='');
-  toast('✅ PIN actualizado correctamente');
-}
+function renderAdmPortones(){const c=C();if(!c)return;renderGates(c,'test','gate-test');const list=document.getElementById('adm-plist');const pts=c.portones||[];if(!pts.length){list.innerHTML=emH('🚪','Sin portones');return;}list.innerHTML=pts.map((p,i)=>`<div class="prw"><select id="pi-${i}" style="margin:0;width:50px;padding:.28rem;font-size:1rem;border-radius:8px;border:1px solid var(--brd);background:var(--sur2);color:var(--t)">${ICONS.map(ic=>`<option value="${ic}" ${ic===p.icon?'selected':''}>${ic}</option>`).join('')}</select><input value="${esc(p.label)}" id="pl-${i}" placeholder="Nombre" style="margin:0;flex:1;font-size:.8rem;padding:.4rem .65rem"><input value="${esc(p.ip||'')}" id="pip-${i}" placeholder="http://192.168.x.x" style="margin:0;flex:1;font-size:.75rem;padding:.4rem .65rem"><input value="${p.time||10}" id="pt-${i}" type="number" min="1" max="60" style="margin:0;width:52px;font-size:.78rem;padding:.4rem .5rem"></div>`).join('');}
+async function savePortones(){const c=C();if(!c)return;(c.portones||[]).forEach((p,i)=>{p.icon=document.getElementById('pi-'+i)?.value||p.icon;p.label=document.getElementById('pl-'+i)?.value.trim()||p.label;p.ip=document.getElementById('pip-'+i)?.value.trim()||'';p.time=parseInt(document.getElementById('pt-'+i)?.value)||10;});save();push('adm');renderGates(c,'test','gate-test');renderDevInfo(c);toast('✅ Guardado');}
+function loadCfg(){const c=C();if(!c)return;document.getElementById('cfg-bin').value=c.jsonbin?.binId||'';document.getElementById('cfg-key').value=c.jsonbin?.apiKey||'';}
+async function saveJsonbin(){const c=C();if(!c)return;const binId=document.getElementById('cfg-bin').value.trim(),apiKey=document.getElementById('cfg-key').value.trim();if(!binId||!apiKey){toast('⚠️ Completa los campos');return;}c.jsonbin={binId,apiKey};save();toast('🔄 Probando...');toast(await jbPush(c)?'✅ Conectado':'❌ Error de conexión');}
+async function changePin(){const c=C();if(!c)return;const np=document.getElementById('cfg-pin').value.trim();if(np.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}c.adminPin=np;save();push('adm');document.getElementById('cfg-pin').value='';toast('✅ PIN actualizado');}
 
 // ── MASTER
 function addPortonRow(l='',i='🚗'){ncP.push({id:'p'+Date.now()+Math.random().toString(36).slice(2),label:l,icon:i,ip:'',time:10});renderNcP();}
@@ -1111,7 +770,7 @@ function createCerrada(){
   if(S.cerradas[code]){toast('⚠️ Código ya existe');return;}
   if(!ncP.length){toast('⚠️ Agrega al menos 1 portón');return;}
   ncP.forEach((p,i)=>{p.label=document.getElementById('npl-'+i)?.value.trim()||'Portón '+(i+1);p.icon=document.getElementById('npi-'+i)?.value||p.icon;});
-  S.cerradas[code]={name,code,houses,adminPin:apin,adminName:aname,adminPhone:aphone,price,active:true,suspended:false,portones:JSON.parse(JSON.stringify(ncP)),residents:[],history:[],movements:[],jsonbin:{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'},createdAt:new Date().toISOString()};
+  S.cerradas[code]={name,code,houses,adminPin:apin,adminName:aname,adminPhone:aphone,price,active:true,suspended:false,portones:JSON.parse(JSON.stringify(ncP)),residents:[],history:[],movements:[],jsonbin:{},createdAt:new Date().toISOString()};
   save();ncP=[];renderNcP();closeModal('modal-nueva');
   ['nc-name','nc-code','nc-houses','nc-price','nc-aname','nc-apin','nc-aphone'].forEach(id=>document.getElementById(id).value='');
   renderMstList();renderNegocio();toast(`✅ "${name}" creada`);
@@ -1119,29 +778,7 @@ function createCerrada(){
 function renderMstList(){const list=document.getElementById('mst-list');const cerradas=Object.values(S.cerradas);if(!cerradas.length){list.innerHTML=emH('🏘️','Sin cerradas');return;}list.innerHTML=cerradas.map(c=>`<div class="mcard"><div style="flex:1;min-width:0"><div class="mn">${esc(c.name)}</div><div class="mm">${esc(c.code)} · ${c.houses} casas · ${(c.portones||[]).length} portones · ${(c.residents||[]).length} vecinos · $${c.price}/mes</div><div class="mm">Admin: ${esc(c.adminName||'—')}${c.adminPhone?' · '+esc(c.adminPhone):''}</div></div><div style="display:flex;flex-direction:column;gap:.3rem;align-items:flex-end;flex-shrink:0"><span class="bge ${c.suspended?'r-b':c.active?'gr-b':'r-b'}">${c.suspended?'Suspendida':c.active?'Activa':'Inactiva'}</span><div style="display:flex;gap:.3rem"><button class="btn ${c.suspended?'bg2':'bw'} xs" onclick="toggleSusp('${c.code}')">${c.suspended?'🔓':'⏸'}</button><button class="btn bg2 xs" onclick="viewCerrada('${c.code}')">👁</button><button class="btn bd xs" onclick="delCerrada('${c.code}')">🗑</button></div></div></div>`).join('');}
 function toggleSusp(code){const c=S.cerradas[code];if(!c)return;c.suspended=!c.suspended;save();renderMstList();renderNegocio();toast(c.suspended?'⏸ Suspendida':'✅ Reactivada');}
 function delCerrada(code){const c=S.cerradas[code];if(!c)return;if(!confirm(`¿Eliminar "${c.name}"?`))return;delete S.cerradas[code];save();renderMstList();renderNegocio();toast('🗑 Eliminada');}
-function viewCerrada(code){const c=S.cerradas[code];if(!c)return;document.getElementById('mcer-title').textContent=c.name;const{income,expense}=calcFin(c);const pts=c.portones||[];document.getElementById('mcer-body').innerHTML=`<div class="li"><div class="lil"><div class="av ab">📋</div><div><div class="in">Código</div><div class="is">${esc(c.code)}</div></div></div></div><div class="li"><div class="lil"><div class="av ag">🏠</div><div><div class="in">Casas / Vecinos</div><div class="is">${c.houses} · ${(c.residents||[]).length} registrados</div></div></div></div><div class="li"><div class="lil"><div class="av ay">💰</div><div><div class="in">Mensualidad</div><div class="is">$${c.price}/mes</div></div></div></div><div class="li"><div class="lil"><div class="av ag">📈</div><div><div class="in">Finanzas del Mes</div><div class="is">+$${income.toFixed(2)} · -$${expense.toFixed(2)}</div></div></div></div><div class="li"><div class="lil"><div class="av ab">🚪</div><div><div class="in">Portones (${pts.length})</div><div class="is">${pts.map(p=>p.icon+' '+esc(p.label)).join(' · ')||'—'}</div></div></div></div><div class="li"><div class="lil"><div class="av ${c.suspended?'ar':'ag'}">${c.suspended?'⏸':'✓'}</div><div><div class="in">Estado</div><div class="is">${c.suspended?'Suspendida':'Activa'}</div></div></div><button class="btn ${c.suspended?'bg2':'bw'} xs" onclick="toggleSusp('${c.code}');viewCerrada('${c.code}')">${c.suspended?'🔓 Reactivar':'⏸ Suspender'}</button></div>
-    <div style="border-top:1px solid var(--brd);padding-top:.85rem;margin-top:.5rem">
-      <p style="font-family:var(--fd);font-size:.88rem;font-weight:800;color:var(--t);margin-bottom:.6rem">🔌 Configuración de Portones</p>
-      <p style="font-size:.73rem;color:var(--t2);margin-bottom:.75rem">IP y tiempo de apertura de cada portón. No visible para el Sub-Admin.</p>
-      <div id="mcer-portones-cfg"></div>
-      <button class="btn bp wf" style="margin-top:.6rem" onclick="saveMstPortones('${c.code}')">💾 Guardar IPs</button>
-    </div>
-    `;
-  // Cargar campos de IP para cada portón
-  const plist = document.getElementById('mcer-portones-cfg');
-  if(plist){
-    plist.innerHTML = pts.map((p,i) => `
-      <div class="prw">
-        <span style="font-size:1.1rem;width:28px;text-align:center">${p.icon||'🚪'}</span>
-        <span style="font-size:.82rem;font-weight:700;color:var(--t);flex:1">${esc(p.label)}</span>
-        <input value="${esc(p.ip||'')}" id="mip-${i}" placeholder="http://192.168.x.x"
-          style="margin:0;width:155px;font-size:.75rem;padding:.36rem .6rem">
-        <input value="${p.time||10}" id="mpt-${i}" type="number" min="1" max="60"
-          title="Segundos abierto" style="margin:0;width:48px;font-size:.75rem;padding:.36rem .45rem">
-        <span style="font-size:.65rem;color:var(--t3)">s</span>
-      </div>`).join('');
-  }
-  openModal('modal-cer');}
+function viewCerrada(code){const c=S.cerradas[code];if(!c)return;document.getElementById('mcer-title').textContent=c.name;const{income,expense}=calcFin(c);const pts=c.portones||[];document.getElementById('mcer-body').innerHTML=`<div class="li"><div class="lil"><div class="av ab">📋</div><div><div class="in">Código</div><div class="is">${esc(c.code)}</div></div></div></div><div class="li"><div class="lil"><div class="av ag">🏠</div><div><div class="in">Casas / Vecinos</div><div class="is">${c.houses} · ${(c.residents||[]).length} registrados</div></div></div></div><div class="li"><div class="lil"><div class="av ay">💰</div><div><div class="in">Mensualidad</div><div class="is">$${c.price}/mes</div></div></div></div><div class="li"><div class="lil"><div class="av ag">📈</div><div><div class="in">Finanzas del Mes</div><div class="is">+$${income.toFixed(2)} · -$${expense.toFixed(2)}</div></div></div></div><div class="li"><div class="lil"><div class="av ab">🚪</div><div><div class="in">Portones (${pts.length})</div><div class="is">${pts.map(p=>p.icon+' '+esc(p.label)).join(' · ')||'—'}</div></div></div></div><div class="li"><div class="lil"><div class="av ${c.suspended?'ar':'ag'}">${c.suspended?'⏸':'✓'}</div><div><div class="in">Estado</div><div class="is">${c.suspended?'Suspendida':'Activa'}</div></div></div><button class="btn ${c.suspended?'bg2':'bw'} xs" onclick="toggleSusp('${c.code}');viewCerrada('${c.code}')">${c.suspended?'🔓 Reactivar':'⏸ Suspender'}</button></div>`;openModal('modal-cer');}
 function renderNegocio(){const cerradas=Object.values(S.cerradas);const active=cerradas.filter(c=>c.active&&!c.suspended);document.getElementById('nb-tot').textContent=cerradas.length;document.getElementById('nb-act').textContent=active.length;document.getElementById('nb-rev').textContent='$'+active.reduce((s,c)=>s+c.price,0);document.getElementById('nb-hs').textContent=cerradas.reduce((s,c)=>s+c.houses,0);const p=S.defaultPrice;document.getElementById('nb-price').textContent='$'+p+'/mes';document.getElementById('nb-p10').textContent='$'+(p*10)+'/mes';document.getElementById('nb-p25').textContent='$'+(p*25)+'/mes';document.getElementById('nb-p50').textContent='$'+(p*50)+'/mes';}
 function changeMasterKey(){const k=document.getElementById('mc-key').value.trim();if(k.length<8){toast('⚠️ Mínimo 8 caracteres');return;}S.masterKey=k;save();document.getElementById('mc-key').value='';toast('✅ Clave actualizada');}
 function saveMasterPrice(){const p=parseFloat(document.getElementById('mc-price').value);if(!p||p<1){toast('⚠️ Precio inválido');return;}S.defaultPrice=p;save();renderNegocio();toast('✅ Tarifa actualizada');}
@@ -1202,201 +839,6 @@ function genPDF(){
   toast('📄 PDF generado correctamente');
 }
 
-// ── MASTER PORTONES IPs
-function saveMstPortones(code){
-  const c=S.cerradas[code];if(!c)return;
-  (c.portones||[]).forEach((p,i)=>{
-    const ipEl=document.getElementById('mip-'+i);
-    const tEl=document.getElementById('mpt-'+i);
-    if(ipEl) p.ip=ipEl.value.trim();
-    if(tEl) p.time=parseInt(tEl.value)||10;
-  });
-  save();
-  // Si tiene JSONBin, sincronizar
-  if(c.jsonbin?.binId) jbPush(c);
-  toast('✅ IPs guardadas para '+c.name);
-}
-
-// ── MASTER JSONBIN
-function loadMstJsonbinFields(){
-  const sel=document.getElementById('mc-bin-cerrada');
-  const code=sel.value;
-  const fields=document.getElementById('mc-bin-fields');
-  if(!code){fields.style.display='none';return;}
-  fields.style.display='block';
-  const c=S.cerradas[code];
-  document.getElementById('mc-bin-id').value=c?.jsonbin?.binId||'';
-  document.getElementById('mc-bin-key').value=c?.jsonbin?.apiKey||'';
-}
-
-function populateMstJsonbinSelect(){
-  const sel=document.getElementById('mc-bin-cerrada');
-  if(!sel)return;
-  const cerradas=Object.values(S.cerradas);
-  sel.innerHTML='<option value="">— Selecciona una cerrada —</option>'+
-    cerradas.map(c=>`<option value="${c.code}">${c.name} (${c.code}) ${c.jsonbin?.binId?'☁️':''}</option>`).join('');
-  document.getElementById('mc-bin-fields').style.display='none';
-}
-
-async function saveMstJsonbin(){
-  const code=document.getElementById('mc-bin-cerrada').value;
-  const binId=document.getElementById('mc-bin-id').value.trim();
-  const apiKey=document.getElementById('mc-bin-key').value.trim();
-  if(!code){toast('⚠️ Selecciona una cerrada');return;}
-  if(!binId||!apiKey){toast('⚠️ Completa Bin ID y API Key');return;}
-  const c=S.cerradas[code];if(!c)return;
-  c.jsonbin={binId,apiKey};save();
-  toast('🔄 Probando conexión...');
-  const ok=await jbPush(c);
-  if(ok){
-    toast('✅ JSONBin conectado para '+c.name);
-    populateMstJsonbinSelect();
-  } else {
-    toast('❌ Error — verifica las credenciales');
-  }
-}
-
-// ── SISTEMA DE INVITACIÓN
-function sendInvite(i) {
-  const c = C(); if (!c) return;
-  const res = c.residents[i];
-  // Generar token único para esta casa
-  const token = btoa(`${c.code}|${res.house}|${Date.now()}`).replace(/=/g,'');
-  // Guardar token en el residente
-  if (!c.residents[i].inviteToken) {
-    c.residents[i].inviteToken = token;
-    save();
-  }
-  const inviteToken = c.residents[i].inviteToken;
-  const baseUrl = 'https://racosta123.github.io/cerradaapp/';
-  const inviteUrl = `${baseUrl}#invite=${inviteToken}&code=${c.code}&house=${encodeURIComponent(res.house)}`;
-
-  const msg = `🏘️ *${c.name}*
-
-Hola, tienes acceso al control de acceso de tu residencia.
-
-📲 Regístrate aquí:
-${inviteUrl}
-
-_Al registrarte podrás abrir el portón desde tu celular._`;
-  const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-  window.open(waUrl, '_blank');
-}
-
-// Verificar si hay invitación pendiente al cargar
-function checkInvite() {
-  // Leer del hash (#invite=...&code=...&house=...)
-  const hash = window.location.hash.substring(1);
-  if (!hash || !hash.includes('invite=')) return false;
-
-  const params = new URLSearchParams(hash);
-  const invite = params.get('invite');
-  const code = params.get('code');
-  const house = decodeURIComponent(params.get('house') || '');
-
-  if (!invite || !code || !house) return false;
-
-  // Limpiar hash de la URL
-  window.history.replaceState({}, '', window.location.pathname);
-
-  // Guardar en localStorage por si la PWA recarga
-  localStorage.setItem('pending_invite', JSON.stringify({invite, code, house}));
-
-  return processInvite(invite, code, house);
-}
-
-function processInvite(invite, code, house) {
-  const c = S.cerradas[code];
-  if (!c) { 
-    setTimeout(() => toast('⚠️ Invitación no válida — asegúrate de tener conexión'), 800);
-    return false; 
-  }
-  const res = c.residents.find(r => r.house === house);
-  if (!res) { toast('⚠️ Casa no encontrada'); return false; }
-  if (res.inviteToken !== invite) { toast('⚠️ Invitación expirada'); return false; }
-
-  const members = res.members || [];
-  if (members.length >= 5) {
-    toast('⚠️ Esta casa ya tiene el máximo de 5 miembros');
-    return false;
-  }
-
-  const role = members.length === 0 ? 'head' : 'family';
-  showRegisterScreen(code, house, invite, role);
-  return true;
-}
-
-function showRegisterScreen(code, house, token, role) {
-  // Limpiar URL sin recargar
-  window.history.replaceState({}, '', window.location.pathname);
-
-  // Ocultar login y mostrar registro
-  showScreen('register');
-  document.getElementById('reg-title').textContent = role === 'head' ? '👤 Registro de Jefe de Familia' : '👤 Registro de Familiar';
-  document.getElementById('reg-subtitle').textContent = house + ' · ' + (S.cerradas[code]?.name || code);
-  // Mostrar info de familiares solo si es el jefe
-  const famInfo = document.getElementById('reg-family-info');
-  if (famInfo) famInfo.style.display = role === 'head' ? 'block' : 'none';
-  document.getElementById('reg-code').value = code;
-  document.getElementById('reg-house').value = house;
-  document.getElementById('reg-token').value = token;
-  document.getElementById('reg-role').value = role;
-}
-
-async function submitRegister() {
-  const code    = document.getElementById('reg-code').value;
-  const house   = document.getElementById('reg-house').value;
-  const token   = document.getElementById('reg-token').value;
-  const role    = document.getElementById('reg-role').value;
-  const name    = document.getElementById('reg-name').value.trim();
-  const address = document.getElementById('reg-address').value.trim();
-  const email   = document.getElementById('reg-email').value.trim();
-  const pin     = document.getElementById('reg-pin').value.trim();
-  const pin2    = document.getElementById('reg-pin2').value.trim();
-
-  if (!name||!address||!email){ toast('⚠️ Completa todos los campos'); return; }
-  if (!pin||pin.length<4){ toast('⚠️ PIN mínimo 4 dígitos'); return; }
-  if (pin!==pin2){ toast('⚠️ Los PINs no coinciden'); return; }
-
-  // Verificar email básico
-  if (!email.includes('@')){ toast('⚠️ Correo electrónico inválido'); return; }
-
-  const c = S.cerradas[code];
-  if (!c) { toast('⚠️ Error: cerrada no encontrada. Pide al admin que reenvíe la invitación.'); return; }
-
-  const resIdx = c.residents.findIndex(r => r.house === house);
-  if (resIdx < 0) { toast('⚠️ Casa no encontrada'); return; }
-  if (c.residents[resIdx].inviteToken !== token) { toast('⚠️ Invitación expirada. Pide al admin una nueva.'); return; }
-
-  // Agregar miembro
-  if (!c.residents[resIdx].members) c.residents[resIdx].members = [];
-  const memberIdx = c.residents[resIdx].members.length;
-  c.residents[resIdx].members.push({
-    name, address, email, role, pin,
-    registeredAt: new Date().toISOString()
-  });
-
-  // Si es el jefe actualizar datos principales
-  if (role === 'head') {
-    c.residents[resIdx].name  = name;
-    c.residents[resIdx].email = email;
-    c.residents[resIdx].pin   = pin;
-  }
-
-  save();
-  if (c.jsonbin?.binId) jbPush(c);
-
-  // Guardar sesión
-  U = { role:'resident', cerradaCode:code, house, memberIdx, memberName:name };
-  localStorage.setItem('cerrada_session', JSON.stringify(U));
-
-  toast('✅ ¡Registro exitoso! Bienvenido a ' + c.name);
-
-  setTimeout(() => {
-    enterRes(c, c.residents[resIdx], c.residents[resIdx].members[memberIdx]);
-  }, 1200);
-}
-
 // ── UTILS
 function calcFin(c){const now=new Date();const mvs=(c.movements||[]).filter(m=>{const d=new Date(m.ts);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});return{income:mvs.filter(m=>m.type==='income').reduce((s,m)=>s+m.amount,0),expense:mvs.filter(m=>m.type==='expense').reduce((s,m)=>s+m.amount,0),mvs};}
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);}
@@ -1405,210 +847,6 @@ function closeModal(id){document.getElementById(id)?.classList.remove('open');}
 function mbg(e,id){if(e.target===document.getElementById(id))closeModal(id);}
 
 load();seedDemo();renderNcP();
-
-// ── INIT: Verificar invitación → Auto Login
-(async function init() {
-
-  // 1. Detectar hash de invitación en la URL — SIEMPRE tiene prioridad
-  const hash = window.location.hash.substring(1);
-  if (hash && hash.includes('invite=')) {
-    const params = new URLSearchParams(hash);
-    const invite = params.get('invite');
-    const code   = params.get('code');
-    const house  = decodeURIComponent(params.get('house') || '');
-
-    // Limpiar hash de URL inmediatamente
-    window.history.replaceState({}, '', window.location.pathname);
-
-    if (invite && code && house) {
-      // Cerrar cualquier sesión activa — la invitación tiene prioridad
-      U = null;
-
-      const c = S.cerradas[code];
-      if (c) {
-        // Cerrada encontrada — intentar pull de JSONBin para datos frescos
-        if (c.jsonbin?.binId) {
-          try {
-            const r = await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}/latest`,
-              {headers:{'X-Master-Key': c.jsonbin.apiKey}});
-            if (r.ok) {
-              const data = await r.json();
-              if (data.record) {
-                const jb = c.jsonbin;
-                Object.assign(c, data.record);
-                c.jsonbin = jb;
-                save();
-              }
-            }
-          } catch(e) {}
-        }
-
-        const res = c.residents.find(r => r.house === house);
-        if (res && res.inviteToken === invite) {
-          const members = res.members || [];
-          if (members.length < 5) {
-            const role = members.length === 0 ? 'head' : 'family';
-            showRegisterScreen(code, house, invite, role);
-            return;
-          } else {
-            // Ya tiene 5 miembros
-            showScreen('login');
-            setTimeout(() => toast('⚠️ Esta casa ya tiene el máximo de miembros'), 500);
-            return;
-          }
-        }
-      }
-
-      // Cerrada no encontrada localmente — guardar y mostrar registro
-      localStorage.setItem('pending_invite', JSON.stringify({invite, code, house}));
-      showRegisterScreenNew(code, house, invite);
-      return;
-    }
-  }
-
-  // 2. Revisar invitación pendiente guardada
-  const _pi = localStorage.getItem('pending_invite');
-  if (_pi) {
-    try {
-      const {invite, code, house} = JSON.parse(_pi);
-      localStorage.removeItem('pending_invite');
-      const c = S.cerradas[code];
-      if (c) {
-        const res = c.residents.find(r => r.house === house);
-        if (res && res.inviteToken === invite) {
-          const members = res.members || [];
-          if (members.length < 5) {
-            showRegisterScreen(code, house, invite, members.length === 0 ? 'head' : 'family');
-            return;
-          }
-        }
-      }
-    } catch(e) { localStorage.removeItem('pending_invite'); }
-  }
-
-  // 3. Auto Login — recordar sesión
-  const saved = localStorage.getItem('cerrada_session');
-  if (!saved) return; // Mostrar login normal
-  try {
-    const sess = JSON.parse(saved);
-    const { role, cerradaCode, house, memberIdx } = sess;
-    if (role === 'master') {
-      U = { role:'master' };
-      showScreen('mst'); renderMstList(); renderNegocio();
-      return;
-    }
-    const c = S.cerradas[cerradaCode];
-    if (!c || c.suspended || !c.active) return;
-    if (role === 'subadmin') {
-      U = { role:'subadmin', cerradaCode };
-      enterAdm(c); return;
-    }
-    if (role === 'resident') {
-      const res = c.residents.find(r => r.house === house);
-      if (!res || !res.active || res.mora) return;
-      const mi = memberIdx !== undefined ? memberIdx : -1;
-      const member = mi >= 0 && res.members ? res.members[mi] : null;
-      U = { role:'resident', cerradaCode, house, memberIdx: mi, memberName: member?.name || res.name };
-      enterRes(c, res, member);
-    }
-  } catch(e) { localStorage.removeItem('cerrada_session'); }
-
-})();
-
-// Pantalla de registro cuando la cerrada no está en localStorage del nuevo usuario
-function showRegisterScreenNew(code, house, token) {
-  showScreen('register');
-  document.getElementById('reg-title').textContent = '👤 Registro de Jefe de Familia';
-  document.getElementById('reg-subtitle').textContent = house;
-  document.getElementById('reg-code').value = code;
-  document.getElementById('reg-house').value = house;
-  document.getElementById('reg-token').value = token;
-  document.getElementById('reg-role').value = 'head';
-  const famInfo = document.getElementById('reg-family-info');
-  if (famInfo) famInfo.style.display = 'block';
-}
-
-// ── PWA INSTALL
-let deferredPrompt = null;
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-
-// Registrar Service Worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/cerradaapp/sw.js').catch(()=>{});
-}
-
-// Limpiar "dismissed" expirado (dura solo 24 horas)
-const _d = localStorage.getItem('pwa-dismissed');
-if (_d && !isNaN(_d) && Date.now() > parseInt(_d)) {
-  localStorage.removeItem('pwa-dismissed');
-}
-
-if (!isStandalone) {
-
-  // ── ANDROID: capturar prompt nativo del navegador
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    if (!localStorage.getItem('pwa-dismissed')) {
-      const btn = document.getElementById('btn-instalar');
-      btn.textContent = '📲 Instalar';
-      btn.onclick = installApp;
-      document.getElementById('install-banner').style.display = 'flex';
-    }
-  });
-
-  // ── ANDROID sin prompt: mostrar banner con instrucciones manuales
-  if (!isIOS) {
-    setTimeout(() => {
-      if (!deferredPrompt && !localStorage.getItem('pwa-dismissed')) {
-        const btn = document.getElementById('btn-instalar');
-        btn.textContent = '📲 Instalar';
-        btn.onclick = () => {
-          document.getElementById('install-banner').style.display = 'none';
-          toast('Toca ⋮ arriba → "Agregar a pantalla de inicio"');
-        };
-        document.getElementById('install-banner').style.display = 'flex';
-      }
-    }, 2500);
-  }
-
-  // ── iOS: mostrar instrucciones
-  if (isIOS && !localStorage.getItem('ios-dismissed')) {
-    setTimeout(() => {
-      document.getElementById('ios-banner').style.display = 'block';
-    }, 2500);
-  }
-}
-
-async function installApp() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    document.getElementById('install-banner').style.display = 'none';
-    if (outcome === 'accepted') toast('🎉 ¡CerradaApp instalada!');
-  } else {
-    document.getElementById('install-banner').style.display = 'none';
-    toast('Toca ⋮ arriba → "Agregar a pantalla de inicio"');
-  }
-}
-
-function dismissInstall() {
-  document.getElementById('install-banner').style.display = 'none';
-  // Expira en 24 horas — volverá a aparecer mañana
-  localStorage.setItem('pwa-dismissed', Date.now() + 24*60*60*1000);
-}
-
-function dismissIOS() {
-  document.getElementById('ios-banner').style.display = 'none';
-  localStorage.setItem('ios-dismissed', '1');
-}
-
-window.addEventListener('appinstalled', () => {
-  toast('🎉 CerradaApp instalada');
-  document.getElementById('install-banner').style.display = 'none';
-});
 </script>
 </body>
 </html>
