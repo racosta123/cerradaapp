@@ -272,12 +272,20 @@ select option{background:var(--sur)}
 
     <!-- SOLO RESIDENTE -->
     <div id="tab-res-only">
-      <label>Código de tu Cerrada</label>
-      <input id="m-code" placeholder="Ej: SMARK-001" oninput="this.value=this.value.toUpperCase()">
-      <label>Tu PIN</label>
-      <input id="m-pin" type="password" placeholder="••••••" maxlength="8">
+      <!-- Si ya tiene sesión entra automático — esto solo aparece si no hay sesión -->
+      <div style="text-align:center;padding:1rem 0">
+        <div style="font-size:2.5rem;margin-bottom:.75rem">🏘️</div>
+        <p style="font-size:.85rem;color:var(--t2);line-height:1.6;margin-bottom:1.25rem">
+          Para acceder necesitas una <b>invitación</b> de tu administrador.<br>
+          Si ya te registraste, la app te entrará automáticamente.
+        </p>
+        <div style="background:var(--blue-lt);border:1.5px solid rgba(59,130,196,.2);
+          border-radius:12px;padding:.85rem;font-size:.78rem;color:var(--blue);text-align:left">
+          <b>¿Primera vez?</b><br>
+          Pide a tu administrador que te envíe la invitación por WhatsApp 📲
+        </div>
+      </div>
       <div class="err" id="m-err"></div>
-      <button class="btn bp" onclick="loginManual()" style="margin-bottom:.75rem">Entrar →</button>
     </div>
 
     <!-- ACCESO DISCRETO PARA ADMIN/MASTER -->
