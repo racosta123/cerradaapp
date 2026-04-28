@@ -288,25 +288,14 @@ select option{background:var(--sur)}
       </span>
     </div>
     <div id="staff-access" style="display:none;margin-top:.75rem">
-      <div style="display:flex;gap:.5rem">
-        <div class="qa-btn adm" onclick="quickLogin('admin')" style="flex:1">
-          <div class="qa-ico">⚙️</div>
-          <div class="qa-lbl">Admin</div>
-        </div>
-        <div class="qa-btn mst" onclick="quickLogin('master')" style="flex:1">
-          <div class="qa-ico">🛡️</div>
-          <div class="qa-lbl">Master</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:.5rem;margin-top:.65rem">
-        <input id="staff-code" placeholder="Código" oninput="this.value=this.value.toUpperCase()" 
-          style="margin:0;flex:1;font-size:.82rem;padding:.5rem .75rem">
-        <input id="staff-pin" type="password" placeholder="PIN" maxlength="8"
-          style="margin:0;width:85px;font-size:.82rem;padding:.5rem .65rem">
-      </div>
-      <button class="btn bg2 wf" onclick="loginStaff()" style="margin-top:.5rem;font-size:.82rem;padding:.55rem">
-        Entrar como Staff →
-      </button>
+      <label>Usuario</label>
+      <input id="staff-user" placeholder="Usuario" autocomplete="off"
+        style="margin-bottom:.6rem">
+      <label>Contraseña</label>
+      <input id="staff-pass" type="password" placeholder="Contraseña" autocomplete="off"
+        style="margin-bottom:.75rem">
+      <div class="err" id="staff-err"></div>
+      <button class="btn bp" onclick="loginStaff()">Entrar →</button>
     </div>
   </div>
 </div>
@@ -772,24 +761,37 @@ function loginManual(){
 }
 
 function loginStaff(){
-  const code=document.getElementById('staff-code').value.trim();
-  const pin=document.getElementById('staff-pin').value.trim();
-  // Master
-  if(!code && pin===S.masterKey){
+  const user = document.getElementById('staff-user').value.trim();
+  const pass = document.getElementById('staff-pass').value.trim();
+  if(!user||!pass){ showStaffErr('Completa usuario y contraseña'); return; }
+
+  // ── MASTER
+  if(user==='Diagonal Catorce' && pass==='250275P'){
     U={role:'master'};
     localStorage.setItem('cerrada_session', JSON.stringify({role:'master'}));
-    showScreen('mst');renderMstList();renderNegocio();return;
+    showScreen('mst');renderMstList();renderNegocio();
+    return;
   }
-  if(!code){showErr('m-err','Ingresa el código.');return;}
-  const c=S.cerradas[code];
-  if(!c){showErr('m-err','Cerrada no encontrada.');return;}
-  if(c.adminPin===pin){
-    if(c.suspended){showErr('m-err','Cerrada suspendida.');return;}
-    U={role:'subadmin',cerradaCode:code};
+
+  // ── ADMIN — buscar cerrada por código
+  if(user==='Administrador' && pass==='Admin4545'){
+    const code = prompt('Ingresa el código de tu cerrada:','SMARK-001');
+    if(!code) return;
+    const cerrada = S.cerradas[code.trim().toUpperCase()];
+    if(!cerrada){ showStaffErr('Cerrada no encontrada'); return; }
+    if(cerrada.suspended){ showStaffErr('Cerrada suspendida por el proveedor'); return; }
+    U={role:'subadmin',cerradaCode:cerrada.code};
     localStorage.setItem('cerrada_session', JSON.stringify(U));
-    enterAdm(c);return;
+    enterAdm(cerrada);
+    return;
   }
-  showErr('m-err','PIN incorrecto.');
+
+  showStaffErr('Usuario o contraseña incorrectos');
+}
+
+function showStaffErr(msg){
+  const el=document.getElementById('staff-err');
+  if(el){el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',3000);}
 }
 
 function toggleStaff(){
