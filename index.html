@@ -1321,6 +1321,10 @@ async function applyMora(){
   const c=C();if(!c)return;
   const r=c.residents[i];
   r.mora=true;r.moraNote=note;r.active=false;
+  // Suspender también a todos los familiares
+  if(r.members && r.members.length > 0){
+    r.members.forEach(m => m.suspended = true);
+  }
   save();
   if(c.jsonbin?.binId){
     setSI('adm','syncing');
@@ -1328,9 +1332,23 @@ async function applyMora(){
     setSI('adm',ok?'ok':'err');
   }
   closeModal('modal-mora');renderVec();updateDash();
-  toast('🔒 Suspendido por mora — sincronizado');
+  toast('🔒 Suspendido por mora — familiares también suspendidos');
 }
-async function quitarMora(i){const c=C();if(!c)return;const r=c.residents[i];r.mora=false;r.moraNote='';r.active=true;save();push('adm');renderVec();updateDash();toast('✅ Mora levantada');}
+async function quitarMora(i){
+  const c=C();if(!c)return;
+  const r=c.residents[i];
+  r.mora=false;r.moraNote='';r.active=true;
+  // Reactivar también a todos los familiares
+  if(r.members && r.members.length > 0){
+    r.members.forEach(m => m.suspended = false);
+  }
+  save();
+  setSI('adm','syncing');
+  const ok=await jbPush(c);
+  setSI('adm',ok?'ok':'err');
+  renderVec();updateDash();
+  toast('✅ Mora levantada — acceso restaurado para toda la familia');
+}
 function renderAdmHist(){const c=C();if(!c)return;const hist=(c.history||[]).slice(-80).reverse();const list=document.getElementById('adm-hist');if(!hist.length){list.innerHTML=emH('📋','Sin registros');return;}const res=c.residents||[];list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who = h.who || (r?r.name:''); return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${who?' — 👤 '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
 async function clearHist(){const c=C();if(!c)return;if(!confirm('¿Limpiar historial?'))return;c.history=[];save();push('adm');renderAdmHist();updateDash();toast('🗑 Limpiado');}
 function renderAdmFin(){const c=C();if(!c)return;const{mvs}=calcFin(c);const list=document.getElementById('adm-fin-list');if(!mvs.length){list.innerHTML=emH('💰','Sin movimientos');return;}list.innerHTML=mvs.slice(-60).reverse().map(m=>`<div class="hi"><div class="hd" style="background:${m.type==='income'?'var(--green)':'var(--rose)'}"></div><div class="hinfo"><div class="hdesc">${esc(m.category)}${m.desc?' — '+esc(m.desc):''}</div><div class="htime">${fd(m.ts)}</div></div><span style="font-size:.76rem;font-weight:700;color:${m.type==='income'?'var(--green)':'var(--rose)'}">${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}</span></div>`).join('');}
