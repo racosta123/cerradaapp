@@ -406,11 +406,11 @@ select option{background:var(--sur)}
   </div>
   <div class="content">
     <div id="rp-portones" class="panel on">
-      <p style="font-size:.76rem;color:var(--t2);margin-bottom:.8rem;font-weight:600">Mantén presionado 1 segundo para abrir 🔓</p>
+      <p style="font-size:.76rem;color:var(--t2);margin-bottom:.8rem;font-weight:600">Mantén presionado ½ segundo para abrir 🔓</p>
       <div id="gate-res" class="gate-grid g1"></div>
       <!-- Botón invitar familiares (solo para jefe de familia) -->
-      <div id="res-invite-btn" style="display:none;margin-top:.5rem">
-        <button class="btn bb2 wf" onclick="invitarFamiliar()" style="font-size:.82rem">
+      <div id="res-invite-btn" style="display:none;margin-top:.6rem">
+        <button class="btn bb2" onclick="invitarFamiliar()" style="font-size:.82rem;width:100%">
           👨‍👩‍👧 Invitar familiar a mi casa
         </button>
         <div id="res-members-list" style="margin-top:.6rem"></div>
@@ -1092,7 +1092,7 @@ function renderGates(c,role,cid){
       onmousedown="gS('${p.id}','${role}')" onmouseup="gE('${p.id}')" onmouseleave="gE('${p.id}')"
       ontouchstart="gS('${p.id}','${role}')" ontouchend="gE('${p.id}')">
       <div class="gico-wrap">${p.icon||'🚪'}</div>
-      <div class="gbtn-info"><div class="glbl">${esc(p.label)}</div><div class="ghint">Mantén presionado 1 segundo</div></div>
+      <div class="gbtn-info"><div class="glbl">${esc(p.label)}</div><div class="ghint">Mantén ½ segundo para abrir</div></div>
       <div class="gbtn-arrow">›</div>
       <div class="gprog" id="gprog-${p.id}"></div>
     </div>`).join('');
@@ -1102,7 +1102,7 @@ function renderResFin(c){const{income,expense,mvs}=calcFin(c);document.getElemen
 function renderResHist(c){const hist=(c.history||[]).filter(h=>h.house===U?.house).slice(-30).reverse();const list=document.getElementById('rh-list');if(!hist.length){list.innerHTML=emH('📋','Sin registros aún');return;}list.innerHTML=hist.map(h=>`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label||h.portonId)}</div><div class="htime">${fd(h.ts)}</div></div></div>`).join('');}
 
 // ── GATE HOLD — Sistema estable
-const HOLD=1000;
+const HOLD=500;
 let gT={};
 let gActive={};
 
