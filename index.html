@@ -2002,9 +2002,27 @@ load();seedDemo();renderNcP();
         showScreen('susp');
         return;
       }
-      const mi = memberIdx !== undefined ? memberIdx : -1;
-      const member = mi >= 0 && res.members ? res.members[mi] : null;
-      U = { role:'resident', cerradaCode, house, memberIdx: mi, memberName: member?.name || res.name };
+      // Buscar miembro por email (más confiable que por índice)
+      const savedEmail = sess.email;
+      let mi = memberIdx !== undefined ? memberIdx : -1;
+      let member = null;
+      if (savedEmail && res.members) {
+        const emailIdx = res.members.findIndex(m => m.email === savedEmail);
+        if (emailIdx >= 0) {
+          mi = emailIdx;
+          member = res.members[emailIdx];
+          // Verificar si el familiar está suspendido
+          if (member.suspended) {
+            localStorage.removeItem('cerrada_session');
+            document.getElementById('susp-msg').textContent = 'Tu acceso fue suspendido. Contacta al administrador.';
+            showScreen('susp');
+            return;
+          }
+        }
+      } else if (mi >= 0 && res.members) {
+        member = res.members[mi];
+      }
+      U = { role:'resident', cerradaCode, house, memberIdx: mi, memberName: member?.name || res.name, email: savedEmail };
       enterRes(c, res, member);
     }
   } catch(e) { localStorage.removeItem('cerrada_session'); }

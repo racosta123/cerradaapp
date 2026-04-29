@@ -293,11 +293,12 @@ async function submitRegister() {
       password: pass
     };
 
-    // Guardar también los datos de la cerrada para que la app los tenga
-    const SK = 'cerradaapp_v3';
+    // Guardar datos de la cerrada actualizada en localStorage de la app
+    const SK = 'cerradaapp_v4';
     let appState = {};
     try { appState = JSON.parse(localStorage.getItem(SK) || '{}'); } catch(e) {}
     if (!appState.cerradas) appState.cerradas = {};
+    // Guardar cerrada con jsonbin config
     appState.cerradas[cerradaData.code] = cerradaData;
     localStorage.setItem(SK, JSON.stringify(appState));
     localStorage.setItem('cerrada_session', JSON.stringify(session));
