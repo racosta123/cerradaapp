@@ -1213,24 +1213,21 @@ async function openPorton(pid,role){
   if(role==='res')renderResHist(c);
 }
 
-// ── SHELLY CLOUD CONTROL
-async function shellyOpen(pt) {
+// ── SHELLY CLOUD CONTROL — Optimizado para máxima velocidad
+function shellyOpen(pt) {
   const SERVER  = 'shelly-258-eu.shelly.cloud';
   const AUTH    = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388D6B4B15BC5295B801F11A2A689C37770CE435132';
   const DEVICE  = pt.shellyId || 'e4b063eb85a4';
   const SECONDS = pt.time || 5;
 
-  // Usamos no-cors para evitar bloqueo CORS del navegador
-  // La petición se envía pero no podemos leer la respuesta — el Shelly igual la ejecuta
-  const sendCmd = (turn) => fetch(`https://${SERVER}/device/relay/control`, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-    body: `id=${DEVICE}&auth_key=${AUTH}&channel=0&turn=${turn}`
-  }).catch(e => console.warn('Shelly:', e));
+  // Usar imagen invisible para evitar CORS y ser más rápido que fetch
+  const sendCmd = (turn) => {
+    const img = new Image();
+    img.src = `https://${SERVER}/device/relay/control?id=${DEVICE}&auth_key=${AUTH}&channel=0&turn=${turn}&_=${Date.now()}`;
+  };
 
-  // Encender
-  await sendCmd('on');
+  // Encender inmediatamente
+  sendCmd('on');
 
   // Apagar después del tiempo configurado
   setTimeout(() => sendCmd('off'), SECONDS * 1000);
