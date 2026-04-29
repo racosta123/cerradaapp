@@ -495,18 +495,67 @@ select option{background:var(--sur)}
       <div id="adm-hist"><div class="empty"><div class="empty-ico">📋</div>Sin registros</div></div>
     </div>
     <div id="ap-finanzas" class="panel">
-      <div class="card"><div class="ch"><div class="ct">Registrar Movimiento</div></div>
+
+      <!-- BALANCE ACUMULADO -->
+      <div style="background:linear-gradient(135deg,#1a4a7a,#2d6aad);border-radius:var(--rad);padding:1.1rem;margin-bottom:.85rem;color:#fff">
+        <div style="font-size:.72rem;opacity:.8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.35rem">Balance Acumulado</div>
+        <div style="font-family:var(--fd);font-size:2rem;font-weight:900" id="fn-balance-total">$0.00</div>
+        <div style="font-size:.72rem;opacity:.75;margin-top:.25rem" id="fn-balance-sub">Calculando...</div>
+      </div>
+
+      <!-- RESUMEN MES ACTUAL -->
+      <div class="fbar" style="margin-bottom:.85rem">
+        <div class="fc"><div class="fl">Ingresos</div><div class="fv fi" id="fn-mes-i">$0</div></div>
+        <div class="fc"><div class="fl">Gastos</div><div class="fv fe" id="fn-mes-e">$0</div></div>
+        <div class="fc"><div class="fl">Este Mes</div><div class="fv fb2" id="fn-mes-b">$0</div></div>
+      </div>
+
+      <!-- REGISTRAR MOVIMIENTO -->
+      <div class="card">
+        <div class="ch"><div class="ct">Registrar Movimiento</div></div>
         <div class="frow">
-          <div><label>Tipo</label><select id="fn-t"><option value="income">+ Ingreso</option><option value="expense">- Gasto</option></select></div>
-          <div><label>Monto ($)</label><input id="fn-a" type="number" placeholder="0.00" min="0"></div>
+          <div>
+            <label>Tipo</label>
+            <select id="fn-t" onchange="updateFnColor(this)">
+              <option value="income">+ Ingreso</option>
+              <option value="expense">- Gasto</option>
+            </select>
+          </div>
+          <div>
+            <label>Monto ($)</label>
+            <input id="fn-a" type="number" placeholder="0.00" min="0" step="0.01">
+          </div>
         </div>
         <label>Categoría</label>
-        <select id="fn-c"><option>Cuota mensual</option><option>Mantenimiento</option><option>Limpieza</option><option>Seguridad</option><option>Servicios</option><option>Reparaciones</option><option>Otro</option></select>
-        <label>Descripción</label><input id="fn-d" placeholder="Descripción del movimiento">
+        <select id="fn-c">
+          <option>Cuota mensual</option>
+          <option>Cuota atrasada</option>
+          <option>Mantenimiento</option>
+          <option>Jardinería</option>
+          <option>Limpieza</option>
+          <option>Seguridad</option>
+          <option>Pintura</option>
+          <option>Servicios</option>
+          <option>Reparaciones</option>
+          <option>Portón</option>
+          <option>Otro</option>
+        </select>
+        <label>Descripción (opcional)</label>
+        <input id="fn-d" placeholder="Ej: Mensualidad enero — Casa 5">
         <button class="btn bp" onclick="addMov()">+ Registrar</button>
       </div>
-      <div class="sh"><h3>Movimientos</h3><button class="btn bg2 sm" onclick="genPDF()">📄 Reporte PDF</button></div>
+
+      <!-- MOVIMIENTOS MES ACTUAL -->
+      <div class="sh">
+        <h3 id="fn-mes-titulo">Movimientos del Mes</h3>
+        <button class="btn bg2 sm" onclick="genPDF()">📄 PDF</button>
+      </div>
       <div id="adm-fin-list"><div class="empty"><div class="empty-ico">💰</div>Sin movimientos</div></div>
+
+      <!-- HISTORIAL MESES ANTERIORES -->
+      <div class="sh" style="margin-top:1rem"><h3>Historial de Meses</h3></div>
+      <div id="fn-historial"></div>
+
     </div>
     <div id="ap-cuotas" class="panel">
       <!-- RESUMEN DE CUOTAS -->
@@ -958,7 +1007,7 @@ function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classL
 function setPanels(pre,list,act){list.forEach(p=>{const el=document.getElementById(pre+p);if(el)el.classList.toggle('on',p===act);});}
 function setTabs(scope,el){document.querySelectorAll(scope+' .ntab').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
 function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);setTabs('#scr-res',el);const c=C();if(!c)return;if(id==='finanzas'){renderResFin(c);renderMiCuenta(c,U?.house);}if(id==='historial')renderResHist(c);}
-function admP(id,el){setPanels('ap-',['dashboard','vecinos','historial','finanzas','portones','config'],id);setTabs('#scr-adm',el);const c=C();if(!c)return;if(id==='dashboard')updateDash();if(id==='vecinos')renderVec();if(id==='historial')renderAdmHist();if(id==='finanzas')renderAdmFin();if(id==='cuotas')initCuotasMes();if(id==='portones')renderAdmPortones();if(id==='config')loadCfg();}
+function admP(id,el){setPanels('ap-',['dashboard','vecinos','historial','finanzas','portones','config'],id);setTabs('#scr-adm',el);const c=C();if(!c)return;if(id==='dashboard')updateDash();if(id==='vecinos')renderVec();if(id==='historial')renderAdmHist();if(id==='finanzas'){renderAdmFin();}if(id==='cuotas')initCuotasMes();if(id==='portones')renderAdmPortones();if(id==='config')loadCfg();}
 function mstP(id,el){setPanels('mp-',['cerradas','negocio','config'],id);setTabs('#scr-mst',el);if(id==='cerradas')renderMstList();if(id==='negocio')renderNegocio();if(id==='config'){document.getElementById('mc-price').value=S.defaultPrice;populateMstJsonbinSelect();}}
 
 // ── RESIDENT
@@ -1351,8 +1400,169 @@ async function quitarMora(i){
 }
 function renderAdmHist(){const c=C();if(!c)return;const hist=(c.history||[]).slice(-80).reverse();const list=document.getElementById('adm-hist');if(!hist.length){list.innerHTML=emH('📋','Sin registros');return;}const res=c.residents||[];list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who = h.who || (r?r.name:''); return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${who?' — 👤 '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
 async function clearHist(){const c=C();if(!c)return;if(!confirm('¿Limpiar historial?'))return;c.history=[];save();push('adm');renderAdmHist();updateDash();toast('🗑 Limpiado');}
-function renderAdmFin(){const c=C();if(!c)return;const{mvs}=calcFin(c);const list=document.getElementById('adm-fin-list');if(!mvs.length){list.innerHTML=emH('💰','Sin movimientos');return;}list.innerHTML=mvs.slice(-60).reverse().map(m=>`<div class="hi"><div class="hd" style="background:${m.type==='income'?'var(--green)':'var(--rose)'}"></div><div class="hinfo"><div class="hdesc">${esc(m.category)}${m.desc?' — '+esc(m.desc):''}</div><div class="htime">${fd(m.ts)}</div></div><span style="font-size:.76rem;font-weight:700;color:${m.type==='income'?'var(--green)':'var(--rose)'}">${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}</span></div>`).join('');}
-async function addMov(){const c=C();if(!c)return;const type=document.getElementById('fn-t').value,amount=parseFloat(document.getElementById('fn-a').value),cat=document.getElementById('fn-c').value,desc=document.getElementById('fn-d').value.trim();if(!amount||isNaN(amount)){toast('⚠️ Monto inválido');return;}if(!c.movements)c.movements=[];c.movements.push({ts:new Date().toISOString(),type,amount,category:cat,desc});save();push('adm');renderAdmFin();updateDash();document.getElementById('fn-a').value='';document.getElementById('fn-d').value='';toast('✅ Registrado');}
+function renderAdmFin(){
+  const c=C();if(!c)return;
+  const now=new Date();
+  const mesKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const mesLabel=now.toLocaleString('es',{month:'long',year:'numeric'});
+
+  // Calcular balance acumulado total (todos los movimientos)
+  const allMovs=c.movements||[];
+  const totalIncome=allMovs.filter(m=>m.type==='income').reduce((s,m)=>s+m.amount,0);
+  const totalExpense=allMovs.filter(m=>m.type==='expense').reduce((s,m)=>s+m.amount,0);
+  const balanceTotal=totalIncome-totalExpense;
+
+  // Mostrar balance acumulado
+  const balEl=document.getElementById('fn-balance-total');
+  if(balEl){
+    balEl.textContent='$'+balanceTotal.toFixed(2);
+    balEl.style.color=balanceTotal>=0?'#fff':'#ffaaaa';
+  }
+  const subEl=document.getElementById('fn-balance-sub');
+  if(subEl) subEl.textContent=`Total ingresos: $${totalIncome.toFixed(2)} · Total gastos: $${totalExpense.toFixed(2)}`;
+
+  // Mes actual
+  const{income,expense,mvs}=calcFin(c);
+  const mesBalance=income-expense;
+
+  const tiEl=document.getElementById('fn-mes-titulo');
+  if(tiEl) tiEl.textContent=`Movimientos — ${mesLabel.charAt(0).toUpperCase()+mesLabel.slice(1)}`;
+
+  const miEl=document.getElementById('fn-mes-i');if(miEl)miEl.textContent='$'+income.toFixed(2);
+  const meEl=document.getElementById('fn-mes-e');if(meEl)meEl.textContent='$'+expense.toFixed(2);
+  const mbEl=document.getElementById('fn-mes-b');
+  if(mbEl){mbEl.textContent='$'+mesBalance.toFixed(2);mbEl.style.color=mesBalance>=0?'var(--green)':'var(--rose)';}
+
+  // Lista mes actual
+  const list=document.getElementById('adm-fin-list');
+  if(!mvs.length){
+    list.innerHTML=emH('💰','Sin movimientos este mes');
+  } else {
+    list.innerHTML=`<div class="card" style="padding:.75rem">
+      ${mvs.slice().reverse().map((m,idx)=>`
+        <div class="hi" style="position:relative">
+          <div class="hd" style="background:${m.type==='income'?'var(--green)':'var(--rose)'}"></div>
+          <div class="hinfo">
+            <div class="hdesc">${esc(m.category)}${m.desc?' — '+esc(m.desc):''}</div>
+            <div class="htime">${fd(m.ts)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:.4rem">
+            <span style="font-size:.8rem;font-weight:800;color:${m.type==='income'?'var(--green)':'var(--rose)'}">
+              ${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}
+            </span>
+            <button onclick="delMov('${m.id||idx}')" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:.85rem;padding:.1rem .3rem">✕</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  // Historial meses anteriores
+  renderFinHistorial(c);
+}
+
+function renderFinHistorial(c){
+  const list=document.getElementById('fn-historial');
+  if(!list)return;
+  const now=new Date();
+  const meses=[];
+  for(let i=1;i<=5;i++){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    meses.push({
+      key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,
+      label:d.toLocaleString('es',{month:'long',year:'numeric'})
+    });
+  }
+
+  const movs=c.movements||[];
+  let html='';
+  let balanceAcum=0;
+
+  // Calcular balance acumulado hasta antes del mes más antiguo
+  // (de más antiguo a más reciente)
+  const mesesConDatos=meses.filter(mes=>
+    movs.some(m=>m.ts&&m.ts.startsWith(mes.key))
+  );
+
+  mesesConDatos.forEach(mes=>{
+    const mvsMes=movs.filter(m=>m.ts&&m.ts.startsWith(mes.key));
+    const inc=mvsMes.filter(m=>m.type==='income').reduce((s,m)=>s+m.amount,0);
+    const exp=mvsMes.filter(m=>m.type==='expense').reduce((s,m)=>s+m.amount,0);
+    const bal=inc-exp;
+
+    html+=`
+    <div class="card" style="margin-bottom:.6rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
+        <span style="font-family:var(--fd);font-size:.88rem;font-weight:800;color:var(--t);text-transform:capitalize">${mes.label}</span>
+        <span style="font-family:var(--fd);font-size:.9rem;font-weight:800;color:${bal>=0?'var(--green)':'var(--rose)'}">
+          ${bal>=0?'+':''}$${bal.toFixed(2)}
+        </span>
+      </div>
+      <div class="fbar" style="margin-bottom:${mvsMes.length?'.65rem':'0'}">
+        <div class="fc"><div class="fl">Ingresos</div><div class="fv fi" style="font-size:.85rem">$${inc.toFixed(2)}</div></div>
+        <div class="fc"><div class="fl">Gastos</div><div class="fv fe" style="font-size:.85rem">$${exp.toFixed(2)}</div></div>
+        <div class="fc"><div class="fl">Balance</div><div class="fv" style="font-size:.85rem;color:${bal>=0?'var(--green)':'var(--rose)'}">$${bal.toFixed(2)}</div></div>
+      </div>
+      ${mvsMes.length?`
+        <details>
+          <summary style="font-size:.75rem;color:var(--t2);cursor:pointer;padding:.2rem 0">Ver ${mvsMes.length} movimiento${mvsMes.length!==1?'s':''}</summary>
+          <div style="margin-top:.5rem">
+            ${mvsMes.slice().reverse().map(m=>`
+              <div class="hi">
+                <div class="hd" style="background:${m.type==='income'?'var(--green)':'var(--rose)'}"></div>
+                <div class="hinfo">
+                  <div class="hdesc">${esc(m.category)}${m.desc?' — '+esc(m.desc):''}</div>
+                  <div class="htime">${fd(m.ts)}</div>
+                </div>
+                <span style="font-size:.76rem;font-weight:700;color:${m.type==='income'?'var(--green)':'var(--rose)'}">
+                  ${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}
+                </span>
+              </div>`).join('')}
+          </div>
+        </details>`:''}
+    </div>`;
+  });
+
+  if(!html) html=emH('📅','Sin historial de meses anteriores');
+  list.innerHTML=html;
+}
+
+async function delMov(id){
+  const c=C();if(!c)return;
+  if(!confirm('¿Eliminar este movimiento?'))return;
+  c.movements=c.movements.filter((m,i)=>(m.id||String(i))!==String(id));
+  save();
+  setSI('adm','syncing');
+  const ok=await jbPush(c);
+  setSI('adm',ok?'ok':'err');
+  renderAdmFin();updateDash();
+  toast('🗑 Movimiento eliminado');
+}
+
+function updateFnColor(sel){
+  sel.style.color=sel.value==='income'?'var(--green)':'var(--rose)';
+}
+async function addMov(){
+  const c=C();if(!c)return;
+  const type=document.getElementById('fn-t').value;
+  const amount=parseFloat(document.getElementById('fn-a').value);
+  const cat=document.getElementById('fn-c').value;
+  const desc=document.getElementById('fn-d').value.trim();
+  if(!amount||isNaN(amount)||amount<=0){toast('⚠️ Ingresa un monto válido');return;}
+  if(!c.movements)c.movements=[];
+  c.movements.push({
+    id:'mov-'+Date.now(),
+    ts:new Date().toISOString(),
+    type,amount,category:cat,desc
+  });
+  save();
+  setSI('adm','syncing');
+  const ok=await jbPush(c);
+  setSI('adm',ok?'ok':'err');
+  renderAdmFin();updateDash();
+  document.getElementById('fn-a').value='';
+  document.getElementById('fn-d').value='';
+  toast(type==='income'?'✅ Ingreso registrado':'✅ Gasto registrado');
+}
 function renderAdmPortones(){
   const c=C();if(!c)return;
   renderGates(c,'test','gate-test');
