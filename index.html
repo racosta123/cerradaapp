@@ -815,9 +815,69 @@ function quickLogin(role){
   }
 }
 
+function showResInviteMsg(){
+  document.getElementById('res-login-form').style.display='none';
+  document.getElementById('res-invite-msg').style.display='block';
+}
+
+async function loginResidente(){
+  const email = document.getElementById('r-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('r-pass').value;
+  if(!email||!pass){showErr('m-err','Ingresa tu correo y contraseña.');return;}
+
+  const KNOWN_BINS={'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
+
+  // Función para buscar en cerradas cargadas
+  function buscarEnCerradas(){
+    for(const cerrada of Object.values(S.cerradas)){
+      if(cerrada.suspended||!cerrada.active) continue;
+      for(const res of cerrada.residents||[]){
+        if(res.email===email && res.password===pass) return {cerrada,res,member:null,mi:-1};
+        for(let mi=0;mi<(res.members||[]).length;mi++){
+          const m=res.members[mi];
+          if(m.email===email && m.password===pass) return {cerrada,res,member:m,mi};
+        }
+      }
+    }
+    return null;
+  }
+
+  // Buscar primero en local
+  let found = buscarEnCerradas();
+
+  // Si no encontró, descargar desde JSONBin
+  if(!found){
+    toast('🔄 Verificando...');
+    for(const [code,cfg] of Object.entries(KNOWN_BINS)){
+      try{
+        const r=await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}/latest`,{headers:{'X-Master-Key':cfg.apiKey}});
+        if(r.ok){const data=await r.json();if(data.record){S.cerradas[code]=data.record;S.cerradas[code].jsonbin=cfg;}}
+      }catch(e){}
+    }
+    save();
+    found = buscarEnCerradas();
+  }
+
+  if(!found){showErr('m-err','Correo o contraseña incorrectos.');return;}
+
+  const {cerrada,res,member,mi} = found;
+  if(!res.active||res.mora){
+    document.getElementById('susp-msg').textContent=res.mora?`Acceso suspendido por mora. ${res.moraNote||''}`:'Tu acceso fue suspendido.';
+    showScreen('susp');return;
+  }
+  if(member?.suspended){
+    document.getElementById('susp-msg').textContent='Tu acceso fue suspendido. Contacta al administrador.';
+    showScreen('susp');return;
+  }
+
+  U={role:'resident',cerradaCode:cerrada.code,house:res.house,memberIdx:mi,memberName:member?.name||res.name,email};
+  localStorage.setItem('cerrada_session',JSON.stringify(U));
+  enterRes(cerrada,res,member);
+}
+
 function loginManual(){
-  const code=document.getElementById('m-code').value.trim();
-  const pin=document.getElementById('m-pin').value.trim();
+  const code=document.getElementById('m-code')?.value.trim();
+  const pin=document.getElementById('m-pin')?.value.trim();
   if(!code){showErr('m-err','Ingresa el código de tu cerrada.');return;}
   const c=S.cerradas[code];
   if(!c){showErr('m-err','Cerrada no encontrada.');return;}
@@ -829,7 +889,7 @@ function loginManual(){
     showScreen('susp');return;
   }
   U={role:'resident',cerradaCode:code,house:res.house,memberIdx:-1,memberName:res.name};
-  localStorage.setItem('cerrada_session', JSON.stringify(U));
+  localStorage.setItem('cerrada_session',JSON.stringify(U));
   enterRes(c,res,null);
 }
 
