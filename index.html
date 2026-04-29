@@ -956,12 +956,17 @@ function invitarFamiliar() {
   const inviteUrl = `https://racosta123.github.io/cerradaapp/?reg=${payload}`;
   const msg = `🏘️ *${c.name}*
 
-Hola, te invito a registrarte como familiar en *${res.house}*.
+Hola, te invitan a acceder al portón de *${res.house}*.
 
-📲 Regístrate aquí:
-${inviteUrl}
+*Para registrarte:*
 
-_Al registrarte podrás abrir el portón desde tu celular._`;
+1️⃣ Mantén presionado el link
+2️⃣ Selecciona *"Abrir en Chrome"* ⚠️
+3️⃣ Llena el formulario
+
+🔗 ${inviteUrl}
+
+_Abre el link en Chrome, no en la app instalada._`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   toast('📲 Abriendo WhatsApp...');
 }
@@ -1432,16 +1437,25 @@ function sendInvite(i) {
     binId: c.jsonbin?.binId || '',
     apiKey: c.jsonbin?.apiKey || ''
   })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
+  // Forzar apertura en navegador (no en PWA instalada)
+  // En Android usa intent://, en iOS usa el link normal
   const inviteUrl = `${baseUrl}?reg=${payload}`;
+  // Versión para forzar Chrome en Android:
+  // const intentUrl = `intent://racosta123.github.io/cerradaapp/?reg=${payload}#Intent;scheme=https;package=com.android.chrome;end`;
 
   const msg = `🏘️ *${c.name}*
 
-Hola, tienes acceso al control de acceso de tu residencia.
+Hola ${res.name}, ya tienes acceso al portón de tu residencia.
 
-📲 Regístrate aquí:
-${inviteUrl}
+*Para registrarte sigue estos pasos:*
 
-_Al registrarte podrás abrir el portón desde tu celular._`;
+1️⃣ Mantén presionado el link de abajo
+2️⃣ Selecciona *"Abrir en Chrome"* (importante ⚠️)
+3️⃣ Llena el formulario y crea tu contraseña
+
+🔗 ${inviteUrl}
+
+_Si ya tienes la app instalada, abre el link en Chrome, NO en la app._`;
   const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
   window.open(waUrl, '_blank');
 }
@@ -1920,13 +1934,23 @@ load();seedDemo();renderNcP();
   }
 
   // 2. Revisar invitación pendiente guardada
+  // También verificar sessionStorage (más rápido que localStorage para el SW)
+  const _piSession = sessionStorage.getItem('pending_invite');
+  if (_piSession) {
+    try {
+      const payload = JSON.parse(_piSession);
+      sessionStorage.removeItem('pending_invite');
+      await showRegisterFromPayload(payload);
+      return;
+    } catch(e) {}
+  }
+
   const _pi = localStorage.getItem('pending_invite');
   if (_pi) {
     try {
       const payload = JSON.parse(_pi);
       localStorage.removeItem('pending_invite');
-      if (payload.binId) {
-        // Nuevo formato con payload completo
+      if (payload.binId || payload.code) {
         await showRegisterFromPayload(payload);
         return;
       } else {
