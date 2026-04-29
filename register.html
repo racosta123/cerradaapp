@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>CerradaApp — Registro</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:linear-gradient(155deg,#c5dcf5 0%,#daeef8 40%,#fef6dc 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.card{width:100%;max-width:400px;background:#fff;border-radius:24px;padding:2rem 1.75rem;box-shadow:0 8px 40px rgba(59,130,196,.15)}
+.brand{text-align:center;margin-bottom:1.5rem}
+.brand-ico{width:56px;height:56px;background:linear-gradient(135deg,#3B82C4,#5BADE0);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;font-size:1.5rem;box-shadow:0 6px 20px rgba(59,130,196,.3)}
+.brand h1{font-size:1.5rem;font-weight:900;color:#3B82C4}
+.brand p{font-size:.8rem;color:#5A6A82;margin-top:.2rem}
+.subtitle{background:#EBF4FF;border:1.5px solid rgba(59,130,196,.2);border-radius:10px;padding:.75rem 1rem;font-size:.82rem;color:#1A2640;margin-bottom:1.25rem;text-align:center;font-weight:600}
+label{display:block;font-size:.71rem;font-weight:700;color:#5A6A82;margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.5px}
+input{width:100%;background:#F5F8FC;border:1.5px solid #DDE4EF;border-radius:10px;padding:.65rem .9rem;color:#1A2640;font-family:'Nunito',sans-serif;font-size:.9rem;margin-bottom:.85rem;outline:none;-webkit-appearance:none}
+input:focus{border-color:#3B82C4;box-shadow:0 0 0 3px rgba(59,130,196,.1);background:#fff}
+.btn{width:100%;background:#3B82C4;color:#fff;border:none;border-radius:10px;padding:.75rem;font-family:'Nunito',sans-serif;font-weight:800;font-size:.95rem;cursor:pointer;margin-bottom:.75rem;transition:all .18s}
+.btn:hover{background:#2d6aad;transform:translateY(-1px)}
+.btn:active{transform:scale(.98)}
+.btn:disabled{background:#9BAABB;cursor:not-allowed;transform:none}
+.err{background:#FEF0F0;border:1.5px solid #f0a0a0;color:#b02020;padding:.55rem .9rem;border-radius:8px;font-size:.79rem;margin-bottom:.85rem;display:none;font-weight:600}
+.success{display:none;text-align:center;padding:1rem}
+.success-ico{font-size:3rem;margin-bottom:.75rem}
+.success h2{font-size:1.25rem;font-weight:900;color:#3BBF6E;margin-bottom:.5rem}
+.success p{font-size:.83rem;color:#5A6A82;line-height:1.6;margin-bottom:1.25rem}
+.btn-app{display:block;background:#3BBF6E;color:#fff;border:none;border-radius:10px;padding:.75rem;font-family:'Nunito',sans-serif;font-weight:800;font-size:.95rem;cursor:pointer;text-align:center;text-decoration:none;transition:all .18s}
+.btn-app:hover{background:#22a355}
+.loading{display:none;text-align:center;padding:2rem}
+.spinner{width:40px;height:40px;border:3px solid #DDE4EF;border-top-color:#3B82C4;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.family-info{background:#E8F8EE;border:1.5px solid rgba(59,191,110,.2);border-radius:12px;padding:.85rem;text-align:center;margin-top:.5rem;display:none}
+.family-info p{font-size:.76rem;color:#1A2640;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p style="color:#5A6A82;font-size:.85rem">Verificando invitación...</p>
+  </div>
+
+  <!-- ERROR -->
+  <div id="error-view" style="display:none;text-align:center;padding:1rem">
+    <div style="font-size:2.5rem;margin-bottom:.75rem">⚠️</div>
+    <h2 style="font-size:1.1rem;font-weight:900;color:#E86060;margin-bottom:.5rem">Invitación no válida</h2>
+    <p style="font-size:.82rem;color:#5A6A82;line-height:1.6" id="error-msg">Pide a tu administrador que reenvíe la invitación.</p>
+  </div>
+
+  <!-- FORMULARIO -->
+  <div id="form-view" style="display:none">
+    <div class="brand">
+      <div class="brand-ico">🏘️</div>
+      <h1>CerradaApp</h1>
+      <p>Registro de Residente</p>
+    </div>
+    <div class="subtitle" id="form-subtitle">Casa · Cerrada</div>
+    <div class="err" id="form-err"></div>
+
+    <label>Nombre completo</label>
+    <input id="f-name" placeholder="Juan Pérez García" autocomplete="name">
+
+    <label>Domicilio dentro de la cerrada</label>
+    <input id="f-address" placeholder="Casa 5, interior 2">
+
+    <label>Correo electrónico</label>
+    <input id="f-email" type="email" placeholder="juan@correo.com" autocomplete="email">
+
+    <label>Crea tu contraseña</label>
+    <input id="f-pass" type="password" placeholder="Mínimo 6 caracteres">
+
+    <label>Confirma tu contraseña</label>
+    <input id="f-pass2" type="password" placeholder="Repite la contraseña">
+
+    <button class="btn" id="btn-register" onclick="submitRegister()">✓ Registrarme y Entrar</button>
+
+    <p style="text-align:center;font-size:.71rem;color:#9BAABB;line-height:1.5">
+      Tu correo y contraseña te permitirán entrar si desinstallas la app.
+    </p>
+
+    <div class="family-info" id="family-info">
+      <p>👨‍👩‍👧‍👦 <b>Después de registrarte</b> podrás invitar hasta 4 familiares desde la app.</p>
+    </div>
+  </div>
+
+  <!-- ÉXITO -->
+  <div class="success" id="success-view">
+    <div class="success-ico">🎉</div>
+    <h2>¡Registro exitoso!</h2>
+    <p>Ya estás registrado en <b id="s-cerrada"></b>.<br>Ahora abre la app para controlar el portón.</p>
+    <a href="https://racosta123.github.io/cerradaapp/" class="btn-app">🏘️ Abrir CerradaApp</a>
+  </div>
+
+</div>
+
+<script>
+const BIN_ID  = '69f0a4b9856a6821898101f0';
+const API_KEY = '$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y';
+const APP_URL = 'https://racosta123.github.io/cerradaapp/';
+
+let cerradaData = null;
+let residenteIdx = -1;
+let invitePayload = null;
+
+function show(id) {
+  ['loading','error-view','form-view','success-view'].forEach(v => {
+    document.getElementById(v).style.display = v === id ? (v==='form-view'?'block':'block') : 'none';
+  });
+}
+
+function showErr(msg) {
+  const el = document.getElementById('form-err');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+
+async function init() {
+  show('loading');
+
+  // Leer ?reg= del URL
+  const params = new URLSearchParams(window.location.search);
+  const regParam = params.get('reg');
+
+  if (!regParam) {
+    document.getElementById('error-msg').textContent = 'No se encontró información de invitación. Usa el link original de WhatsApp.';
+    show('error-view');
+    return;
+  }
+
+  try {
+    const b64 = regParam.replace(/-/g, '+').replace(/_/g, '/');
+    invitePayload = JSON.parse(atob(b64));
+  } catch(e) {
+    document.getElementById('error-msg').textContent = 'Link de invitación corrupto. Pide al admin que reenvíe.';
+    show('error-view');
+    return;
+  }
+
+  const { code, house, cerradaName, binId, apiKey } = invitePayload;
+
+  // Descargar datos frescos desde JSONBin
+  try {
+    const useBinId  = binId  || BIN_ID;
+    const useApiKey = apiKey || API_KEY;
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${useBinId}/latest`, {
+      headers: { 'X-Master-Key': useApiKey }
+    });
+    if (!r.ok) throw new Error('Error JSONBin: ' + r.status);
+    const data = await r.json();
+    cerradaData = data.record;
+    cerradaData.jsonbin = { binId: useBinId, apiKey: useApiKey };
+  } catch(e) {
+    document.getElementById('error-msg').textContent = 'No se pudo verificar la invitación. Revisa tu conexión e intenta de nuevo.';
+    show('error-view');
+    return;
+  }
+
+  // Verificar que la cerrada y la casa existen
+  if (!cerradaData || cerradaData.code !== code) {
+    document.getElementById('error-msg').textContent = 'Cerrada no encontrada.';
+    show('error-view');
+    return;
+  }
+
+  const residents = cerradaData.residents || [];
+  residenteIdx = residents.findIndex(r => r.house === house);
+
+  if (residenteIdx < 0) {
+    document.getElementById('error-msg').textContent = `Casa "${house}" no encontrada. Pide al admin que verifique.`;
+    show('error-view');
+    return;
+  }
+
+  const res = residents[residenteIdx];
+
+  // Verificar suspensión
+  if (!res.active || res.mora) {
+    document.getElementById('error-msg').textContent = res.mora
+      ? `Acceso suspendido por mora. ${res.moraNote || ''} Contacta al administrador.`
+      : 'Acceso suspendido. Contacta al administrador.';
+    show('error-view');
+    return;
+  }
+
+  // Verificar límite de miembros
+  const members = res.members || [];
+  if (members.length >= 5) {
+    document.getElementById('error-msg').textContent = 'Esta casa ya tiene el máximo de 5 miembros registrados.';
+    show('error-view');
+    return;
+  }
+
+  // Mostrar formulario
+  const isFamiliar = invitePayload.isFamiliar || members.length > 0;
+  const role = isFamiliar ? 'familiar' : 'jefe de familia';
+  document.getElementById('form-subtitle').textContent = `${house} · ${cerradaData.name || cerradaName}`;
+  document.getElementById('family-info').style.display = !isFamiliar ? 'block' : 'none';
+  show('form-view');
+}
+
+async function submitRegister() {
+  const name    = document.getElementById('f-name').value.trim();
+  const address = document.getElementById('f-address').value.trim();
+  const email   = document.getElementById('f-email').value.trim().toLowerCase();
+  const pass    = document.getElementById('f-pass').value;
+  const pass2   = document.getElementById('f-pass2').value;
+
+  if (!name || !address || !email) { showErr('⚠️ Completa todos los campos'); return; }
+  if (!email.includes('@'))        { showErr('⚠️ Correo electrónico inválido'); return; }
+  if (pass.length < 6)             { showErr('⚠️ Contraseña mínimo 6 caracteres'); return; }
+  if (pass !== pass2)              { showErr('⚠️ Las contraseñas no coinciden'); return; }
+
+  // Verificar correo único
+  const allMembers = (cerradaData.residents || []).flatMap(r => [
+    r, ...(r.members || [])
+  ]);
+  if (allMembers.some(m => m.email === email)) {
+    showErr('⚠️ Este correo ya está registrado. Usa otro correo.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-register');
+  btn.disabled = true;
+  btn.textContent = '⏳ Guardando...';
+
+  const res = cerradaData.residents[residenteIdx];
+  if (!res.members) res.members = [];
+
+  const isFamiliar = invitePayload.isFamiliar || res.members.length > 0;
+  const role = isFamiliar ? 'family' : 'head';
+
+  // Agregar miembro
+  res.members.push({
+    name, address, email, password: pass, role,
+    registeredAt: new Date().toISOString(),
+    suspended: false
+  });
+
+  // Si es jefe actualizar datos principales
+  if (role === 'head') {
+    res.name     = name;
+    res.email    = email;
+    res.password = pass;
+    res.pin      = pass;
+  }
+
+  // Guardar en JSONBin
+  try {
+    const payload = {
+      name: cerradaData.name,
+      code: cerradaData.code,
+      houses: cerradaData.houses,
+      adminPin: cerradaData.adminPin,
+      adminName: cerradaData.adminName,
+      adminPhone: cerradaData.adminPhone,
+      price: cerradaData.price,
+      active: cerradaData.active,
+      suspended: cerradaData.suspended,
+      portones: cerradaData.portones || [],
+      residents: cerradaData.residents,
+      history: (cerradaData.history || []).slice(-500),
+      movements: cerradaData.movements || [],
+      cuotas: cerradaData.cuotas || {},
+      cuotaConfig: cerradaData.cuotaConfig || {},
+      updatedAt: new Date().toISOString()
+    };
+
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${cerradaData.jsonbin.binId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': cerradaData.jsonbin.apiKey
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!r.ok) throw new Error('Error guardando: ' + r.status);
+
+    // Guardar sesión para auto-login en la app
+    const memberIdx = res.members.length - 1;
+    const session = {
+      role: 'resident',
+      cerradaCode: cerradaData.code,
+      house: res.house,
+      memberIdx,
+      memberName: name,
+      email,
+      password: pass
+    };
+
+    // Guardar también los datos de la cerrada para que la app los tenga
+    const SK = 'cerradaapp_v3';
+    let appState = {};
+    try { appState = JSON.parse(localStorage.getItem(SK) || '{}'); } catch(e) {}
+    if (!appState.cerradas) appState.cerradas = {};
+    appState.cerradas[cerradaData.code] = cerradaData;
+    localStorage.setItem(SK, JSON.stringify(appState));
+    localStorage.setItem('cerrada_session', JSON.stringify(session));
+
+    // Mostrar éxito
+    document.getElementById('s-cerrada').textContent = cerradaData.name;
+    show('success-view');
+
+    // Auto-redirigir a la app después de 2 segundos
+    setTimeout(() => {
+      window.location.href = APP_URL;
+    }, 2500);
+
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '✓ Registrarme y Entrar';
+    showErr('⚠️ Error al guardar. Revisa tu conexión e intenta de nuevo.');
+  }
+}
+
+// Iniciar
+init();
+</script>
+</body>
+</html>

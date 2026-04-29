@@ -953,20 +953,15 @@ function invitarFamiliar() {
     apiKey: c.jsonbin?.apiKey || '',
     isFamiliar: true
   })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
-  const inviteUrl = `https://racosta123.github.io/cerradaapp/?reg=${payload}`;
+  const inviteUrl = `https://racosta123.github.io/cerradaapp/register.html?reg=${payload}`;
   const msg = `🏘️ *${c.name}*
 
-Hola, te invitan a acceder al portón de *${res.house}*.
+Hola, te invitan a acceder al portón de *${res.house}*. 🏠
 
-*Para registrarte:*
+👉 Toca el link para registrarte:
+${inviteUrl}
 
-1️⃣ Mantén presionado el link
-2️⃣ Selecciona *"Abrir en Chrome"* ⚠️
-3️⃣ Llena el formulario
-
-🔗 ${inviteUrl}
-
-_Abre el link en Chrome, no en la app instalada._`;
+_Solo tarda 1 minuto._`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   toast('📲 Abriendo WhatsApp...');
 }
@@ -1427,8 +1422,8 @@ function sendInvite(i) {
   // Push async sin bloquear
   if(c.jsonbin?.binId) jbPush(c);
 
-  const baseUrl = 'https://racosta123.github.io/cerradaapp/';
-  // Empaquetar datos en el link — usar ?reg= para que funcione en PWA
+  const baseUrl = 'https://racosta123.github.io/cerradaapp/register.html';
+  // Empaquetar datos en el link
   const payload = btoa(JSON.stringify({
     code: c.code,
     house: res.house,
@@ -1445,17 +1440,12 @@ function sendInvite(i) {
 
   const msg = `🏘️ *${c.name}*
 
-Hola ${res.name}, ya tienes acceso al portón de tu residencia.
+Hola ${res.name}, ya tienes acceso al portón de tu residencia. 🏠
 
-*Para registrarte sigue estos pasos:*
+👉 Toca el link para registrarte:
+${inviteUrl}
 
-1️⃣ Mantén presionado el link de abajo
-2️⃣ Selecciona *"Abrir en Chrome"* (importante ⚠️)
-3️⃣ Llena el formulario y crea tu contraseña
-
-🔗 ${inviteUrl}
-
-_Si ya tienes la app instalada, abre el link en Chrome, NO en la app._`;
+_Solo tarda 1 minuto. Después podrás abrir el portón desde tu celular._`;
   const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
   window.open(waUrl, '_blank');
 }
