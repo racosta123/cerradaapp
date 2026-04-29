@@ -952,8 +952,8 @@ function invitarFamiliar() {
     binId: c.jsonbin?.binId || '',
     apiKey: c.jsonbin?.apiKey || '',
     isFamiliar: true
-  })).replace(/=/g,'');
-  const inviteUrl = `https://racosta123.github.io/cerradaapp/#reg=${payload}`;
+  })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
+  const inviteUrl = `https://racosta123.github.io/cerradaapp/?reg=${payload}`;
   const msg = `🏘️ *${c.name}*
 
 Hola, te invito a registrarte como familiar en *${res.house}*.
@@ -1423,7 +1423,7 @@ function sendInvite(i) {
   if(c.jsonbin?.binId) jbPush(c);
 
   const baseUrl = 'https://racosta123.github.io/cerradaapp/';
-  // Empaquetar datos mínimos en el link para que funcione sin datos locales
+  // Empaquetar datos en el link — usar ?reg= para que funcione en PWA
   const payload = btoa(JSON.stringify({
     code: c.code,
     house: res.house,
@@ -1431,8 +1431,8 @@ function sendInvite(i) {
     token,
     binId: c.jsonbin?.binId || '',
     apiKey: c.jsonbin?.apiKey || ''
-  })).replace(/=/g,'');
-  const inviteUrl = `${baseUrl}#reg=${payload}`;
+  })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
+  const inviteUrl = `${baseUrl}?reg=${payload}`;
 
   const msg = `🏘️ *${c.name}*
 
@@ -1448,24 +1448,53 @@ _Al registrarte podrás abrir el portón desde tu celular._`;
 
 // Verificar si hay invitación pendiente al cargar
 function checkInvite() {
-  // Leer del hash (#invite=...&code=...&house=...)
+  // PRIMERO: leer ?reg= de query params (funciona en PWA instalada)
+  const urlParams = new URLSearchParams(window.location.search);
+  const regParam = urlParams.get('reg');
+
+  if (regParam) {
+    try {
+      const b64 = regParam.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(b64));
+      window.history.replaceState({}, '', window.location.pathname);
+      if (payload.code && payload.house) {
+        localStorage.setItem('pending_invite', JSON.stringify(payload));
+        showRegisterFromPayload(payload);
+        return true;
+      }
+    } catch(e) { console.log('Error parsing ?reg=:', e); }
+  }
+
+  // SEGUNDO: formato hash legacy #invite=
   const hash = window.location.hash.substring(1);
-  if (!hash || !hash.includes('invite=')) return false;
+  if (!hash) return false;
 
-  const params = new URLSearchParams(hash);
-  const invite = params.get('invite');
-  const code = params.get('code');
-  const house = decodeURIComponent(params.get('house') || '');
+  if (hash.startsWith('reg=')) {
+    try {
+      const b64 = hash.substring(4).replace(/-/g,'+').replace(/_/g,'/');
+      const payload = JSON.parse(atob(b64));
+      window.history.replaceState({}, '', window.location.pathname);
+      if (payload.code && payload.house) {
+        localStorage.setItem('pending_invite', JSON.stringify(payload));
+        showRegisterFromPayload(payload);
+        return true;
+      }
+    } catch(e) {}
+  }
 
-  if (!invite || !code || !house) return false;
+  if (hash.includes('invite=')) {
+    const params = new URLSearchParams(hash);
+    const invite = params.get('invite');
+    const code   = params.get('code');
+    const house  = decodeURIComponent(params.get('house') || '');
+    window.history.replaceState({}, '', window.location.pathname);
+    if (invite && code && house) {
+      localStorage.setItem('pending_invite', JSON.stringify({invite, code, house}));
+      return processInvite(invite, code, house);
+    }
+  }
 
-  // Limpiar hash de la URL
-  window.history.replaceState({}, '', window.location.pathname);
-
-  // Guardar en localStorage por si la PWA recarga
-  localStorage.setItem('pending_invite', JSON.stringify({invite, code, house}));
-
-  return processInvite(invite, code, house);
+  return false;
 }
 
 function processInvite(invite, code, house) {
