@@ -910,12 +910,21 @@ function loginStaff(){
   if(user==='Administrador' && pass==='Admin4545'){
     const code = prompt('Ingresa el código de tu cerrada:','SMARK-001');
     if(!code) return;
-    const cerrada = S.cerradas[code.trim().toUpperCase()];
+    const codeUp = code.trim().toUpperCase();
+    
+    // Si no tiene la cerrada localmente, crearla con datos mínimos
+    const KNOWN_BINS={'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
+    if(!S.cerradas[codeUp] && KNOWN_BINS[codeUp]){
+      S.cerradas[codeUp]={name:'Cerrada',code:codeUp,houses:50,adminPin:'1234',adminName:'',price:20,active:true,suspended:false,portones:[],residents:[],history:[],movements:[],cuotas:{},cuotaConfig:{},jsonbin:KNOWN_BINS[codeUp]};
+      save();
+    }
+    
+    const cerrada = S.cerradas[codeUp];
     if(!cerrada){ showStaffErr('Cerrada no encontrada'); return; }
     if(cerrada.suspended){ showStaffErr('Cerrada suspendida por el proveedor'); return; }
     U={role:'subadmin',cerradaCode:cerrada.code};
     localStorage.setItem('cerrada_session', JSON.stringify(U));
-    enterAdm(cerrada);
+    enterAdm(cerrada); // enterAdm descarga JSONBin automáticamente
     return;
   }
 
@@ -1172,7 +1181,39 @@ async function shellyOpen(pt) {
 }
 
 // ── ADMIN
-function enterAdm(c){document.getElementById('adm-cname').textContent=c.name;setSI('adm','ok');updateDash();showScreen('adm');}
+async function enterAdm(c){
+  document.getElementById('adm-cname').textContent=c.name;
+  setSI('adm','syncing');
+
+  // Siempre sincronizar con JSONBin al entrar como Admin
+  const KNOWN_BINS={'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
+  const cfg = c.jsonbin?.binId ? c.jsonbin : KNOWN_BINS[c.code];
+
+  if(cfg){
+    // Asegurar que la cerrada tiene jsonbin configurado
+    if(!c.jsonbin?.binId) { c.jsonbin = cfg; save(); }
+    try{
+      const r=await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}/latest`,
+        {headers:{'X-Master-Key':cfg.apiKey}});
+      if(r.ok){
+        const data=await r.json();
+        if(data.record){
+          const jb=c.jsonbin;
+          Object.assign(c,data.record);
+          c.jsonbin=jb;
+          save();
+          toast('☁️ Datos sincronizados');
+        }
+      }
+      setSI('adm','ok');
+    }catch(e){ setSI('adm','err'); }
+  } else {
+    setSI('adm','off');
+  }
+
+  updateDash();
+  showScreen('adm');
+}
 function updateDash(){
   const c=C();if(!c)return;const res=c.residents||[];
   document.getElementById('ds-tot').textContent=res.length;
@@ -1224,7 +1265,28 @@ function renderVec(){
     ${membersHtml}
   </div>`;}).join('');
 }
-async function addVec(){const c=C();if(!c)return;const house=document.getElementById('nv-h').value.trim(),pin=document.getElementById('nv-p').value.trim(),name=document.getElementById('nv-n').value.trim(),phone=document.getElementById('nv-t').value.trim();if(!house||!pin||!name){toast('⚠️ Completa casa, PIN y nombre');return;}if(pin.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}if(!c.residents)c.residents=[];if(c.residents.find(r=>r.house===house)){toast('⚠️ Esa casa ya existe');return;}if(c.residents.length>=c.houses){toast(`⚠️ Máximo ${c.houses} casas`);return;}c.residents.push({house,pin,name,phone,active:true,mora:false,moraNote:''});save();push('adm');['nv-h','nv-p','nv-n','nv-t'].forEach(id=>document.getElementById(id).value='');renderVec();updateDash();toast('✅ Vecino agregado');}
+async function addVec(){
+  const c=C();if(!c)return;
+  const house=document.getElementById('nv-h').value.trim();
+  const pin=document.getElementById('nv-p').value.trim();
+  const name=document.getElementById('nv-n').value.trim();
+  const phone=document.getElementById('nv-t').value.trim();
+  if(!house||!pin||!name){toast('⚠️ Completa casa, PIN y nombre');return;}
+  if(pin.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}
+  if(!c.residents)c.residents=[];
+  if(c.residents.find(r=>r.house===house)){toast('⚠️ Esa casa ya existe');return;}
+  if(c.residents.length>=c.houses){toast(`⚠️ Máximo ${c.houses} casas`);return;}
+  c.residents.push({house,pin,name,phone,active:true,mora:false,moraNote:'',members:[]});
+  save();
+  // Push inmediato al JSONBin
+  setSI('adm','syncing');
+  const ok=await jbPush(c);
+  setSI('adm',ok?'ok':'err');
+  if(ok) toast('✅ Vecino agregado y sincronizado ☁️');
+  else toast('✅ Vecino agregado (sin conexión — sincronizará después)');
+  ['nv-h','nv-p','nv-n','nv-t'].forEach(id=>document.getElementById(id).value='');
+  renderVec();updateDash();
+}
 async function toggleVec(i){
   const c=C();if(!c)return;
   const r=c.residents[i];
