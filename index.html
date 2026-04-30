@@ -1213,24 +1213,23 @@ async function openPorton(pid,role){
   if(role==='res')renderResHist(c);
 }
 
-// ── SHELLY CLOUD CONTROL — Optimizado para máxima velocidad
+// ── SHELLY CLOUD CONTROL — via Cloudflare Worker proxy (más rápido)
 function shellyOpen(pt) {
-  const SERVER  = 'shelly-258-eu.shelly.cloud';
-  const AUTH    = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388D6B4B15BC5295B801F11A2A689C37770CE435132';
-  const DEVICE  = pt.shellyId || 'e4b063eb85a4';
-  const SECONDS = pt.time || 5;
+  const PROXY  = 'https://shelly-proxy.acosta4770.workers.dev';
+  const AUTH   = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388D6B4B15BC5295B801F11A2A689C37770CE435132';
+  const DEVICE = pt.shellyId || 'e4b063eb85a4';
+  const SECS   = pt.time || 5;
 
-  // Usar imagen invisible para evitar CORS y ser más rápido que fetch
   const sendCmd = (turn) => {
-    const img = new Image();
-    img.src = `https://${SERVER}/device/relay/control?id=${DEVICE}&auth_key=${AUTH}&channel=0&turn=${turn}&_=${Date.now()}`;
+    fetch(`${PROXY}?id=${DEVICE}&auth=${AUTH}&turn=${turn}`)
+      .catch(e => console.warn('Proxy:', e));
   };
 
   // Encender inmediatamente
   sendCmd('on');
 
   // Apagar después del tiempo configurado
-  setTimeout(() => sendCmd('off'), SECONDS * 1000);
+  setTimeout(() => sendCmd('off'), SECS * 1000);
 }
 
 // ── ADMIN
