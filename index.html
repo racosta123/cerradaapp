@@ -530,14 +530,16 @@ select option{background:var(--sur)}
       </div>
     </div>
     <div id="ap-vecinos" class="panel">
-      <div class="card"><div class="ch"><div class="ct">Agregar Vecino</div></div>
+      <div class="card"><div class="ch"><div class="ct">➕ Registrar Casa</div></div>
+        <p style="font-size:.75rem;color:var(--t2);margin-bottom:.85rem">Registra la casa e invita al jefe de familia por correo o WhatsApp. Ellos crearán su propio PIN al registrarse.</p>
         <div class="frow">
           <div><label>Casa / Lote</label><input id="nv-h" placeholder="Casa 12"></div>
-          <div><label>PIN (4-8 dígitos)</label><input id="nv-p" type="password" maxlength="8" placeholder="••••••"></div>
+          <div><label>Nombre completo</label><input id="nv-n" placeholder="Juan Pérez"></div>
         </div>
-        <label>Nombre completo</label><input id="nv-n" placeholder="Juan Pérez">
+        <label>Correo electrónico del jefe de familia</label>
+        <input id="nv-email" type="email" placeholder="juan@correo.com">
         <label>Teléfono (opcional)</label><input id="nv-t" placeholder="+502 1234 5678">
-        <button class="btn bp" onclick="addVec()">+ Agregar Vecino</button>
+        <button class="btn bp" onclick="addVec()">📋 Registrar y generar invitación</button>
       </div>
       <div class="sh"><h3>Vecinos Registrados</h3><span class="bge b-b" id="vec-cnt">0</span></div>
       <div id="vec-list"><div class="empty"><div class="empty-ico">👥</div>Sin vecinos</div></div>
@@ -933,10 +935,11 @@ async function loginResidente(){
     for(const cerrada of Object.values(S.cerradas)){
       if(cerrada.suspended||!cerrada.active) continue;
       for(const res of cerrada.residents||[]){
-        if(res.email===email && res.password===pass) return {cerrada,res,member:null,mi:-1};
+        // Aceptar pin o password (ambos son validos)
+        if(res.email===email && (res.pin===pass||res.password===pass)) return {cerrada,res,member:null,mi:-1};
         for(let mi=0;mi<(res.members||[]).length;mi++){
           const m=res.members[mi];
-          if(m.email===email && m.password===pass) return {cerrada,res,member:m,mi};
+          if(m.email===email && (m.pin===pass||m.password===pass)) return {cerrada,res,member:m,mi};
         }
       }
     }
@@ -962,6 +965,10 @@ async function loginResidente(){
   if(!found){showErr('m-err','Correo o contraseña incorrectos.');return;}
 
   const {cerrada,res,member,mi} = found;
+  if(res.pendingReg){
+    showErr('m-err','Tu registro aun esta pendiente. Revisa el correo de invitacion.');
+    return;
+  }
   if(!res.active||res.mora){
     document.getElementById('susp-msg').textContent=res.mora?`Acceso suspendido por mora. ${res.moraNote||''}`:'Tu acceso fue suspendido.';
     showScreen('susp');return;
@@ -1235,7 +1242,7 @@ function gE(pid){
   }
 }
 let lastSuspCheck = 0; // Timestamp del último check de suspensión
-const SUSP_CHECK_INTERVAL = 60 * 1000; // 1 minuto
+const SUSP_CHECK_INTERVAL = 10 * 1000; // 10 segundos (para detectar reactivación rápido)
 
 async function openPorton(pid,role){
   const c=C();if(!c)return;
@@ -1256,24 +1263,32 @@ async function openPorton(pid,role){
       }
       lastSuspCheck=Date.now();
     } catch(e){}
-    // Verificar si sigue activo
+    // Verificar si sigue activo (datos ya actualizados desde JSONBin)
     const res=c.residents.find(r=>r.house===U.house);
     const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
     if(!res||!res.active||res.mora||memberSusp){
-      localStorage.removeItem('cerrada_session');
+      // Solo borrar sesión si la suspensión es definitiva (no mora temporal)
+      if(!res?.mora) localStorage.removeItem('cerrada_session');
       document.getElementById('susp-msg').textContent=res?.mora
         ?`Acceso suspendido por mora. ${res.moraNote||''}`
         :'Tu acceso fue suspendido. Contacta al administrador.';
       showScreen('susp');
       return;
     }
+    // Si llegamos aquí con datos frescos de JSONBin, actualizar UI
+    if(window._wasSuspended) { window._wasSuspended=false; showScreen('res'); }
   } else if(role==='res'){
-    // Verificar solo con datos locales (instantáneo)
+    // Verificar con datos locales — si hay mora, forzar sync inmediato
     const res=c.residents.find(r=>r.house===U.house);
     const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
     if(!res||!res.active||res.mora||memberSusp){
-      localStorage.removeItem('cerrada_session');
-      document.getElementById('susp-msg').textContent='Tu acceso fue suspendido.';
+      // Forzar sync inmediato para ver si fue reactivado
+      lastSuspCheck = 0;
+      if(!res?.mora) localStorage.removeItem('cerrada_session');
+      document.getElementById('susp-msg').textContent=res?.mora
+        ?`Acceso suspendido por mora. ${res.moraNote||''}`
+        :'Tu acceso fue suspendido. Contacta al administrador.';
+      window._wasSuspended = true;
       showScreen('susp');
       return;
     }
@@ -1431,8 +1446,8 @@ function renderVec(){
       <div class="lil">
         <div class="av ${r.mora?'ar':r.active?'ag':'ar'}">${esc(hn)}</div>
         <div>
-          <div class="in">${esc(r.name)}${r.mora?` <span class="mora">⚠️ Mora</span>`:''}</div>
-          <div class="is">${esc(r.house)} · ${members.length} miembro${members.length!==1?'s':''} registrado${members.length!==1?'s':''}</div>
+          <div class="in">${esc(r.name)}${r.mora?` <span class="mora">⚠️ Mora</span>`:''}${r.pendingReg?` <span class="mora" style="background:#fef3c7;color:#b45309;border-color:rgba(180,83,9,.3)">⏳ Pendiente</span>`:''}</div>
+          <div class="is">${esc(r.house)} · ${r.email||''} · ${members.length} miembro${members.length!==1?'s':''}</div>
         </div>
       </div>
       <div class="ia">
@@ -1448,24 +1463,91 @@ function renderVec(){
 async function addVec(){
   const c=C();if(!c)return;
   const house=document.getElementById('nv-h').value.trim();
-  const pin=document.getElementById('nv-p').value.trim();
   const name=document.getElementById('nv-n').value.trim();
+  const email=document.getElementById('nv-email').value.trim().toLowerCase();
   const phone=document.getElementById('nv-t').value.trim();
-  if(!house||!pin||!name){toast('⚠️ Completa casa, PIN y nombre');return;}
-  if(pin.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}
+  if(!house||!name||!email){toast('⚠️ Completa casa, nombre y correo');return;}
+  if(!email.includes('@')){toast('⚠️ Correo no válido');return;}
   if(!c.residents)c.residents=[];
   if(c.residents.find(r=>r.house===house)){toast('⚠️ Esa casa ya existe');return;}
   if(c.residents.length>=c.houses){toast(`⚠️ Máximo ${c.houses} casas`);return;}
-  c.residents.push({house,pin,name,phone,active:true,mora:false,moraNote:'',members:[]});
+
+  // Generar token de invitación (válido 7 días)
+  const inviteToken = btoa(`${c.code}|${house}|head|${Date.now()}`).replace(/[+/=]/g,'');
+  const inviteExpires = Date.now() + 7*24*60*60*1000;
+
+  // Crear residente SIN pin — pendiente de registro
+  c.residents.push({
+    house, name, phone, email,
+    pin: '',           // vacío hasta que el residente se registre
+    active: false,     // inactivo hasta completar registro
+    pendingReg: true,  // bandera de registro pendiente
+    mora: false, moraNote: '',
+    members: [],
+    inviteToken, inviteExpires
+  });
   save();
-  // Push inmediato al JSONBin
   setSI('adm','syncing');
   const ok=await jbPush(c);
   setSI('adm',ok?'ok':'err');
-  if(ok) toast('✅ Vecino agregado y sincronizado ☁️');
-  else toast('✅ Vecino agregado (sin conexión — sincronizará después)');
-  ['nv-h','nv-p','nv-n','nv-t'].forEach(id=>document.getElementById(id).value='');
+
+  // Generar link de invitación para jefe de familia
+  const payload = btoa(JSON.stringify({
+    code: c.code,
+    house,
+    cerradaName: c.name,
+    token: inviteToken,
+    binId: c.jsonbin?.binId||'',
+    apiKey: c.jsonbin?.apiKey||'',
+    isHead: true,
+    email
+  })).replace(/[+/=]/g, m=>({'+':`-`,'/':'_','=':''}[m]));
+  const inviteUrl = `https://racosta123.github.io/cerradaapp/register.html?reg=${payload}`;
+
+  // Mostrar opciones de envío
+  const msg = `Hola ${name},
+
+Fuiste registrado en ${c.name} (${house}).
+
+Completa tu registro aqui:
+${inviteUrl}
+
+El link es valido por 7 dias.`;
+  ['nv-h','nv-n','nv-email','nv-t'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   renderVec();updateDash();
+
+  // Mostrar modal con opciones de envío
+  showInviteModal(name, email, msg, inviteUrl);
+}
+
+function showInviteModal(name, email, msg, url){
+  // Crear modal de invitación si no existe
+  let m = document.getElementById('modal-invite-send');
+  if(!m){
+    m = document.createElement('div');
+    m.className='mover';
+    m.id='modal-invite-send';
+    m.onclick=e=>{if(e.target===m)m.style.display='none';};
+    document.body.appendChild(m);
+  }
+  m.innerHTML=`<div class="mdl">
+    <div class="mtitle">📨 Invitar a ${esc(name)}</div>
+    <p style="font-size:.8rem;color:var(--t2);margin-bottom:1rem">El residente recibirá un link para crear su PIN y registrarse. Elige cómo enviarla:</p>
+    <div style="display:flex;flex-direction:column;gap:.6rem">
+      <button class="btn bp" onclick="window.open('mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent('Invitación CerradaApp')}&body=${encodeURIComponent(msg)}','_blank')">
+        📧 Enviar por Email
+      </button>
+      <button class="btn bg2" onclick="window.open('https://wa.me/?text=${encodeURIComponent(msg)}','_blank')">
+        💬 Enviar por WhatsApp
+      </button>
+      <div style="margin-top:.5rem;padding:.75rem;background:var(--bg2);border-radius:8px;font-size:.72rem;word-break:break-all;color:var(--t2)">${url}</div>
+      <button class="btn bw sm" onclick="navigator.clipboard.writeText('${url}').then(()=>toast('✅ Link copiado'))">
+        📋 Copiar Link
+      </button>
+    </div>
+    <button class="btn bg2" style="margin-top:.75rem;width:100%" onclick="document.getElementById('modal-invite-send').style.display='none'">Cerrar</button>
+  </div>`;
+  m.style.display='flex';
 }
 async function toggleVec(i){
   const c=C();if(!c)return;
@@ -1896,39 +1978,30 @@ async function saveMstJsonbin(){
 function sendInvite(i) {
   const c = C(); if (!c) return;
   const res = c.residents[i];
-  // Generar token único — siempre renovar al enviar
-  const token = btoa(`${c.code}|${res.house}|${Date.now()}`).replace(/=/g,'');
+
+  // Renovar token de invitacion (valido 7 dias)
+  const token = btoa(c.code+'|'+res.house+'|head|'+Date.now()).replace(/[+/=]/g,'');
+  const inviteExpires = Date.now() + 7*24*60*60*1000;
   c.residents[i].inviteToken = token;
+  c.residents[i].inviteExpires = inviteExpires;
   save();
-  // Push async sin bloquear
   if(c.jsonbin?.binId) jbPush(c);
 
-  const baseUrl = 'https://racosta123.github.io/cerradaapp/register.html';
-  // Empaquetar datos en el link
   const payload = btoa(JSON.stringify({
     code: c.code,
     house: res.house,
     cerradaName: c.name,
     token,
     binId: c.jsonbin?.binId || '',
-    apiKey: c.jsonbin?.apiKey || ''
+    apiKey: c.jsonbin?.apiKey || '',
+    isHead: true,
+    email: res.email || ''
   })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
-  // Forzar apertura en navegador (no en PWA instalada)
-  // En Android usa intent://, en iOS usa el link normal
-  const inviteUrl = `${baseUrl}?reg=${payload}`;
-  // Versión para forzar Chrome en Android:
-  // const intentUrl = `intent://racosta123.github.io/cerradaapp/?reg=${payload}#Intent;scheme=https;package=com.android.chrome;end`;
 
-  const msg = `🏘️ *${c.name}*
+  const inviteUrl = 'https://racosta123.github.io/cerradaapp/register.html?reg=' + payload;
+  const msg = 'Hola ' + res.name + ',\n\nFuiste registrado en ' + c.name + ' (' + res.house + ').\n\nCompleta tu registro aqui:\n' + inviteUrl + '\n\nEl link es valido por 7 dias.';
 
-Hola ${res.name}, ya tienes acceso al portón de tu residencia. 🏠
-
-👉 Toca el link para registrarte:
-${inviteUrl}
-
-_Solo tarda 1 minuto. Después podrás abrir el portón desde tu celular._`;
-  const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-  window.open(waUrl, '_blank');
+  showInviteModal(res.name, res.email||'', msg, inviteUrl);
 }
 
 // Verificar si hay invitación pendiente al cargar
