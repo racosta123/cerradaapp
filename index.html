@@ -1101,24 +1101,36 @@ function enterRes(c, res, member) {
 
   // Inicializar push y guardar token
   if (window.initPushNotifications) {
-    window.initPushNotifications().then(token => {
+    window.initPushNotifications().then(async token => {
       if (token && c && res) {
-        // Guardar token en el miembro correspondiente
         const memberIdx = U.memberIdx;
-        if (memberIdx >= 0 && res.members[memberIdx]) {
-          res.members[memberIdx].fcmToken = token;
-        } else {
-          res.fcmToken = token;
+        const prevToken = memberIdx >= 0 && res.members?.[memberIdx]
+          ? res.members[memberIdx].fcmToken
+          : res.fcmToken;
+
+        // Solo sincronizar si el token cambió
+        if (token !== prevToken) {
+          if (memberIdx >= 0 && res.members?.[memberIdx]) {
+            res.members[memberIdx].fcmToken = token;
+          } else {
+            // Jefe de familia: guardar en res directamente
+            res.fcmToken = token;
+            // También guardarlo en members[0] si existe (compatibilidad)
+            if (res.members?.length > 0) {
+              const headIdx = res.members.findIndex(m => m.role === 'head');
+              if (headIdx >= 0) res.members[headIdx].fcmToken = token;
+            }
+          }
+          save();
+          // Sync a JSONBin y confirmar
+          if (c.jsonbin?.binId) {
+            const ok = await jbPush(c);
+            console.log('FCM token synced to JSONBin:', ok);
+          }
         }
-        save();
-        // Sync async sin bloquear
-        if (c.jsonbin?.binId) jbPush(c);
       }
     });
   }
-
-  // Disparar evento de login para inicializar push
-  window.dispatchEvent(new Event('cerradaapp:login'));
 }
 
 function invitarFamiliar() {
@@ -1292,31 +1304,41 @@ async function openPorton(pid,role){
 }
 
 async function sendFamilyNotification(c, portonLabel) {
-  // Recopilar tokens FCM de todos los miembros de la casa
   const res = c.residents.find(r => r.house === U.house);
-  if (!res || !res.members) return;
+  if (!res) return;
 
-  const tokens = res.members
-    .map(m => m.fcmToken)
-    .filter(t => t && t !== localStorage.getItem('fcm_token')); // Excluir quien abrió
+  const myToken = localStorage.getItem('fcm_token');
 
+  // Recopilar tokens: jefe de familia + todos los miembros
+  const allTokens = new Set();
+  if (res.fcmToken) allTokens.add(res.fcmToken);
+  for (const m of res.members || []) {
+    if (m.fcmToken) allTokens.add(m.fcmToken);
+  }
+  // Excluir el token del dispositivo que abrio
+  if (myToken) allTokens.delete(myToken);
+
+  const tokens = [...allTokens];
   if (!tokens.length) return;
 
   const who = U.memberName || res.name;
   const msg = {
-    title: `🚗 ${portonLabel} abierto`,
-    body: `${who} abrió el portón — ${new Date().toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'})}`,
+    title: '🚗 ' + portonLabel + ' abierto',
+    body: who + ' abrió el portón — ' + new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'}),
     tokens
   };
 
-  // Enviar via Cloudflare Worker
   try {
-    await fetch('https://shelly-proxy.acosta4770.workers.dev/notify', {
+    const r = await fetch('https://shelly-proxy.acosta4770.workers.dev/notify', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(msg)
     });
-  } catch(e) { console.log('Notif error:', e); }
+    const result = await r.json();
+    console.log('Push enviado:', result);
+  } catch(e) {
+    console.log('Notif error:', e);
+  }
 }
 
 // ── SHELLY CLOUD CONTROL — via Cloudflare Worker proxy (más rápido)
