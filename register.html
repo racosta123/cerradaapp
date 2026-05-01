@@ -213,7 +213,8 @@ async function init() {
     showStep('step-form');
 
   } catch(e) {
-    document.getElementById('error-msg').textContent = 'Error al cargar los datos. Intenta de nuevo más tarde.';
+    console.log('ERROR en init:', e.message, e);
+    document.getElementById('error-msg').textContent = 'Error: ' + e.message + '. Intenta de nuevo o contacta al administrador.';
     showStep('step-error');
   }
 }
