@@ -697,6 +697,7 @@ select option{background:var(--sur)}
   </div>
   <div class="nav">
     <button class="ntab on" onclick="mstP('cerradas',this)">🏘️ Cerradas</button>
+    <button class="ntab" onclick="mstP('usuarios',this)">👥 Usuarios</button>
     <button class="ntab" onclick="mstP('negocio',this)">📊 Negocio</button>
     <button class="ntab" onclick="mstP('config',this)">⚙️ Config</button>
   </div>
@@ -704,6 +705,10 @@ select option{background:var(--sur)}
     <div id="mp-cerradas" class="panel on">
       <div class="sh"><h3>Cerradas Registradas</h3><button class="btn bp sm" onclick="openModal('modal-nueva')">+ Nueva</button></div>
       <div id="mst-list"><div class="empty"><div class="empty-ico">🏘️</div>Sin cerradas</div></div>
+    </div>
+    <div id="mp-usuarios" class="panel">
+      <div class="sh"><h3>Usuarios del Sistema</h3><button class="btn bp sm" onclick="openModalUsuario()">+ Nuevo Usuario</button></div>
+      <div id="usr-list"><div class="empty"><div class="empty-ico">👥</div>Sin usuarios</div></div>
     </div>
     <div id="mp-negocio" class="panel">
       <div class="sgrid">
@@ -862,7 +867,7 @@ select option{background:var(--sur)}
 <script>
 const SK='cerradaapp_v4';
 const ICONS=['🚗','🚶','🚪','🏠','🔑','🚧','🛻','🏍'];
-let S={masterKey:'MASTER2025',defaultPrice:20,cerradas:{}};
+let S={masterKey:'MASTER2025',defaultPrice:20,cerradas:{},systemUsers:[]};
 let U=null,ncP=[];
 
 function load(){try{const d=localStorage.getItem(SK);if(d)S=JSON.parse(d);}catch(e){}}
@@ -1015,33 +1020,53 @@ function loginStaff(){
   const pass = document.getElementById('staff-pass').value.trim();
   if(!user||!pass){ showStaffErr('Completa usuario y contraseña'); return; }
 
-  // ── MASTER
+  // ── MASTER hardcodeado (cuenta maestra del sistema)
   if(user==='Diagonal Catorce' && pass==='250275P'){
     U={role:'master'};
     localStorage.setItem('cerrada_session', JSON.stringify({role:'master'}));
-    showScreen('mst');renderMstList();renderNegocio();
+    showScreen('mst');renderMstList();renderNegocio();renderUsuarios();
     return;
   }
 
-  // ── ADMIN — buscar cerrada por código
+  // ── Buscar en systemUsers (admins y masters creados desde el panel)
+  const sysUser = (S.systemUsers||[]).find(u => u.email===user && u.pin===pass && u.active);
+  if(sysUser){
+    if(sysUser.role==='master'){
+      U={role:'master'};
+      localStorage.setItem('cerrada_session', JSON.stringify({role:'master'}));
+      showScreen('mst');renderMstList();renderNegocio();renderUsuarios();
+      return;
+    }
+    if(sysUser.role==='admin'){
+      const KNOWN_BINS={'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
+      const codeUp = sysUser.cerradaCode;
+      if(!S.cerradas[codeUp] && KNOWN_BINS[codeUp]){
+        S.cerradas[codeUp]={name:'Cerrada',code:codeUp,houses:50,adminPin:'1234',adminName:'',price:20,active:true,suspended:false,portones:[],residents:[],history:[],movements:[],cuotas:{},cuotaConfig:{},jsonbin:KNOWN_BINS[codeUp]};
+        save();
+      }
+      const cerrada = S.cerradas[codeUp];
+      if(!cerrada){ showStaffErr('Cerrada no encontrada'); return; }
+      if(cerrada.suspended){ showStaffErr('Cerrada suspendida'); return; }
+      U={role:'subadmin',cerradaCode:cerrada.code,sysUserId:sysUser.id};
+      localStorage.setItem('cerrada_session', JSON.stringify(U));
+      enterAdm(cerrada);
+      return;
+    }
+  }
+
+  // ── Admin legacy (compatibilidad hacia atras)
   if(user==='Administrador' && pass==='Admin4545'){
-    const code = prompt('Ingresa el código de tu cerrada:','SMARK-001');
-    if(!code) return;
-    const codeUp = code.trim().toUpperCase();
-    
-    // Si no tiene la cerrada localmente, crearla con datos mínimos
     const KNOWN_BINS={'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
+    const codeUp = 'SMARK-001';
     if(!S.cerradas[codeUp] && KNOWN_BINS[codeUp]){
       S.cerradas[codeUp]={name:'Cerrada',code:codeUp,houses:50,adminPin:'1234',adminName:'',price:20,active:true,suspended:false,portones:[],residents:[],history:[],movements:[],cuotas:{},cuotaConfig:{},jsonbin:KNOWN_BINS[codeUp]};
       save();
     }
-    
     const cerrada = S.cerradas[codeUp];
     if(!cerrada){ showStaffErr('Cerrada no encontrada'); return; }
-    if(cerrada.suspended){ showStaffErr('Cerrada suspendida por el proveedor'); return; }
     U={role:'subadmin',cerradaCode:cerrada.code};
     localStorage.setItem('cerrada_session', JSON.stringify(U));
-    enterAdm(cerrada); // enterAdm descarga JSONBin automáticamente
+    enterAdm(cerrada);
     return;
   }
 
@@ -1898,6 +1923,137 @@ function createCerrada(){
   ['nc-name','nc-code','nc-houses','nc-price','nc-aname','nc-apin','nc-aphone'].forEach(id=>document.getElementById(id).value='');
   renderMstList();renderNegocio();toast(`✅ "${name}" creada`);
 }
+// ══════════════════════════════════════
+// GESTIÓN DE USUARIOS DEL SISTEMA
+// ══════════════════════════════════════
+
+function renderUsuarios(){
+  const list = document.getElementById('usr-list');
+  if(!list) return;
+  const users = S.systemUsers || [];
+  if(!users.length){
+    list.innerHTML = '<div class="empty"><div class="empty-ico">👥</div>Sin usuarios del sistema</div>';
+    return;
+  }
+  const roleLabel = {master:'👑 Master', admin:'🛡️ Admin'};
+  const roleBadge = {master:'y-b', admin:'b-b'};
+  list.innerHTML = users.map((u,i) => `
+    <div class="li">
+      <div class="lil">
+        <div class="av ${u.role==='master'?'ay':'ab'}">${u.role==='master'?'👑':'🛡️'}</div>
+        <div>
+          <div class="in">${esc(u.name)} ${u.active?'':' <span class="mora">Inactivo</span>'}</div>
+          <div class="is">${esc(u.email)} · ${u.role==='admin'?(u.cerradaCode||'Sin cerrada'):''}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.3rem;align-items:center">
+        <span class="bge ${roleBadge[u.role]||'gr-b'}">${roleLabel[u.role]||u.role}</span>
+        <button class="btn ${u.active?'bg2':'bp'} xs" onclick="toggleUserActive(${i})">${u.active?'⏸':'▶'}</button>
+        <button class="btn bd xs" onclick="delSysUser(${i})">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openModalUsuario(){
+  // Poblar select de cerradas
+  const cerradas = Object.values(S.cerradas);
+  let m = document.getElementById('modal-new-user');
+  if(!m){
+    m = document.createElement('div');
+    m.className='mover';
+    m.id='modal-new-user';
+    m.onclick=e=>{if(e.target===m)m.style.display='none';};
+    document.body.appendChild(m);
+  }
+  const cerradaOpts = cerradas.map(c=>`<option value="${c.code}">${esc(c.name)} (${c.code})</option>`).join('');
+  m.innerHTML=`<div class="mdl">
+    <div class="mtitle">👥 Nuevo Usuario del Sistema</div>
+    <label>Nombre completo</label>
+    <input id="nu-name" placeholder="Juan Pérez">
+    <label>Correo electrónico (será su usuario)</label>
+    <input id="nu-email" type="email" placeholder="juan@correo.com">
+    <label>Rol</label>
+    <select id="nu-role" onchange="toggleCerradaField()">
+      <option value="admin">🛡️ Admin</option>
+      <option value="master">👑 Master</option>
+    </select>
+    <div id="nu-cerrada-wrap">
+      <label>Cerrada asignada</label>
+      <select id="nu-cerrada">${cerradaOpts||'<option>Sin cerradas registradas</option>'}</select>
+    </div>
+    <p style="font-size:.75rem;color:var(--t2);margin-top:.75rem">📲 Se enviará un link de invitación por WhatsApp para que el usuario cree su propio PIN.</p>
+    <div id="nu-err" style="display:none;color:var(--red);font-size:.8rem;margin-top:.5rem"></div>
+    <button class="btn bp" style="margin-top:1rem" onclick="createSysUser()">Crear y enviar invitación</button>
+    <button class="btn bg2" style="margin-top:.5rem;width:100%" onclick="document.getElementById('modal-new-user').style.display='none'">Cancelar</button>
+  </div>`;
+  m.style.display='flex';
+}
+
+function toggleCerradaField(){
+  const role = document.getElementById('nu-role')?.value;
+  const wrap = document.getElementById('nu-cerrada-wrap');
+  if(wrap) wrap.style.display = role==='master' ? 'none' : 'block';
+}
+
+function createSysUser(){
+  const name  = document.getElementById('nu-name')?.value.trim();
+  const email = document.getElementById('nu-email')?.value.trim().toLowerCase();
+  const role  = document.getElementById('nu-role')?.value;
+  const cerradaCode = role==='admin' ? document.getElementById('nu-cerrada')?.value : null;
+  const errEl = document.getElementById('nu-err');
+
+  if(!name||!email){ errEl.textContent='⚠️ Completa nombre y correo'; errEl.style.display='block'; return; }
+  if(!email.includes('@')){ errEl.textContent='⚠️ Correo no válido'; errEl.style.display='block'; return; }
+
+  // Verificar max 2 admins por cerrada
+  if(role==='admin' && cerradaCode){
+    const adminsEnCerrada = (S.systemUsers||[]).filter(u=>u.role==='admin'&&u.cerradaCode===cerradaCode&&u.active);
+    if(adminsEnCerrada.length>=2){ errEl.textContent='⚠️ Máximo 2 admins por cerrada'; errEl.style.display='block'; return; }
+  }
+
+  // Verificar email duplicado
+  if((S.systemUsers||[]).find(u=>u.email===email)){ errEl.textContent='⚠️ Este correo ya está registrado'; errEl.style.display='block'; return; }
+
+  // Generar token de invitación
+  const id = 'usr_' + Date.now();
+  const token = btoa(id+'|'+role+'|'+Date.now()).replace(/[^a-zA-Z0-9]/g,'');
+  const expires = Date.now() + 7*24*60*60*1000;
+
+  const newUser = { id, name, email, role, cerradaCode, pin:'', active:false, pendingReg:true, inviteToken:token, inviteExpires:expires };
+  if(!S.systemUsers) S.systemUsers=[];
+  S.systemUsers.push(newUser);
+  save();
+
+  // Generar link de invitación
+  const payload = btoa(JSON.stringify({ type:'sysuser', id, role, cerradaCode, name, token })).replace(/[+/=]/g, m=>({'+':`-`,'/':'_','=':''}[m]));
+  const inviteUrl = 'https://racosta123.github.io/cerradaapp/register.html?reg=' + payload;
+  const msg = 'Hola ' + name + ', tienes acceso como ' + (role==='master'?'Master':'Admin') + ' en CerradaApp.\n\nRegistrate aquí:\n' + inviteUrl + '\n\nLink válido 7 días.';
+
+  document.getElementById('modal-new-user').style.display='none';
+  renderUsuarios();
+
+  // Enviar por WhatsApp
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+  toast('✅ Usuario creado — invitación enviada por WhatsApp');
+}
+
+function toggleUserActive(i){
+  if(!S.systemUsers?.[i]) return;
+  S.systemUsers[i].active = !S.systemUsers[i].active;
+  save();
+  renderUsuarios();
+  toast(S.systemUsers[i].active ? '✅ Usuario activado' : '⏸ Usuario desactivado');
+}
+
+function delSysUser(i){
+  if(!confirm('¿Eliminar este usuario del sistema?')) return;
+  S.systemUsers.splice(i,1);
+  save();
+  renderUsuarios();
+  toast('🗑 Usuario eliminado');
+}
+
 function renderMstList(){const list=document.getElementById('mst-list');const cerradas=Object.values(S.cerradas);if(!cerradas.length){list.innerHTML=emH('🏘️','Sin cerradas');return;}list.innerHTML=cerradas.map(c=>`<div class="mcard"><div style="flex:1;min-width:0"><div class="mn">${esc(c.name)}</div><div class="mm">${esc(c.code)} · ${c.houses} casas · ${(c.portones||[]).length} portones · ${(c.residents||[]).length} vecinos · $${c.price}/mes</div><div class="mm">Admin: ${esc(c.adminName||'—')}${c.adminPhone?' · '+esc(c.adminPhone):''}</div></div><div style="display:flex;flex-direction:column;gap:.3rem;align-items:flex-end;flex-shrink:0"><span class="bge ${c.suspended?'r-b':c.active?'gr-b':'r-b'}">${c.suspended?'Suspendida':c.active?'Activa':'Inactiva'}</span><div style="display:flex;gap:.3rem"><button class="btn ${c.suspended?'bg2':'bw'} xs" onclick="toggleSusp('${c.code}')">${c.suspended?'🔓':'⏸'}</button><button class="btn bg2 xs" onclick="viewCerrada('${c.code}')">👁</button><button class="btn bd xs" onclick="delCerrada('${c.code}')">🗑</button></div></div></div>`).join('');}
 function toggleSusp(code){const c=S.cerradas[code];if(!c)return;c.suspended=!c.suspended;save();renderMstList();renderNegocio();toast(c.suspended?'⏸ Suspendida':'✅ Reactivada');}
 function delCerrada(code){const c=S.cerradas[code];if(!c)return;if(!confirm(`¿Eliminar "${c.name}"?`))return;delete S.cerradas[code];save();renderMstList();renderNegocio();toast('🗑 Eliminada');}

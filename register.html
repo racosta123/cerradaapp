@@ -151,7 +151,18 @@ async function init() {
   if (!raw) { showStep('step-error'); return; }
 
   REG = decodePayload(raw);
-  if (!REG || !REG.code || !REG.house || !REG.token) {
+  if (!REG || !REG.token) {
+    showStep('step-error');
+    return;
+  }
+
+  // Si es invitacion de usuario del sistema (admin/master)
+  if (REG.type === 'sysuser') {
+    await initSysUser();
+    return;
+  }
+
+  if (!REG.code || !REG.house) {
     showStep('step-error');
     return;
   }
@@ -207,6 +218,21 @@ async function init() {
   }
 }
 
+// ── Registrar usuario del sistema (admin/master)
+async function initSysUser() {
+  document.getElementById('form-title').textContent =
+    REG.role === 'master' ? '👑 Registro como Master' : '🛡️ Registro como Administrador';
+  document.getElementById('form-house').textContent =
+    REG.role === 'master' ? 'Acceso completo al sistema' : 'Admin de cerrada';
+  document.getElementById('form-cerrada').textContent = REG.cerradaCode || '';
+  document.getElementById('reg-name').value = REG.name || '';
+  document.getElementById('pd1').classList.add('done');
+  showStep('step-form');
+
+  // Sobreescribir doRegister para sysuser
+  window._isSysUser = true;
+}
+
 // ── Registrar residente/familiar
 async function doRegister() {
   const name = document.getElementById('reg-name').value.trim();
@@ -231,6 +257,34 @@ async function doRegister() {
   const btn = document.getElementById('btn-register');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Registrando...';
+
+  // Si es usuario del sistema, guardar en localStorage del master
+  if (window._isSysUser) {
+    try {
+      // Los datos del sysuser se guardan en S.systemUsers del localStorage
+      // El usuario necesita abrir la app principal para completar
+      const S = JSON.parse(localStorage.getItem('cerradaapp_state') || '{}');
+      if (!S.systemUsers) S.systemUsers = [];
+      const idx = S.systemUsers.findIndex(u => u.id === REG.id);
+      if (idx >= 0) {
+        S.systemUsers[idx].name  = name;
+        S.systemUsers[idx].email = email;
+        S.systemUsers[idx].pin   = pin;
+        S.systemUsers[idx].active = true;
+        S.systemUsers[idx].pendingReg = false;
+        S.systemUsers[idx].inviteToken = null;
+        localStorage.setItem('cerradaapp_state', JSON.stringify(S));
+      }
+      document.getElementById('done-msg').textContent =
+        'Tu cuenta está lista. Ya puedes iniciar sesión en la app con tu correo y PIN.';
+      showStep('step-done');
+    } catch(e) {
+      showMsg('❌ Error al guardar: ' + e.message);
+      btn.disabled = false;
+      btn.innerHTML = '✓ Completar Registro';
+    }
+    return;
+  }
 
   try {
     // Recargar datos frescos para evitar conflictos
