@@ -448,7 +448,6 @@ select option{background:var(--sur)}
     <div class="t-right">
       <span id="sync-res" style="font-size:.9rem">☁️</span>
       <span class="bge g-b" id="res-house">Casa</span>
-      <button class="btn bg2 sm" onclick="logout()">Salir</button>
     </div>
   </div>
   <div class="nav">
@@ -969,13 +968,13 @@ async function loginResidente(){
     showErr('m-err','Tu registro aun esta pendiente. Revisa el correo de invitacion.');
     return;
   }
-  if(!res.active||res.mora){
-    document.getElementById('susp-msg').textContent=res.mora?`Acceso suspendido por mora. ${res.moraNote||''}`:'Tu acceso fue suspendido.';
-    showScreen('susp');return;
-  }
-  if(member?.suspended){
-    document.getElementById('susp-msg').textContent='Tu acceso fue suspendido. Contacta al administrador.';
-    showScreen('susp');return;
+  if(!res.active||res.mora||member?.suspended){
+    const msg = res.mora
+      ? (res.moraNote ? 'Suspendido por mora: '+res.moraNote : 'Acceso suspendido por mora')
+      : 'Tu acceso fue suspendido. Contacta al administrador.';
+    showScreen('res');
+    lockPortones(msg);
+    return;
   }
 
   U={role:'resident',cerradaCode:cerrada.code,house:res.house,memberIdx:mi,memberName:member?.name||res.name,email};
@@ -1070,6 +1069,25 @@ function admP(id,el){setPanels('ap-',['dashboard','vecinos','historial','finanza
 function mstP(id,el){setPanels('mp-',['cerradas','negocio','config'],id);setTabs('#scr-mst',el);if(id==='cerradas')renderMstList();if(id==='negocio')renderNegocio();if(id==='config'){document.getElementById('mc-price').value=S.defaultPrice;populateMstJsonbinSelect();}}
 
 // ── RESIDENT
+function lockPortones(msg) {
+  showScreen('res');
+  const grid = document.getElementById('gate-res');
+  if(!grid) return;
+  const c = C();
+  const portones = c?.portones || [];
+  grid.innerHTML = portones.map(pt => `
+    <div style="display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1.2rem;background:rgba(232,96,96,.08);border:1.5px solid rgba(232,96,96,.25);border-radius:14px;text-align:center">
+      <div style="font-size:2.8rem">🔒</div>
+      <div style="font-size:.88rem;font-weight:700;color:#e86060">${pt.label||'Portón'}</div>
+      <div style="font-size:.72rem;color:#94a3b8;line-height:1.4">${msg}</div>
+    </div>
+  `).join('') || '<div style="text-align:center;padding:2rem"><div style="font-size:3rem">🔒</div><div style="font-size:.9rem;font-weight:700;color:#e86060;margin:.5rem 0">Acceso suspendido</div><div style="font-size:.76rem;color:#94a3b8">'+msg+'</div></div>';
+}
+
+function unlockPortones() {
+  renderGates();
+}
+
 function enterRes(c, res, member) {
   const displayName = member ? member.name : res.name;
   document.getElementById('res-cname').textContent = c.name;
@@ -1267,31 +1285,30 @@ async function openPorton(pid,role){
     const res=c.residents.find(r=>r.house===U.house);
     const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
     if(!res||!res.active||res.mora||memberSusp){
-      // Solo borrar sesión si la suspensión es definitiva (no mora temporal)
-      if(!res?.mora) localStorage.removeItem('cerrada_session');
-      document.getElementById('susp-msg').textContent=res?.mora
-        ?`Acceso suspendido por mora. ${res.moraNote||''}`
-        :'Tu acceso fue suspendido. Contacta al administrador.';
-      showScreen('susp');
+      showScreen('res');
+      const msg = res?.mora
+        ? (res.moraNote ? 'Suspendido por mora: '+res.moraNote : 'Acceso suspendido por mora')
+        : 'Tu acceso fue suspendido. Contacta al administrador.';
+      lockPortones(msg);
+      window._wasSuspended = true;
       return;
     }
-    // Si llegamos aquí con datos frescos de JSONBin, actualizar UI
-    if(window._wasSuspended) { window._wasSuspended=false; showScreen('res'); }
+    // Si llegamos aqui con datos frescos y estaba suspendido, desbloquear
+    if(window._wasSuspended) { window._wasSuspended=false; unlockPortones(); }
   } else if(role==='res'){
-    // Verificar con datos locales — si hay mora, forzar sync inmediato
     const res=c.residents.find(r=>r.house===U.house);
     const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
     if(!res||!res.active||res.mora||memberSusp){
-      // Forzar sync inmediato para ver si fue reactivado
-      lastSuspCheck = 0;
-      if(!res?.mora) localStorage.removeItem('cerrada_session');
-      document.getElementById('susp-msg').textContent=res?.mora
-        ?`Acceso suspendido por mora. ${res.moraNote||''}`
-        :'Tu acceso fue suspendido. Contacta al administrador.';
+      lastSuspCheck = 0; // forzar sync inmediato
+      showScreen('res');
+      const msg = res?.mora
+        ? (res.moraNote ? 'Suspendido por mora: '+res.moraNote : 'Acceso suspendido por mora')
+        : 'Tu acceso fue suspendido. Contacta al administrador.';
+      lockPortones(msg);
       window._wasSuspended = true;
-      showScreen('susp');
       return;
     }
+    if(window._wasSuspended) { window._wasSuspended=false; unlockPortones(); }
   }
 
   const pt=c.portones.find(p=>p.id===pid);if(!pt)return;
@@ -1472,8 +1489,9 @@ async function addVec(){
   if(c.residents.find(r=>r.house===house)){toast('⚠️ Esa casa ya existe');return;}
   if(c.residents.length>=c.houses){toast(`⚠️ Máximo ${c.houses} casas`);return;}
 
-  // Generar token de invitación (válido 7 días)
-  const inviteToken = btoa(`${c.code}|${house}|head|${Date.now()}`).replace(/[+/=]/g,'');
+  // Generar token de invitacion (valido 7 dias) — solo alphanumerico
+  const inviteToken = btoa(c.code+'|'+house+'|head|'+Date.now())
+    .replace(/[^a-zA-Z0-9]/g,'');
   const inviteExpires = Date.now() + 7*24*60*60*1000;
 
   // Crear residente SIN pin — pendiente de registro
@@ -2547,36 +2565,18 @@ load();seedDemo();renderNcP();
         } catch(e) {}
       }
       const res = c.residents.find(r => r.house === house);
-      if (!res || !res.active || res.mora) {
-        // Suspendido — limpiar sesión y mostrar pantalla de suspensión
-        localStorage.removeItem('cerrada_session');
-        document.getElementById('susp-msg').textContent = res?.mora 
-          ? `Acceso suspendido por mora. ${res.moraNote || ''}` 
-          : 'Tu acceso fue suspendido. Contacta al administrador.';
-        showScreen('susp');
-        return;
-      }
-      // Buscar miembro por email (más confiable que por índice)
+      // Buscar miembro por email
       const savedEmail = sess.email;
       let mi = memberIdx !== undefined ? memberIdx : -1;
       let member = null;
-      if (savedEmail && res.members) {
+      if (savedEmail && res?.members) {
         const emailIdx = res.members.findIndex(m => m.email === savedEmail);
-        if (emailIdx >= 0) {
-          mi = emailIdx;
-          member = res.members[emailIdx];
-          // Verificar si el familiar está suspendido
-          if (member.suspended) {
-            localStorage.removeItem('cerrada_session');
-            document.getElementById('susp-msg').textContent = 'Tu acceso fue suspendido. Contacta al administrador.';
-            showScreen('susp');
-            return;
-          }
-        }
-      } else if (mi >= 0 && res.members) {
+        if (emailIdx >= 0) { mi = emailIdx; member = res.members[emailIdx]; }
+      } else if (mi >= 0 && res?.members) {
         member = res.members[mi];
       }
-      U = { role:'resident', cerradaCode, house, memberIdx: mi, memberName: member?.name || res.name, email: savedEmail };
+      U = { role:'resident', cerradaCode, house, memberIdx: mi, memberName: member?.name || res?.name, email: savedEmail };
+      // Entrar siempre — lockPortones se encarga si hay mora/suspension
       enterRes(c, res, member);
     }
   } catch(e) { localStorage.removeItem('cerrada_session'); }
