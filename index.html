@@ -208,6 +208,7 @@ select option{background:var(--sur)}
   background:var(--blue-lt);
 }
 /* Icono pulsando */
+@keyframes dot{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
 @keyframes pulse-ico{
   0%,100%{transform:scale(1)}
   50%{transform:scale(1.12)}
@@ -314,7 +315,16 @@ select option{background:var(--sur)}
 <body>
 
 <!-- LOGIN -->
-<div id="scr-login" class="screen active">
+<div id="scr-splash" class="screen active" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;background:linear-gradient(160deg,#e8f0fb 0%,#f8faff 100%)">
+  <div style="font-size:4rem;animation:pulse 1.5s ease-in-out infinite">🏘️</div>
+  <div style="font-size:1.4rem;font-weight:900;color:#1e3a5f;letter-spacing:-.5px">CerradaApp</div>
+  <div style="display:flex;gap:.4rem;margin-top:.5rem">
+    <div style="width:8px;height:8px;border-radius:50%;background:#3B82C4;animation:dot 1.2s ease-in-out infinite"></div>
+    <div style="width:8px;height:8px;border-radius:50%;background:#3B82C4;animation:dot 1.2s ease-in-out .2s infinite"></div>
+    <div style="width:8px;height:8px;border-radius:50%;background:#3B82C4;animation:dot 1.2s ease-in-out .4s infinite"></div>
+  </div>
+</div>
+<div id="scr-login" class="screen" style="display:none">
   <div class="lcard">
     <div class="brand">
       <div class="brand-ico">🏘️</div>
@@ -1061,7 +1071,10 @@ async function jbPush(c){if(!c?.jsonbin?.binId||!c?.jsonbin?.apiKey)return false
 async function push(role){const c=C();if(!c?.jsonbin?.binId)return;setSI(role,'syncing');setSI(role,await jbPush(c)?'ok':'err');}
 
 // ── NAV
-function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('scr-'+id)?.classList.add('active');}
+function showScreen(id){
+  // Ocultar splash siempre que se muestre cualquier pantalla
+  const splash = document.getElementById('scr-splash');
+  if(splash) splash.style.display='none';document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('scr-'+id)?.classList.add('active');}
 function setPanels(pre,list,act){list.forEach(p=>{const el=document.getElementById(pre+p);if(el)el.classList.toggle('on',p===act);});}
 function setTabs(scope,el){document.querySelectorAll(scope+' .ntab').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
 function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);setTabs('#scr-res',el);const c=C();if(!c)return;if(id==='finanzas'){renderResFin(c);renderMiCuenta(c,U?.house);}if(id==='historial')renderResHist(c);}
@@ -2532,7 +2545,13 @@ load();seedDemo();renderNcP();
 
   // 3. Auto Login — recordar sesión
   const saved = localStorage.getItem('cerrada_session');
-  if (!saved) return; // Mostrar login normal
+  if (!saved) {
+    // Sin sesión — mostrar login directamente
+    document.getElementById('scr-splash').style.display = 'none';
+    document.getElementById('scr-login').style.display = '';
+    document.getElementById('scr-login').classList.add('active');
+    return;
+  }
   try {
     const sess = JSON.parse(saved);
     const { role, cerradaCode, house, memberIdx } = sess;
