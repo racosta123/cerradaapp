@@ -1399,9 +1399,21 @@ function shellyOpen(pt) {
   const DEVICE = pt.shellyId || 'e4b063eb85a4';
   const SECS   = pt.time || 5;
 
-  const sendCmd = (turn) => {
-    fetch(`${PROXY}?id=${DEVICE}&auth=${AUTH}&turn=${turn}`)
-      .catch(e => console.warn('Proxy:', e));
+  const sendCmd = async (turn) => {
+    // Intentar primero directo a Shelly Cloud (sin cold start)
+    const body = new URLSearchParams({id: DEVICE, auth_key: AUTH, channel: '0', turn});
+    try {
+      await fetch('https://shelly-258-eu.shelly.cloud/device/relay/control', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: body.toString(),
+        mode: 'no-cors' // evitar bloqueo CORS — no podemos leer respuesta pero el comando llega
+      });
+    } catch(e) {
+      // Fallback al Worker si falla
+      fetch(`${PROXY}?id=${DEVICE}&auth=${AUTH}&turn=${turn}`)
+        .catch(e2 => console.warn('Proxy fallback:', e2));
+    }
   };
 
   // Encender inmediatamente
