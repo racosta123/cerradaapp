@@ -1109,12 +1109,27 @@ function enterRes(c, res, member) {
   if (sub) sub.textContent = displayName + ' · ' + res.house;
   setSI('res','ok');
   renderGates(c,'res','gate-res');
-  // Ping silencioso al Worker para evitar cold start
+  // Ping al Worker cada minuto
   const workerPing = () => fetch('https://shelly-proxy.acosta4770.workers.dev/?ping=1').catch(()=>{});
   workerPing();
-  // Mantener el Worker caliente con ping cada 3 minutos
   if(window._workerPingInterval) clearInterval(window._workerPingInterval);
   window._workerPingInterval = setInterval(workerPing, 60 * 1000);
+
+  // Ping al Shelly cada minuto para mantenerlo activo
+  const shellyPing = () => {
+    const b = new URLSearchParams({
+      id: 'e4b063eb85a4',
+      auth_key: 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388D6B4B15BC5295B801F11A2A689C37770CE435132',
+      channel: '0', turn: 'off'
+    });
+    fetch('https://shelly-258-eu.shelly.cloud/device/relay/control',{
+      method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: b.toString(), mode:'no-cors'
+    }).catch(()=>{});
+  };
+  shellyPing();
+  if(window._shellyPingInterval) clearInterval(window._shellyPingInterval);
+  window._shellyPingInterval = setInterval(shellyPing, 60 * 1000);
   renderResFin(c);
   renderResHist(c);
   renderMiCuenta(c, res.house);
