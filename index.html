@@ -1109,6 +1109,8 @@ function enterRes(c, res, member) {
   if (sub) sub.textContent = displayName + ' · ' + res.house;
   setSI('res','ok');
   renderGates(c,'res','gate-res');
+  // Ping silencioso al Worker para evitar cold start en primera apertura
+  fetch('https://shelly-proxy.acosta4770.workers.dev/?ping=1').catch(()=>{});
   renderResFin(c);
   renderResHist(c);
   renderMiCuenta(c, res.house);
