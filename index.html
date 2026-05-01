@@ -1104,7 +1104,7 @@ function setPanels(pre,list,act){list.forEach(p=>{const el=document.getElementBy
 function setTabs(scope,el){document.querySelectorAll(scope+' .ntab').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
 function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);setTabs('#scr-res',el);const c=C();if(!c)return;if(id==='finanzas'){renderResFin(c);renderMiCuenta(c,U?.house);}if(id==='historial')renderResHist(c);}
 function admP(id,el){setPanels('ap-',['dashboard','vecinos','historial','finanzas','portones','config'],id);setTabs('#scr-adm',el);const c=C();if(!c)return;if(id==='dashboard')updateDash();if(id==='vecinos')renderVec();if(id==='historial')renderAdmHist();if(id==='finanzas'){renderAdmFin();}if(id==='cuotas')initCuotasMes();if(id==='portones')renderAdmPortones();if(id==='config')loadCfg();}
-function mstP(id,el){setPanels('mp-',['cerradas','negocio','config'],id);setTabs('#scr-mst',el);if(id==='cerradas')renderMstList();if(id==='negocio')renderNegocio();if(id==='config'){document.getElementById('mc-price').value=S.defaultPrice;populateMstJsonbinSelect();}}
+function mstP(id,el){setPanels('mp-',['cerradas','usuarios','negocio','config'],id);setTabs('#scr-mst',el);if(id==='cerradas')renderMstList();if(id==='usuarios')renderUsuarios();if(id==='negocio')renderNegocio();if(id==='config'){document.getElementById('mc-price').value=S.defaultPrice;populateMstJsonbinSelect();}}
 
 // ── RESIDENT
 function lockPortones(msg) {
