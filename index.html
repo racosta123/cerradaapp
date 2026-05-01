@@ -1092,7 +1092,7 @@ function logout(){
 
 // ── JSONBIN
 function setSI(r,st){const m={syncing:'🔄',ok:'☁️',err:'⚠️',off:'💾'};const el=document.getElementById('sync-'+r);if(el)el.textContent=m[st]||'☁️';}
-async function jbPush(c){if(!c?.jsonbin?.binId||!c?.jsonbin?.apiKey)return false;const p={name:c.name,code:c.code,houses:c.houses,adminPin:c.adminPin,adminName:c.adminName,adminPhone:c.adminPhone,price:c.price,active:c.active,suspended:c.suspended,portones:c.portones||[],residents:c.residents||[],history:(c.history||[]).slice(-500),movements:c.movements||[],cuotas:c.cuotas||{},cuotaConfig:c.cuotaConfig||{},updatedAt:new Date().toISOString()};try{const r=await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':c.jsonbin.apiKey},body:JSON.stringify(p)});return r.ok;}catch(e){return false;}}
+async function jbPush(c){console.log('jbPush binId:', c?.jsonbin?.binId, 'apiKey:', c?.jsonbin?.apiKey?'OK':'MISSING');if(!c?.jsonbin?.binId||!c?.jsonbin?.apiKey)return false;const p={name:c.name,code:c.code,houses:c.houses,adminPin:c.adminPin,adminName:c.adminName,adminPhone:c.adminPhone,price:c.price,active:c.active,suspended:c.suspended,portones:c.portones||[],residents:c.residents||[],history:(c.history||[]).slice(-500),movements:c.movements||[],cuotas:c.cuotas||{},cuotaConfig:c.cuotaConfig||{},updatedAt:new Date().toISOString()};try{const r=await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':c.jsonbin.apiKey},body:JSON.stringify(p)});return r.ok;}catch(e){return false;}}
 async function push(role){const c=C();if(!c?.jsonbin?.binId)return;setSI(role,'syncing');setSI(role,await jbPush(c)?'ok':'err');}
 
 // ── NAV
@@ -1577,8 +1577,14 @@ async function addVec(){
   });
   save();
   setSI('adm','syncing');
+  toast('⏳ Sincronizando con la nube...');
   const ok=await jbPush(c);
   setSI('adm',ok?'ok':'err');
+
+  if(!ok){
+    toast('⚠️ Error al sincronizar. Verifica tu conexión y vuelve a intentar.');
+    return;
+  }
 
   // Generar link de invitación para jefe de familia
   const payload = btoa(JSON.stringify({
@@ -1593,17 +1599,10 @@ async function addVec(){
   })).replace(/[+/=]/g, m=>({'+':`-`,'/':'_','=':''}[m]));
   const inviteUrl = `https://racosta123.github.io/cerradaapp/register.html?reg=${payload}`;
 
-  // Mostrar opciones de envío
-  const msg = `Hola ${name},
-
-Fuiste registrado en ${c.name} (${house}).
-
-Completa tu registro aqui:
-${inviteUrl}
-
-El link es valido por 7 dias.`;
+  const msg = 'Hola '+name+',\n\nFuiste registrado en '+c.name+' ('+house+').\n\nCompleta tu registro aqui:\n'+inviteUrl+'\n\nEl link es valido por 7 dias.';
   ['nv-h','nv-n','nv-email','nv-t'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   renderVec();updateDash();
+  toast('✅ Casa registrada y sincronizada');
 
   // Mostrar modal con opciones de envío
   showInviteModal(name, email, msg, inviteUrl);
