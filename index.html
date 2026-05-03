@@ -1242,19 +1242,25 @@ async function invitarFamiliar() {
   // Generar token exclusivo para familiar
   const token = btoa(c.code+'|'+res.house+'|fam|'+Date.now()).replace(/[^a-zA-Z0-9]/g,'');
 
+  // Asegurar jsonbin con KNOWN_BINS hardcodeado como fallback
+  const _KB = {'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
+  const _jb = (c.jsonbin?.binId) ? c.jsonbin : _KB[c.code];
+  if (!_jb?.binId) { toast('⚠️ Sin configuración de nube'); return; }
+  if (!c.jsonbin?.binId) { c.jsonbin = _jb; save(); }
+
   // Descargar datos frescos de JSONBin, actualizar y subir
   toast('⏳ Generando invitación...');
   try {
-    const freshResp = await fetch('https://api.jsonbin.io/v3/b/'+c.jsonbin.binId+'/latest',
-      {headers:{'X-Master-Key':c.jsonbin.apiKey}});
+    const freshResp = await fetch('https://api.jsonbin.io/v3/b/'+_jb.binId+'/latest',
+      {headers:{'X-Master-Key':_jb.apiKey}});
     if (!freshResp.ok) throw new Error('fetch');
     const freshData = (await freshResp.json()).record;
     const resIdx = freshData.residents.findIndex(r => r.house === res.house);
     if (resIdx < 0) throw new Error('Casa no encontrada en JSONBin');
     freshData.residents[resIdx].familiarToken = token;
     freshData.residents[resIdx].familiarTokenExpires = Date.now() + 7*24*60*60*1000;
-    const saveResp = await fetch('https://api.jsonbin.io/v3/b/'+c.jsonbin.binId,
-      {method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':c.jsonbin.apiKey},
+    const saveResp = await fetch('https://api.jsonbin.io/v3/b/'+_jb.binId,
+      {method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':_jb.apiKey},
        body:JSON.stringify(freshData)});
     if (!saveResp.ok) throw new Error('save');
     // Actualizar local tambien
@@ -1271,15 +1277,55 @@ async function invitarFamiliar() {
     house: res.house,
     cerradaName: c.name,
     token,
-    binId: c.jsonbin?.binId || '',
-    apiKey: c.jsonbin?.apiKey || '',
+    binId: _jb.binId || '',
+    apiKey: _jb.apiKey || '',
     isFamiliar: true
   })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
 
   const inviteUrl = 'https://racosta123.github.io/cerradaapp/register.html?reg=' + payload;
-  const msg = '🏘️ *' + c.name + '*\n\nHola, te invitan a acceder al portón de *' + res.house + '*. 🏠\n\n👉 Toca el link para registrarte:\n' + inviteUrl + '\n\n_Solo tarda 1 minuto. Válido 7 días._';
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-  toast('📲 Invitación enviada por WhatsApp');
+  const msg = 'Hola! Te invitan a acceder al portón de ' + res.house + ' en ' + c.name + '. Regístrate aqui: ' + inviteUrl;
+
+  // Guardar link en variable global para usar en el modal
+  window._familiarInviteUrl = inviteUrl;
+  window._familiarInviteMsg = msg;
+
+  // Mostrar modal
+  let modal = document.getElementById('modal-familiar-invite');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'modal-familiar-invite';
+    modal.className = 'mover';
+    modal.onclick = function(e){ if(e.target===modal) modal.style.display='none'; };
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = '<div class="mdl">'
+    + '<div class="mtitle">👥 Invitar Familiar</div>'
+    + '<p style="font-size:.8rem;color:var(--t2);margin-bottom:1rem">Comparte este link con tu familiar:</p>'
+    + '<div style="background:var(--bg2);border-radius:8px;padding:.75rem;font-size:.72rem;word-break:break-all;color:var(--t2);margin-bottom:1rem">' + inviteUrl + '</div>'
+    + '<div style="display:flex;flex-direction:column;gap:.5rem">'
+    + '<button class="btn bp" id="fam-share-btn">📤 Compartir</button>'
+    + '<button class="btn bg2" id="fam-copy-btn">📋 Copiar link</button>'
+    + '</div>'
+    + '<button class="btn bw" style="margin-top:.75rem;width:100%" onclick="document.getElementById(\'modal-familiar-invite\').style.display=\'none\'">Cerrar</button>'
+    + '</div>';
+
+  document.getElementById('fam-share-btn').onclick = function() {
+    const u = window._familiarInviteUrl;
+    const m = window._familiarInviteMsg;
+    if (navigator.share) {
+      navigator.share({ title: 'Invitación CerradaApp', text: m, url: u }).catch(function(){});
+    } else {
+      window.open('https://wa.me/?text=' + encodeURIComponent(m), '_blank');
+    }
+  };
+  document.getElementById('fam-copy-btn').onclick = function() {
+    navigator.clipboard.writeText(window._familiarInviteUrl)
+      .then(function(){ toast('✅ Link copiado'); })
+      .catch(function(){ toast('⚠️ No se pudo copiar'); });
+  };
+
+  modal.style.display = 'flex';
+  toast('✅ Link listo para compartir');
 }
 function renderGates(c,role,cid){
   const pts=c.portones||[];const n=pts.length;
@@ -2294,8 +2340,8 @@ function sendInvite(i) {
     house: res.house,
     cerradaName: c.name,
     token,
-    binId: c.jsonbin?.binId || '',
-    apiKey: c.jsonbin?.apiKey || '',
+    binId: _jb.binId || '',
+    apiKey: _jb.apiKey || '',
     isHead: true,
     email: res.email || ''
   })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
