@@ -1528,9 +1528,9 @@ function renderVec(){
   const membersHtml = members.length ? `
     <div style="margin-top:.35rem;padding-left:.5rem;border-left:2px solid var(--brd)">
       ${members.map((m,mi)=>`
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:.25rem 0;font-size:.72rem">
-          <span style="color:var(--t2)">👤 ${esc(m.name)} <span style="color:var(--t3)">${m.role==='head'?'Jefe':'Familiar'}</span></span>
-          <span style="color:var(--t3)">${m.email||''}</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.25rem 0;font-size:.72rem;gap:.5rem">
+          <span style="color:var(--t2);flex:1">👤 ${esc(m.name)} <span style="color:var(--t3)">${m.role==='head'?'Jefe':'Familiar'}</span> · <span style="color:var(--t3)">${m.email||''}</span></span>
+          <button class="btn bw xs" style="font-size:.65rem;padding:.2rem .5rem" onclick="resetPinMember(${i},${mi})" title="Resetear PIN">🔑</button>
         </div>`).join('')}
     </div>` : '';
   return`<div class="li" style="flex-direction:column;align-items:stretch">
@@ -1544,6 +1544,7 @@ function renderVec(){
       </div>
       <div class="ia">
         <button class="btn bb2 xs" onclick="sendInvite(${i})" title="Invitar por WhatsApp">📲</button>
+        <button class="btn bw xs" onclick="resetPinJefe(${i})" title="Resetear PIN del jefe">🔑</button>
         ${r.mora?`<button class="btn bg2 xs" onclick="quitarMora(${i})">✓ Pagó</button>`:`<button class="btn bw xs" onclick="openMora(${i})">⚠️</button>`}
         <button class="btn ${r.active&&!r.mora?'bd':'bg2'} xs" onclick="toggleVec(${i})">${r.active&&!r.mora?'🔒':'🔓'}</button>
         <button class="btn bd xs" onclick="delVec(${i})">✕</button>
@@ -1552,6 +1553,59 @@ function renderVec(){
     ${membersHtml}
   </div>`;}).join('');
 }
+// ── RESET PIN JEFE DE FAMILIA
+async function resetPinJefe(i) {
+  const c = C(); if (!c) return;
+  const r = c.residents[i]; if (!r) return;
+  if (!confirm('¿Estas seguro que quieres enviar un reset de PIN a ' + r.name + '?')) return;
+
+  const token = btoa(c.code+'|'+r.house+'|head|'+Date.now()).replace(/[^a-zA-Z0-9]/g,'');
+  c.residents[i].inviteToken = token;
+  c.residents[i].inviteExpires = Date.now() + 7*24*60*60*1000;
+  save();
+
+  toast('⏳ Sincronizando...');
+  const ok = await jbPush(c);
+  if (!ok) { toast('⚠️ Error al sincronizar'); return; }
+
+  const payload = btoa(JSON.stringify({
+    code: c.code, house: r.house, cerradaName: c.name,
+    token, binId: c.jsonbin?.binId||'', apiKey: c.jsonbin?.apiKey||'',
+    isHead: true, email: r.email||''
+  })).replace(/[+/=]/g, m=>({'+':`-`,'/':'_','=':''}[m]));
+  const url = 'https://racosta123.github.io/cerradaapp/register.html?reg=' + payload;
+  const msg = 'Hola ' + r.name + ', se ha solicitado un reset de tu PIN en CerradaApp.\n\nCrea tu nuevo PIN aqui:\n' + url + '\n\nValido por 7 dias.';
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  toast('🔑 Reset enviado por WhatsApp');
+}
+
+// ── RESET PIN FAMILIAR
+async function resetPinMember(i, mi) {
+  const c = C(); if (!c) return;
+  const r = c.residents[i]; if (!r) return;
+  const m = r.members?.[mi]; if (!m) return;
+  if (!confirm('¿Estas seguro que quieres enviar un reset de PIN a ' + m.name + '?')) return;
+
+  const token = btoa(c.code+'|'+r.house+'|fam|'+Date.now()).replace(/[^a-zA-Z0-9]/g,'');
+  c.residents[i].familiarToken = token;
+  c.residents[i].familiarTokenExpires = Date.now() + 7*24*60*60*1000;
+  save();
+
+  toast('⏳ Sincronizando...');
+  const ok = await jbPush(c);
+  if (!ok) { toast('⚠️ Error al sincronizar'); return; }
+
+  const payload = btoa(JSON.stringify({
+    code: c.code, house: r.house, cerradaName: c.name,
+    token, binId: c.jsonbin?.binId||'', apiKey: c.jsonbin?.apiKey||'',
+    isFamiliar: true, email: m.email||''
+  })).replace(/[+/=]/g, m2=>({'+':`-`,'/':'_','=':''}[m2]));
+  const url = 'https://racosta123.github.io/cerradaapp/register.html?reg=' + payload;
+  const msg = 'Hola ' + m.name + ', se ha solicitado un reset de tu PIN en CerradaApp.\n\nCrea tu nuevo PIN aqui:\n' + url + '\n\nValido por 7 dias.';
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  toast('🔑 Reset enviado por WhatsApp');
+}
+
 async function addVec(){
   const c=C();if(!c)return;
   const house=document.getElementById('nv-h').value.trim();
