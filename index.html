@@ -1217,19 +1217,29 @@ function enterRes(c, res, member) {
   }
 }
 
-function invitarFamiliar() {
+async function invitarFamiliar() {
   const c = C(); if (!c) return;
   const res = c.residents.find(r => r.house === U.house);
   if (!res) return;
   const members = res.members || [];
-  if (members.length >= 5) { toast('⚠️ Ya tienes el máximo de 5 miembros'); return; }
+  if (members.filter(m => m.role !== 'head').length >= 4) {
+    toast('⚠️ Ya tienes el máximo de 4 familiares');
+    return;
+  }
 
-  // Generar token para el familiar — siempre renovar
-  const token = btoa(`${c.code}|${res.house}|fam|${Date.now()}`).replace(/=/g,'');
-  res.inviteToken = token;
-  res.inviteExpires = Date.now() + 24*60*60*1000; // 24 horas
+  // Generar token exclusivo para familiar (no sobreescribe el del jefe)
+  const token = btoa(c.code+'|'+res.house+'|fam|'+Date.now()).replace(/[^a-zA-Z0-9]/g,'');
+  res.familiarToken = token;
+  res.familiarTokenExpires = Date.now() + 7*24*60*60*1000; // 7 dias
   save();
-  if (c.jsonbin?.binId) jbPush(c);
+
+  // Sincronizar con JSONBin ANTES de enviar el link
+  toast('⏳ Generando invitación...');
+  const ok = await jbPush(c);
+  if (!ok) {
+    toast('⚠️ Error al sincronizar. Verifica tu conexión.');
+    return;
+  }
 
   const payload = btoa(JSON.stringify({
     code: c.code,
@@ -1240,17 +1250,11 @@ function invitarFamiliar() {
     apiKey: c.jsonbin?.apiKey || '',
     isFamiliar: true
   })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
-  const inviteUrl = `https://racosta123.github.io/cerradaapp/register.html?reg=${payload}`;
-  const msg = `🏘️ *${c.name}*
 
-Hola, te invitan a acceder al portón de *${res.house}*. 🏠
-
-👉 Toca el link para registrarte:
-${inviteUrl}
-
-_Solo tarda 1 minuto._`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-  toast('📲 Abriendo WhatsApp...');
+  const inviteUrl = 'https://racosta123.github.io/cerradaapp/register.html?reg=' + payload;
+  const msg = '🏘️ *' + c.name + '*\n\nHola, te invitan a acceder al portón de *' + res.house + '*. 🏠\n\n👉 Toca el link para registrarte:\n' + inviteUrl + '\n\n_Solo tarda 1 minuto. Válido 7 días._';
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  toast('📲 Invitación enviada por WhatsApp');
 }
 function renderGates(c,role,cid){
   const pts=c.portones||[];const n=pts.length;

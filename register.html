@@ -185,12 +185,14 @@ async function init() {
       return;
     }
 
-    // Verificar token — normalizar ambos para comparacion robusta
-    const normalize = t => (t||'').replace(/[+\/=\-_ ]/g,'').toLowerCase();
-    const tokenOk = res.inviteToken && REG.token &&
-                    normalize(res.inviteToken) === normalize(REG.token);
-    const notExpired = !res.inviteExpires || Date.now() < res.inviteExpires;
+    // Verificar token -- familiar usa familiarToken, jefe usa inviteToken
+    const normalize = t => (t||'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
     const isFamiliar = REG.isFamiliar;
+    const storedToken = isFamiliar ? res.familiarToken : res.inviteToken;
+    const storedExpires = isFamiliar ? res.familiarTokenExpires : res.inviteExpires;
+    const tokenOk = storedToken && REG.token &&
+                    normalize(storedToken) === normalize(REG.token);
+    const notExpired = !storedExpires || Date.now() < storedExpires;
 
     console.log('DEBUG token JSONBin:', res.inviteToken);
     console.log('DEBUG token link:', REG.token);
@@ -328,8 +330,13 @@ async function doRegister() {
     }
 
     // Invalidar token para que no se reutilice
-    res.inviteToken = null;
-    res.inviteExpires = null;
+    if (REG.isFamiliar) {
+      res.familiarToken = null;
+      res.familiarTokenExpires = null;
+    } else {
+      res.inviteToken = null;
+      res.inviteExpires = null;
+    }
 
     cerradaData.residents[resIdx] = res;
 
