@@ -91,6 +91,7 @@ input:focus{border-color:#3b82f6}
 var REG = null;
 var DATA = null;
 var JB = 'https://api.jsonbin.io/v3/b';
+var WORKER = 'https://shelly-proxy.acosta4770.workers.dev';
 
 function show(id){
   var steps = document.querySelectorAll('.step');
@@ -157,13 +158,13 @@ function doReg(){
   showMsg('Conectando...','ok');
 
   // Ahora sí hacemos la llamada a JSONBin
-  fetch(JB+'/'+REG.binId+'/latest',{headers:{'X-Master-Key':REG.apiKey}})
+  fetch(WORKER+'/jb?bin='+REG.binId+'&key='+encodeURIComponent(REG.apiKey))
     .then(function(r){
       if(!r.ok) throw new Error('Error de conexion ('+r.status+')');
       return r.json();
     })
     .then(function(d){
-      DATA = d.record;
+      DATA = d.record || d;
       var rs = DATA.residents||[];
       var resIdx = -1;
       for(var i=0;i<rs.length;i++){if(rs[i].house===REG.house){resIdx=i;break;}}
@@ -176,7 +177,11 @@ function doReg(){
       var tokenOk = stored && REG.token && norm(stored)===norm(REG.token);
       var notExp = !expires || Date.now()<expires;
 
-      if(!tokenOk||!notExp) throw new Error('Link expirado o ya usado');
+      console.log('DEBUG isFam:',isFam,'stored:',stored,'link:',REG.token,'ok:',tokenOk,'notExp:',notExp);
+      if(!tokenOk||!notExp){
+        var det = !stored ? 'Sin token guardado' : !tokenOk ? 'Token no coincide' : 'Expirado';
+        throw new Error(det);
+      }
 
       if(isFam){
         if(!res.members) res.members=[];
@@ -196,14 +201,15 @@ function doReg(){
       }
       DATA.residents[resIdx]=res;
 
-      return fetch(JB+'/'+REG.binId,{
-        method:'PUT',
-        headers:{'Content-Type':'application/json','X-Master-Key':REG.apiKey},
-        body:JSON.stringify(DATA)
+      return fetch(WORKER+'/jb',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({bin:REG.binId,key:REG.apiKey,data:DATA})
       });
     })
-    .then(function(r){
-      if(!r.ok) throw new Error('Error al guardar');
+    .then(function(r){return r.json();})
+    .then(function(saved){
+      if(!saved.ok) throw new Error('Error al guardar');
       document.getElementById('pd2').className='prog-dot done';
       document.getElementById('pd3').className='prog-dot done';
       document.getElementById('okmsg').textContent =
