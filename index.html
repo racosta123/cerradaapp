@@ -1227,6 +1227,18 @@ async function invitarFamiliar() {
     return;
   }
 
+  // Asegurar que la cerrada tenga JSONBin configurado
+  const KNOWN_BINS = {'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
+  if (!c.jsonbin?.binId && KNOWN_BINS[c.code]) {
+    c.jsonbin = KNOWN_BINS[c.code];
+    save();
+  }
+
+  if (!c.jsonbin?.binId) {
+    toast('⚠️ Sin conexión a la nube. Contacta al administrador.');
+    return;
+  }
+
   // Generar token exclusivo para familiar (no sobreescribe el del jefe)
   const token = btoa(c.code+'|'+res.house+'|fam|'+Date.now()).replace(/[^a-zA-Z0-9]/g,'');
   res.familiarToken = token;
