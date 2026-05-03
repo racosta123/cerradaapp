@@ -1239,17 +1239,30 @@ async function invitarFamiliar() {
     return;
   }
 
-  // Generar token exclusivo para familiar (no sobreescribe el del jefe)
+  // Generar token exclusivo para familiar
   const token = btoa(c.code+'|'+res.house+'|fam|'+Date.now()).replace(/[^a-zA-Z0-9]/g,'');
-  res.familiarToken = token;
-  res.familiarTokenExpires = Date.now() + 7*24*60*60*1000; // 7 dias
-  save();
 
-  // Sincronizar con JSONBin ANTES de enviar el link
+  // Descargar datos frescos de JSONBin, actualizar y subir
   toast('⏳ Generando invitación...');
-  const ok = await jbPush(c);
-  if (!ok) {
-    toast('⚠️ Error al sincronizar. Verifica tu conexión.');
+  try {
+    const freshResp = await fetch('https://api.jsonbin.io/v3/b/'+c.jsonbin.binId+'/latest',
+      {headers:{'X-Master-Key':c.jsonbin.apiKey}});
+    if (!freshResp.ok) throw new Error('fetch');
+    const freshData = (await freshResp.json()).record;
+    const resIdx = freshData.residents.findIndex(r => r.house === res.house);
+    if (resIdx < 0) throw new Error('Casa no encontrada en JSONBin');
+    freshData.residents[resIdx].familiarToken = token;
+    freshData.residents[resIdx].familiarTokenExpires = Date.now() + 7*24*60*60*1000;
+    const saveResp = await fetch('https://api.jsonbin.io/v3/b/'+c.jsonbin.binId,
+      {method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':c.jsonbin.apiKey},
+       body:JSON.stringify(freshData)});
+    if (!saveResp.ok) throw new Error('save');
+    // Actualizar local tambien
+    const localRes = c.residents.find(r => r.house === res.house);
+    if (localRes) { localRes.familiarToken = token; localRes.familiarTokenExpires = Date.now() + 7*24*60*60*1000; }
+    save();
+  } catch(e) {
+    toast('⚠️ Error al sincronizar: ' + e.message);
     return;
   }
 
