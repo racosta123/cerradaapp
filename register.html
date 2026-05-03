@@ -95,42 +95,21 @@ function fetchTimeout(url, opts, ms) {
   return fetch(url, options).then(function(r){ clearTimeout(timer); return r; });
 }
 function load(binId,apiKey){
-  // Intentar primero via Worker, luego directo a JSONBin
-  return fetchTimeout(WORKER+'/jb?bin='+binId+'&key='+encodeURIComponent(apiKey), {}, 8000)
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(d.ok) return d.record;
-      // Worker fallo, intentar directo
-      return fetchTimeout('https://api.jsonbin.io/v3/b/'+binId+'/latest',
-        {headers:{'X-Master-Key':apiKey}}, 8000)
-        .then(function(r){return r.json();})
-        .then(function(d){return d.record;});
+  // Directo a JSONBin — mas rapido y compatible con WebView
+  return fetchTimeout('https://api.jsonbin.io/v3/b/'+binId+'/latest',
+    {headers:{'X-Master-Key':apiKey}}, 12000)
+    .then(function(r){
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
     })
-    .catch(function(){
-      // Fallback directo a JSONBin
-      return fetchTimeout('https://api.jsonbin.io/v3/b/'+binId+'/latest',
-        {headers:{'X-Master-Key':apiKey}}, 10000)
-        .then(function(r){return r.json();})
-        .then(function(d){return d.record;});
-    });
+    .then(function(d){return d.record;});
 }
 function save(binId,apiKey,data){
-  return fetchTimeout(WORKER+'/jb',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({bin:binId,key:apiKey,data:data})},10000)
-    .then(function(r){return r.json();})
-    .then(function(d){
-      if(d.ok) return true;
-      return fetchTimeout('https://api.jsonbin.io/v3/b/'+binId,
-        {method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':apiKey},
-        body:JSON.stringify(data)},10000)
-        .then(function(r){return r.ok;});
-    })
-    .catch(function(){
-      return fetchTimeout('https://api.jsonbin.io/v3/b/'+binId,
-        {method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':apiKey},
-        body:JSON.stringify(data)},10000)
-        .then(function(r){return r.ok;});
-    });
+  return fetchTimeout('https://api.jsonbin.io/v3/b/'+binId,
+    {method:'PUT',
+     headers:{'Content-Type':'application/json','X-Master-Key':apiKey},
+     body:JSON.stringify(data)}, 12000)
+    .then(function(r){return r.ok;});
 }
 function norm(t){return(t||'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();}
 function decode(raw){try{var b=raw.replace(/-/g,'+').replace(/_/g,'/');var p=b.length%4?b+'==='.slice(b.length%4):b;return JSON.parse(atob(p));}catch(e){return null;}}
