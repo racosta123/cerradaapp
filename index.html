@@ -1153,24 +1153,9 @@ let lastSuspCheck = 0; // Timestamp del último check de suspensión
 
 async function openPorton(pid,role){
   const c=C();if(!c)return;
-  
-  // Verificar suspensión solo cada 5 minutos para no ralentizar
-  if(role==='res' && c.jsonbin?.binId && (Date.now()-lastSuspCheck > 5*60*1000)){
-    try {
-      const r=await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}/latest`,
-        {headers:{'X-Master-Key':c.jsonbin.apiKey}});
-      if(r.ok){
-        const data=await r.json();
-        if(data.record){
-          const jb=c.jsonbin;
-          Object.assign(c,data.record);
-          c.jsonbin=jb;
-          save();
-        }
-      }
-      lastSuspCheck=Date.now();
-    } catch(e){}
-    // Verificar si sigue activo
+
+  // Verificar suspensión SOLO con datos locales — instantáneo, sin bloquear
+  if(role==='res'){
     const res=c.residents.find(r=>r.house===U.house);
     const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
     if(!res||!res.active||res.mora||memberSusp){
@@ -1181,16 +1166,6 @@ async function openPorton(pid,role){
       showScreen('susp');
       return;
     }
-  } else if(role==='res'){
-    // Verificar solo con datos locales (instantáneo)
-    const res=c.residents.find(r=>r.house===U.house);
-    const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
-    if(!res||!res.active||res.mora||memberSusp){
-      localStorage.removeItem('cerrada_session');
-      document.getElementById('susp-msg').textContent='Tu acceso fue suspendido.';
-      showScreen('susp');
-      return;
-    }
   }
 
   const pt=c.portones.find(p=>p.id===pid);if(!pt)return;
@@ -1198,11 +1173,11 @@ async function openPorton(pid,role){
   if(!c.history)c.history=[];
   const memberName = U.memberName || house;
   c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label,who:memberName});
-  save();push(role);
-  // Control via Shelly Cloud (funciona desde cualquier red)
+  save();
+
+  // Abrir portón INMEDIATAMENTE — sin esperar nada
   shellyOpen(pt);
   toast(`✅ ${pt.label} abierto`);
-  // Vibración de éxito: patrón largo-corto
   if(navigator.vibrate) navigator.vibrate([80,40,80]);
   const btn=document.getElementById(`gbtn-${role}-${pid}`);
   if(btn){
@@ -1210,7 +1185,22 @@ async function openPorton(pid,role){
     btn.classList.add('ok');
     setTimeout(()=>btn.classList.remove('ok'),2500);
   }
-  if(role==='res')renderResHist(c);
+  if(role==='res') renderResHist(c);
+
+  // Sync JSONBin en segundo plano — NO bloquea la apertura
+  push(role);
+  if(role==='res' && c.jsonbin?.binId && (Date.now()-lastSuspCheck > 5*60*1000)){
+    lastSuspCheck=Date.now();
+    fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}/latest`,
+      {headers:{'X-Master-Key':c.jsonbin.apiKey}})
+      .then(r=>r.ok?r.json():null)
+      .then(data=>{
+        if(data?.record){
+          const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
+          // Si fue suspendido mientras usaba, bloquear en siguiente apertura
+        }
+      }).catch(()=>{});
+  }
 }
 
 // ── SHELLY CLOUD CONTROL
