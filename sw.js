@@ -1,4 +1,4 @@
-// CerradaApp Service Worker — v4
+// CerradaApp Service Worker — v5
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
@@ -34,7 +34,7 @@ self.addEventListener('notificationclick', (e) => {
   );
 });
 
-const CACHE = 'cerradaapp-v4';
+const CACHE = 'cerradaapp-v5';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/cerradaapp/','/cerradaapp/index.html'])));
   self.skipWaiting();
@@ -45,6 +45,13 @@ self.addEventListener('activate', e => {
 });
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
+  // No interceptar: requests con ?reg=, metodos no-GET, o APIs externas
   if (url.searchParams.has('reg')) { e.respondWith(fetch(e.request)); return; }
-  e.respondWith(fetch(e.request).then(res=>{const clone=res.clone();caches.open(CACHE).then(c=>c.put(e.request,clone));return res;}).catch(()=>caches.match(e.request)));
+  if (e.request.method !== 'GET') { e.respondWith(fetch(e.request)); return; }
+  if (url.hostname !== 'racosta123.github.io') { e.respondWith(fetch(e.request)); return; }
+  e.respondWith(fetch(e.request).then(res=>{
+    const clone=res.clone();
+    caches.open(CACHE).then(c=>c.put(e.request,clone));
+    return res;
+  }).catch(()=>caches.match(e.request)));
 });
