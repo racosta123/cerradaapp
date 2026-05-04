@@ -396,6 +396,7 @@ select option{background:var(--sur)}
     <div class="t-right">
       <span id="sync-res" style="font-size:.9rem">☁️</span>
       <span class="bge g-b" id="res-house">Casa</span>
+      <button class="btn bg2 sm" onclick="logout()">Salir</button>
     </div>
   </div>
   <div class="nav">
@@ -880,10 +881,10 @@ async function loginResidente(){
     for(const cerrada of Object.values(S.cerradas)){
       if(cerrada.suspended||!cerrada.active) continue;
       for(const res of cerrada.residents||[]){
-        if(res.email===email && (res.password===pass||res.pin===pass)) return {cerrada,res,member:null,mi:-1};
+        if(res.email===email && res.password===pass) return {cerrada,res,member:null,mi:-1};
         for(let mi=0;mi<(res.members||[]).length;mi++){
           const m=res.members[mi];
-          if(m.email===email && (m.password===pass||m.pin===pass)) return {cerrada,res,member:m,mi};
+          if(m.email===email && m.password===pass) return {cerrada,res,member:m,mi};
         }
       }
     }
@@ -893,13 +894,13 @@ async function loginResidente(){
   // Buscar primero en local
   let found = buscarEnCerradas();
 
-  // Si no encontró en local, descargar desde JSONBin via Worker (más rápido)
+  // Si no encontró, descargar desde JSONBin
   if(!found){
     toast('🔄 Verificando...');
     for(const [code,cfg] of Object.entries(KNOWN_BINS)){
       try{
-        const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${cfg.binId}&key=${encodeURIComponent(cfg.apiKey)}`);
-        if(r.ok){const data=await r.json();if(data.ok&&data.record){S.cerradas[code]=data.record;S.cerradas[code].jsonbin=cfg;}}
+        const r=await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}/latest`,{headers:{'X-Master-Key':cfg.apiKey}});
+        if(r.ok){const data=await r.json();if(data.record){S.cerradas[code]=data.record;S.cerradas[code].jsonbin=cfg;}}
       }catch(e){}
     }
     save();
@@ -1201,8 +1202,8 @@ async function openPorton(pid,role){
   // Control via Shelly Cloud (funciona desde cualquier red)
   shellyOpen(pt);
   toast(`✅ ${pt.label} abierto`);
-  playGateSound();
-  if(navigator.vibrate) navigator.vibrate([60,30,120]);
+  // Vibración de éxito: patrón largo-corto
+  if(navigator.vibrate) navigator.vibrate([80,40,80]);
   const btn=document.getElementById(`gbtn-${role}-${pid}`);
   if(btn){
     btn.classList.remove('pressing');
@@ -1213,28 +1214,6 @@ async function openPorton(pid,role){
 }
 
 // ── SHELLY CLOUD CONTROL
-function playGateSound() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const master = ctx.createGain();
-    master.gain.setValueAtTime(0.28, ctx.currentTime);
-    master.connect(ctx.destination);
-    [523.25, 659.25, 783.99].forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      const t = ctx.currentTime + i * 0.08;
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.6, t + 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
-      osc.connect(gain); gain.connect(master);
-      osc.start(t); osc.stop(t + 0.6);
-    });
-    setTimeout(() => ctx.close(), 1500);
-  } catch(e) {}
-}
-
 async function shellyOpen(pt) {
   const PROXY   = 'https://shelly-proxy.acosta4770.workers.dev';
   const SERVER  = 'shelly-258-eu.shelly.cloud';
