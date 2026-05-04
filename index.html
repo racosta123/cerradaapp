@@ -880,10 +880,10 @@ async function loginResidente(){
     for(const cerrada of Object.values(S.cerradas)){
       if(cerrada.suspended||!cerrada.active) continue;
       for(const res of cerrada.residents||[]){
-        if(res.email===email && (res.password===pass||res.pin===pass)) return {cerrada,res,member:null,mi:-1};
+        if(res.email===email && res.password===pass) return {cerrada,res,member:null,mi:-1};
         for(let mi=0;mi<(res.members||[]).length;mi++){
           const m=res.members[mi];
-          if(m.email===email && (m.password===pass||m.pin===pass)) return {cerrada,res,member:m,mi};
+          if(m.email===email && m.password===pass) return {cerrada,res,member:m,mi};
         }
       }
     }
@@ -893,13 +893,13 @@ async function loginResidente(){
   // Buscar primero en local
   let found = buscarEnCerradas();
 
-  // Si no encontró, descargar desde JSONBin via Worker
+  // Si no encontró, descargar desde JSONBin
   if(!found){
     toast('🔄 Verificando...');
     for(const [code,cfg] of Object.entries(KNOWN_BINS)){
       try{
-        const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${cfg.binId}&key=${encodeURIComponent(cfg.apiKey)}`);
-        if(r.ok){const data=await r.json();if(data.ok&&data.record){S.cerradas[code]=data.record;S.cerradas[code].jsonbin=cfg;}}
+        const r=await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}/latest`,{headers:{'X-Master-Key':cfg.apiKey}});
+        if(r.ok){const data=await r.json();if(data.record){S.cerradas[code]=data.record;S.cerradas[code].jsonbin=cfg;}}
       }catch(e){}
     }
     save();
@@ -1213,23 +1213,18 @@ async function openPorton(pid,role){
 }
 
 // ── SHELLY CLOUD CONTROL
-async function shellyOpen(pt) {
-  const SERVER  = 'shelly-258-eu.shelly.cloud';
-  const AUTH    = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
-  const DEVICE  = pt.shellyId || 'e4b063eb85a4';
-  const SECONDS = pt.time || 5;
+function shellyOpen(pt) {
+  const PROXY  = 'https://shelly-proxy.acosta4770.workers.dev';
+  const AUTH   = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
+  const DEVICE = pt.shellyId || 'e4b063eb85a4';
+  const SECS   = pt.time || 5;
 
   const sendCmd = (turn) => {
-    const body = new URLSearchParams({ auth_key: AUTH, id: DEVICE, channel: 0, turn });
-    fetch(`https://${SERVER}/device/relay/control`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString()
-    }).catch(e => console.warn('Shelly:', e));
+    fetch(`${PROXY}?id=${DEVICE}&auth=${AUTH}&turn=${turn}`).catch(()=>{});
   };
 
   sendCmd('on');
-  setTimeout(() => sendCmd('off'), SECONDS * 1000);
+  setTimeout(() => sendCmd('off'), SECS * 1000);
 }
 
 // ── ADMIN
