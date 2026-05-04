@@ -1664,14 +1664,14 @@ async function resetPinJefe(i) {
   })).replace(/[+/=]/g, m=>({'+':`-`,'/':'_','=':''}[m]));
   const url = 'https://racosta123.github.io/cerradaapp/register.html?reg=' + payload;
   const msg = 'Hola ' + r.name + ', se ha solicitado un reset de tu PIN en CerradaApp.\n\nCrea tu nuevo PIN aqui:\n' + url + '\n\nValido por 7 dias.';
-  if (navigator.share) {
-    navigator.share({ title: 'Reset PIN CerradaApp', text: msg, url: url }).catch(function(){
-      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-    });
-  } else {
+  // Copiar link al portapapeles y mostrar opciones
+  try {
+    await navigator.clipboard.writeText(url);
+    toast('🔑 Link copiado! Pégalo en WhatsApp');
+  } catch(e) {
+    // Fallback: abrir WhatsApp
     window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
   }
-  toast('🔑 Reset enviado');
 }
 
 // ── RESET PIN FAMILIAR
@@ -1705,14 +1705,13 @@ async function resetPinMember(i, mi) {
   })).replace(/[+/=]/g, m2=>({'+':`-`,'/':'_','=':''}[m2]));
   const url = 'https://racosta123.github.io/cerradaapp/register.html?reg=' + payload;
   const msg = 'Hola ' + m.name + ', se ha solicitado un reset de tu PIN en CerradaApp.\n\nCrea tu nuevo PIN aqui:\n' + url + '\n\nValido por 7 dias.';
-  if (navigator.share) {
-    navigator.share({ title: 'Reset PIN CerradaApp', text: msg, url: url }).catch(function(){
-      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-    });
-  } else {
+  // Copiar link al portapapeles y mostrar opciones
+  try {
+    await navigator.clipboard.writeText(url);
+    toast('🔑 Link copiado! Pégalo en WhatsApp');
+  } catch(e) {
     window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
   }
-  toast('🔑 Reset enviado');
 }
 
 async function addVec(){
