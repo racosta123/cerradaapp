@@ -1690,7 +1690,7 @@ async function resetPinMember(i, mi) {
     const sr2 = await fetch('https://api.jsonbin.io/v3/b/'+_jbM.binId,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':_jbM.apiKey},body:JSON.stringify(fd2)});
     if(!sr2.ok)throw new Error('Error al guardar');
     c.residents[i].familiarToken=token;c.residents[i].familiarTokenExpires=Date.now()+7*24*60*60*1000;save();
-  } catch(e){toast('⚠️ Error: '+e.message);return;}
+  } catch(e){console.log('resetPinMember error:',e);toast('⚠️ Error: '+e.message);return;}
 
   const payload = btoa(JSON.stringify({
     code: c.code, house: r.house, cerradaName: c.name,
