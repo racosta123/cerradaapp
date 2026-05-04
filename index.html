@@ -1641,17 +1641,25 @@ async function resetPinJefe(i) {
   if (!confirm('¿Estas seguro que quieres enviar un reset de PIN a ' + r.name + '?')) return;
 
   const token = btoa(c.code+'|'+r.house+'|head|'+Date.now()).replace(/[^a-zA-Z0-9]/g,'');
-  c.residents[i].inviteToken = token;
-  c.residents[i].inviteExpires = Date.now() + 7*24*60*60*1000;
-  save();
+  const _jbR = c.jsonbin?.binId ? c.jsonbin : {'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}}[c.code];
+  if(!_jbR?.binId){toast('⚠️ Sin configuración de nube');return;}
 
   toast('⏳ Sincronizando...');
-  const ok = await jbPush(c);
-  if (!ok) { toast('⚠️ Error al sincronizar'); return; }
+  try {
+    const fr = await fetch('https://api.jsonbin.io/v3/b/'+_jbR.binId+'/latest',{headers:{'X-Master-Key':_jbR.apiKey}});
+    const fd = (await fr.json()).record;
+    const ri = fd.residents.findIndex(x=>x.house===r.house);
+    if(ri<0)throw new Error('Casa no encontrada');
+    fd.residents[ri].inviteToken = token;
+    fd.residents[ri].inviteExpires = Date.now()+7*24*60*60*1000;
+    const sr = await fetch('https://api.jsonbin.io/v3/b/'+_jbR.binId,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':_jbR.apiKey},body:JSON.stringify(fd)});
+    if(!sr.ok)throw new Error('Error al guardar');
+    c.residents[i].inviteToken=token;c.residents[i].inviteExpires=Date.now()+7*24*60*60*1000;save();
+  } catch(e){toast('⚠️ Error: '+e.message);return;}
 
   const payload = btoa(JSON.stringify({
     code: c.code, house: r.house, cerradaName: c.name,
-    token, binId: c.jsonbin?.binId||'', apiKey: c.jsonbin?.apiKey||'',
+    token, binId: _jbR.binId, apiKey: _jbR.apiKey,
     isHead: true, email: r.email||''
   })).replace(/[+/=]/g, m=>({'+':`-`,'/':'_','=':''}[m]));
   const url = 'https://racosta123.github.io/cerradaapp/register.html?reg=' + payload;
@@ -1668,17 +1676,25 @@ async function resetPinMember(i, mi) {
   if (!confirm('¿Estas seguro que quieres enviar un reset de PIN a ' + m.name + '?')) return;
 
   const token = btoa(c.code+'|'+r.house+'|fam|'+Date.now()).replace(/[^a-zA-Z0-9]/g,'');
-  c.residents[i].familiarToken = token;
-  c.residents[i].familiarTokenExpires = Date.now() + 7*24*60*60*1000;
-  save();
+  const _jbM = c.jsonbin?.binId ? c.jsonbin : {'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}}[c.code];
+  if(!_jbM?.binId){toast('⚠️ Sin configuración de nube');return;}
 
   toast('⏳ Sincronizando...');
-  const ok = await jbPush(c);
-  if (!ok) { toast('⚠️ Error al sincronizar'); return; }
+  try {
+    const fr2 = await fetch('https://api.jsonbin.io/v3/b/'+_jbM.binId+'/latest',{headers:{'X-Master-Key':_jbM.apiKey}});
+    const fd2 = (await fr2.json()).record;
+    const ri2 = fd2.residents.findIndex(x=>x.house===r.house);
+    if(ri2<0)throw new Error('Casa no encontrada');
+    fd2.residents[ri2].familiarToken=token;
+    fd2.residents[ri2].familiarTokenExpires=Date.now()+7*24*60*60*1000;
+    const sr2 = await fetch('https://api.jsonbin.io/v3/b/'+_jbM.binId,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':_jbM.apiKey},body:JSON.stringify(fd2)});
+    if(!sr2.ok)throw new Error('Error al guardar');
+    c.residents[i].familiarToken=token;c.residents[i].familiarTokenExpires=Date.now()+7*24*60*60*1000;save();
+  } catch(e){toast('⚠️ Error: '+e.message);return;}
 
   const payload = btoa(JSON.stringify({
     code: c.code, house: r.house, cerradaName: c.name,
-    token, binId: c.jsonbin?.binId||'', apiKey: c.jsonbin?.apiKey||'',
+    token, binId: _jbM.binId, apiKey: _jbM.apiKey,
     isFamiliar: true, email: m.email||''
   })).replace(/[+/=]/g, m2=>({'+':`-`,'/':'_','=':''}[m2]));
   const url = 'https://racosta123.github.io/cerradaapp/register.html?reg=' + payload;
