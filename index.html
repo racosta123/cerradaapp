@@ -23,58 +23,6 @@
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js';
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyChuftPnUTXr7KmrVufvMxtmeH14Or0HUU",
-    authDomain: "cerradaapp-7179e.firebaseapp.com",
-    projectId: "cerradaapp-7179e",
-    storageBucket: "cerradaapp-7179e.firebasestorage.app",
-    messagingSenderId: "481439052062",
-    appId: "1:481439052062:web:c3a0a104bae74763cf590f"
-  };
-
-  const VAPID_KEY = "BJJf5QgIrh28rvGAas60s-CbdsDpFBWmeweaGjaaOquey2ytqoyQ-6GnTir26z0q26H3VQcsKLfGQxnni0DdLy0";
-
-  const app = initializeApp(firebaseConfig);
-  const messaging = getMessaging(app);
-
-  // Solicitar permiso y obtener token FCM
-  window.initPushNotifications = async function() {
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') return null;
-
-      const token = await getToken(messaging, { vapidKey: VAPID_KEY });
-      if (token) {
-        localStorage.setItem('fcm_token', token);
-        console.log('FCM Token:', token);
-        return token;
-      }
-    } catch(e) {
-      console.log('Push no disponible:', e);
-    }
-    return null;
-  };
-
-  // Escuchar notificaciones cuando la app está abierta
-  onMessage(messaging, (payload) => {
-    const { title, body } = payload.notification || {};
-    if (title) {
-      // Mostrar como toast en la app
-      if (window.toast) window.toast(`🔔 ${title}: ${body}`);
-    }
-  });
-
-  // Inicializar push cuando el usuario entra
-  window.addEventListener('cerradaapp:login', () => {
-    window.initPushNotifications();
-  });
-</script>
 <style>
 :root{
   --blue:#3B82C4;--blue-dark:#2d6aad;--blue-lt:#EBF4FF;
@@ -448,7 +396,6 @@ select option{background:var(--sur)}
     <div class="t-right">
       <span id="sync-res" style="font-size:.9rem">☁️</span>
       <span class="bge g-b" id="res-house">Casa</span>
-      <button class="btn bg2 sm" onclick="logout()">Salir</button>
     </div>
   </div>
   <div class="nav">
@@ -933,10 +880,10 @@ async function loginResidente(){
     for(const cerrada of Object.values(S.cerradas)){
       if(cerrada.suspended||!cerrada.active) continue;
       for(const res of cerrada.residents||[]){
-        if(res.email===email && res.password===pass) return {cerrada,res,member:null,mi:-1};
+        if(res.email===email && (res.password===pass||res.pin===pass)) return {cerrada,res,member:null,mi:-1};
         for(let mi=0;mi<(res.members||[]).length;mi++){
           const m=res.members[mi];
-          if(m.email===email && m.password===pass) return {cerrada,res,member:m,mi};
+          if(m.email===email && (m.password===pass||m.pin===pass)) return {cerrada,res,member:m,mi};
         }
       }
     }
@@ -946,13 +893,13 @@ async function loginResidente(){
   // Buscar primero en local
   let found = buscarEnCerradas();
 
-  // Si no encontró, descargar desde JSONBin
+  // Si no encontró en local, descargar desde JSONBin via Worker (más rápido)
   if(!found){
     toast('🔄 Verificando...');
     for(const [code,cfg] of Object.entries(KNOWN_BINS)){
       try{
-        const r=await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}/latest`,{headers:{'X-Master-Key':cfg.apiKey}});
-        if(r.ok){const data=await r.json();if(data.record){S.cerradas[code]=data.record;S.cerradas[code].jsonbin=cfg;}}
+        const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${cfg.binId}&key=${encodeURIComponent(cfg.apiKey)}`);
+        if(r.ok){const data=await r.json();if(data.ok&&data.record){S.cerradas[code]=data.record;S.cerradas[code].jsonbin=cfg;}}
       }catch(e){}
     }
     save();
@@ -1098,27 +1045,6 @@ function enterRes(c, res, member) {
   }
 
   showScreen('res');
-
-  // Inicializar push y guardar token
-  if (window.initPushNotifications) {
-    window.initPushNotifications().then(token => {
-      if (token && c && res) {
-        // Guardar token en el miembro correspondiente
-        const memberIdx = U.memberIdx;
-        if (memberIdx >= 0 && res.members[memberIdx]) {
-          res.members[memberIdx].fcmToken = token;
-        } else {
-          res.fcmToken = token;
-        }
-        save();
-        // Sync async sin bloquear
-        if (c.jsonbin?.binId) jbPush(c);
-      }
-    });
-  }
-
-  // Disparar evento de login para inicializar push
-  window.dispatchEvent(new Event('cerradaapp:login'));
 }
 
 function invitarFamiliar() {
@@ -1223,13 +1149,12 @@ function gE(pid){
   }
 }
 let lastSuspCheck = 0; // Timestamp del último check de suspensión
-const SUSP_CHECK_INTERVAL = 60 * 1000; // 1 minuto
 
 async function openPorton(pid,role){
   const c=C();if(!c)return;
   
   // Verificar suspensión solo cada 5 minutos para no ralentizar
-  if(role==='res' && c.jsonbin?.binId && (Date.now()-lastSuspCheck > SUSP_CHECK_INTERVAL)){
+  if(role==='res' && c.jsonbin?.binId && (Date.now()-lastSuspCheck > 5*60*1000)){
     try {
       const r=await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}/latest`,
         {headers:{'X-Master-Key':c.jsonbin.apiKey}});
@@ -1276,66 +1201,60 @@ async function openPorton(pid,role){
   // Control via Shelly Cloud (funciona desde cualquier red)
   shellyOpen(pt);
   toast(`✅ ${pt.label} abierto`);
-  // Vibración de éxito
-  if(navigator.vibrate) navigator.vibrate([80,40,80]);
+  playGateSound();
+  if(navigator.vibrate) navigator.vibrate([60,30,120]);
   const btn=document.getElementById(`gbtn-${role}-${pid}`);
   if(btn){
     btn.classList.remove('pressing');
     btn.classList.add('ok');
     setTimeout(()=>btn.classList.remove('ok'),2500);
   }
-  if(role==='res'){
-    renderResHist(c);
-    // Enviar notificación push a toda la familia
-    sendFamilyNotification(c, pt.label);
-  }
+  if(role==='res')renderResHist(c);
 }
 
-async function sendFamilyNotification(c, portonLabel) {
-  // Recopilar tokens FCM de todos los miembros de la casa
-  const res = c.residents.find(r => r.house === U.house);
-  if (!res || !res.members) return;
-
-  const tokens = res.members
-    .map(m => m.fcmToken)
-    .filter(t => t && t !== localStorage.getItem('fcm_token')); // Excluir quien abrió
-
-  if (!tokens.length) return;
-
-  const who = U.memberName || res.name;
-  const msg = {
-    title: `🚗 ${portonLabel} abierto`,
-    body: `${who} abrió el portón — ${new Date().toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'})}`,
-    tokens
-  };
-
-  // Enviar via Cloudflare Worker
+// ── SHELLY CLOUD CONTROL
+function playGateSound() {
   try {
-    await fetch('https://shelly-proxy.acosta4770.workers.dev/notify', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(msg)
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.28, ctx.currentTime);
+    master.connect(ctx.destination);
+    [523.25, 659.25, 783.99].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      const t = ctx.currentTime + i * 0.08;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.6, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+      osc.connect(gain); gain.connect(master);
+      osc.start(t); osc.stop(t + 0.6);
     });
-  } catch(e) { console.log('Notif error:', e); }
+    setTimeout(() => ctx.close(), 1500);
+  } catch(e) {}
 }
 
-// ── SHELLY CLOUD CONTROL — via Cloudflare Worker proxy (más rápido)
-function shellyOpen(pt) {
-  const PROXY  = 'https://shelly-proxy.acosta4770.workers.dev';
-  const AUTH   = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388D6B4B15BC5295B801F11A2A689C37770CE435132';
-  const DEVICE = pt.shellyId || 'e4b063eb85a4';
-  const SECS   = pt.time || 5;
+async function shellyOpen(pt) {
+  const PROXY   = 'https://shelly-proxy.acosta4770.workers.dev';
+  const SERVER  = 'shelly-258-eu.shelly.cloud';
+  const AUTH    = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
+  const DEVICE  = pt.shellyId || 'e4b063eb85a4';
+  const SECONDS = pt.time || 5;
 
   const sendCmd = (turn) => {
-    fetch(`${PROXY}?id=${DEVICE}&auth=${AUTH}&turn=${turn}`)
-      .catch(e => console.warn('Proxy:', e));
+    // Directo a Shelly — rápido, sin esperar respuesta
+    fetch(`https://${SERVER}/device/relay/control`, {
+      method: 'POST', mode: 'no-cors',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: `id=${DEVICE}&auth_key=${AUTH}&channel=0&turn=${turn}`
+    }).catch(()=>{});
+    // Worker en paralelo — como respaldo
+    fetch(`${PROXY}?id=${DEVICE}&auth=${AUTH}&turn=${turn}`).catch(()=>{});
   };
 
-  // Encender inmediatamente
   sendCmd('on');
-
-  // Apagar después del tiempo configurado
-  setTimeout(() => sendCmd('off'), SECS * 1000);
+  setTimeout(() => sendCmd('off'), SECONDS * 1000);
 }
 
 // ── ADMIN
