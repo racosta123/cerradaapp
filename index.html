@@ -208,6 +208,7 @@ select option{background:var(--sur)}
   background:var(--blue-lt);
 }
 /* Icono pulsando */
+@keyframes spin-btn{to{transform:rotate(360deg)}}
 @keyframes dot{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
 @keyframes pulse-ico{
   0%,100%{transform:scale(1)}
@@ -341,7 +342,7 @@ select option{background:var(--sur)}
         <label>Contraseña</label>
         <input id="r-pass" type="password" placeholder="••••••••" autocomplete="current-password">
         <div class="err" id="m-err"></div>
-        <button class="btn bp" onclick="loginResidente()" style="margin-bottom:.75rem">Entrar →</button>
+        <button class="btn bp" id="btn-login-res" onclick="loginResidente()" style="margin-bottom:.75rem">Entrar →</button>
         <div style="text-align:center">
           <span style="font-size:.74rem;color:var(--t3)">¿Primera vez? </span>
           <span onclick="showResInviteMsg()" style="font-size:.74rem;color:var(--blue);cursor:pointer;font-weight:700">
@@ -942,6 +943,14 @@ async function loginResidente(){
   const pass  = document.getElementById('r-pass').value;
   if(!email||!pass){showErr('m-err','Ingresa tu correo y contraseña.');return;}
 
+  // Mostrar spinner en boton
+  const btnLogin = document.getElementById('btn-login-res');
+  if(btnLogin){
+    btnLogin.disabled = true;
+    btnLogin.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin-btn .7s linear infinite;vertical-align:middle;margin-right:6px"></span>Verificando...';
+  }
+  const resetBtn = () => { if(btnLogin){ btnLogin.disabled=false; btnLogin.innerHTML='Entrar →'; } };
+
   const KNOWN_BINS={'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
 
   // Función para buscar en cerradas cargadas
@@ -976,10 +985,11 @@ async function loginResidente(){
     found = buscarEnCerradas();
   }
 
-  if(!found){showErr('m-err','Correo o contraseña incorrectos.');return;}
+  if(!found){resetBtn();showErr('m-err','Correo o contraseña incorrectos.');return;}
 
   const {cerrada,res,member,mi} = found;
   if(res.pendingReg){
+    resetBtn();
     showErr('m-err','Tu registro aun esta pendiente. Revisa el correo de invitacion.');
     return;
   }
