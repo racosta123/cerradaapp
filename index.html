@@ -1216,18 +1216,23 @@ async function openPorton(pid,role){
 // ── SHELLY CLOUD CONTROL
 async function shellyOpen(pt) {
   const PROXY   = 'https://shelly-proxy.acosta4770.workers.dev';
+  const SERVER  = 'shelly-258-eu.shelly.cloud';
   const AUTH    = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
   const DEVICE  = pt.shellyId || 'e4b063eb85a4';
   const SECONDS = pt.time || 5;
 
-  // Usar Worker proxy — tiene CORS correcto y confirmamos que funciona
-  const sendCmd = (turn) => fetch(`${PROXY}?id=${DEVICE}&auth=${AUTH}&turn=${turn}`)
-    .catch(e => console.warn('Shelly proxy:', e));
+  const sendCmd = (turn) => {
+    // Directo a Shelly — rápido, sin esperar respuesta
+    fetch(`https://${SERVER}/device/relay/control`, {
+      method: 'POST', mode: 'no-cors',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: `id=${DEVICE}&auth_key=${AUTH}&channel=0&turn=${turn}`
+    }).catch(()=>{});
+    // Worker en paralelo — como respaldo
+    fetch(`${PROXY}?id=${DEVICE}&auth=${AUTH}&turn=${turn}`).catch(()=>{});
+  };
 
-  // Encender
-  await sendCmd('on');
-
-  // Apagar después del tiempo configurado
+  sendCmd('on');
   setTimeout(() => sendCmd('off'), SECONDS * 1000);
 }
 
