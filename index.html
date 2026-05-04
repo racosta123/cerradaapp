@@ -1219,13 +1219,14 @@ function shellyOpen(pt) {
   const DEVICE = pt.shellyId || 'e4b063eb85a4';
   const SECS   = pt.time || 5;
 
-  const sendCmd = (turn) => {
+  const sendCmd = async (turn) => {
     const body = new URLSearchParams({ auth_key: AUTH, id: DEVICE, channel: 0, turn });
-    fetch(`https://${SERVER}/device/relay/control`, {
+    const res = await fetch(`https://${SERVER}/device/relay/control`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: body.toString()
-    }).catch(e => console.warn('Shelly:', e));
+    });
+    return res.json();
   };
 
   sendCmd('on');
