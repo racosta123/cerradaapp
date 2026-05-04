@@ -2,210 +2,54 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monitor Catorce | Acceso Residencial</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#2c3e50">
-    <meta name="description" content="Sistema de administración de accesos para cerradas">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-
-    <!-- Google Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #27ae60;
-            --bg: #f4f7f6;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--primary);
-        }
-
-        header {
-            background-color: var(--primary);
-            color: white;
-            width: 100%;
-            padding: 20px 0;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .container {
-            width: 90%;
-            max-width: 500px;
-            margin-top: 30px;
-        }
-
-        .status-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: #bdc3c7;
-            margin-right: 8px;
-        }
-
-        .status-online { background-color: var(--accent); }
-
-        .module-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .btn-module {
-            background: white;
-            border: 2px solid var(--primary);
-            padding: 20px;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-module:active {
-            transform: scale(0.95);
-            background-color: #ecf0f1;
-        }
-
-        .btn-module i {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-
-        #btn-abrir {
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 25px;
-            border-radius: 15px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-        }
-
-        .loader {
-            display: none;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--accent);
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 10px auto;
-        }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor Catorce</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <header>
-        <h1 style="margin:0; font-size: 1.5rem;">MONITOR CATORCE</h1>
-    </header>
-
-    <div class="container">
-        <div class="status-card">
-            <div id="connection-dot" class="status-indicator"></div>
-            <span id="status-text">Conectando con dispositivo...</span>
-            <div id="loader" class="loader"></div>
-        </div>
-
-        <div class="module-grid">
-            <div class="btn-module" onclick="location.href='usuarios.html'">
-                <i class="material-icons">people</i>
-                <span>Usuarios</span>
-            </div>
-            <div class="btn-module" onclick="location.href='visitantes.html'">
-                <i class="material-icons">qr_code_2</i>
-                <span>Visitantes</span>
+    <div id="container">
+        <h1 id="title">Monitor Catorce</h1>
+        <div id="content">
+            <p id="message">Cargando datos de la cerrada...</p>
+            <div id="buttons-container" style="display: none;">
+                <button class="btn" id="btn-usuarios" onclick="window.location.href='usuarios.html'">Usuarios</button>
+                <button class="btn" id="btn-visitantes" onclick="window.location.href='visitantes.html'">Visitantes</button>
+                <button class="btn action-btn" id="btn-abrir">ACCIONAR ENTRADA</button>
             </div>
         </div>
-
-        <button id="btn-abrir" onclick="accionarRelevador()">
-            ACCIONAR PORTÓN
-        </button>
     </div>
 
+    <script src="script.js"></script>
     <script>
-        // Configuración del Shelly (Ajustar según tu red)
-        const SHELLY_IP = "192.168.1.100"; // Cambiar por la IP real del Shelly 1
-        let keepAliveInterval;
+        /**
+         * CORRECCIÓN PARA SHELLY: 
+         * Mantiene la conexión activa para evitar el retraso al "despertar".
+         */
+        const SHELLY_IP = "192.168.1.100"; // Sustituye por la IP local de tu Shelly
 
-        // Función para mantener el Shelly "despierto"
-        function startKeepAlive() {
-            console.log("Iniciando Keep-Alive para Shelly...");
-            keepAliveInterval = setInterval(() => {
+        function keepShellyAlive() {
+            setInterval(() => {
                 fetch(`http://${SHELLY_IP}/status`, { mode: 'no-cors' })
-                .then(() => {
-                    document.getElementById('connection-dot').className = 'status-indicator status-online';
-                    document.getElementById('status-text').innerText = 'Dispositivo Listo (Local)';
-                })
+                    .then(() => console.log("Shelly Wake-up Pulse Sent"))
+                    .catch(() => console.error("Shelly Local Offline - Using Cloud Mode"));
+            }, 15000); // Pulso cada 15 segundos
+        }
+
+        // Iniciar el pulso al cargar la página
+        window.addEventListener('load', keepShellyAlive);
+
+        // Optimización del botón de apertura
+        const btnAbrir = document.getElementById('btn-abrir');
+        if(btnAbrir) {
+            btnAbrir.addEventListener('click', () => {
+                // Intento local inmediato
+                fetch(`http://${SHELLY_IP}/relay/0?turn=on&timer=2`, { mode: 'no-cors' })
                 .catch(() => {
-                    document.getElementById('connection-dot').className = 'status-indicator';
-                    document.getElementById('status-text').innerText = 'Modo Nube Activo';
+                    // Si falla el local, el script.js original manejará la lógica de nube
+                    console.log("Local fetch failed, relying on script.js logic");
                 });
-            }, 30000); // Cada 30 segundos
-        }
-
-        async function accionarRelevador() {
-            const btn = document.getElementById('btn-abrir');
-            const loader = document.getElementById('loader');
-            
-            btn.disabled = true;
-            loader.style.display = 'block';
-
-            try {
-                // Intento 1: Red Local (Instantáneo)
-                const response = await fetch(`http://${SHELLY_IP}/relay/0?turn=on&timer=2`, { 
-                    method: 'GET',
-                    mode: 'no-cors' 
-                });
-                alert("Acceso concedido");
-            } catch (error) {
-                console.log("Fallo local, intentando vía Nube...");
-                // Aquí podrías agregar tu llamada actual a la API Cloud de Shelly
-            } finally {
-                btn.disabled = false;
-                loader.style.display = 'none';
-            }
-        }
-
-        // Registrar Service Worker para PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('SW registrado', reg))
-                .catch(err => console.log('Error SW', err));
             });
         }
-
-        // Iniciar procesos al cargar
-        window.onload = startKeepAlive;
     </script>
 </body>
 </html>
