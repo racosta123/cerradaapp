@@ -1215,19 +1215,14 @@ async function openPorton(pid,role){
 
 // ── SHELLY CLOUD CONTROL
 async function shellyOpen(pt) {
-  const SERVER  = 'shelly-258-eu.shelly.cloud';
+  const PROXY   = 'https://shelly-proxy.acosta4770.workers.dev';
   const AUTH    = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
   const DEVICE  = pt.shellyId || 'e4b063eb85a4';
   const SECONDS = pt.time || 5;
 
-  // Usamos no-cors para evitar bloqueo CORS del navegador
-  // La petición se envía pero no podemos leer la respuesta — el Shelly igual la ejecuta
-  const sendCmd = (turn) => fetch(`https://${SERVER}/device/relay/control`, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-    body: `id=${DEVICE}&auth_key=${AUTH}&channel=0&turn=${turn}`
-  }).catch(e => console.warn('Shelly:', e));
+  // Usar Worker proxy — tiene CORS correcto y confirmamos que funciona
+  const sendCmd = (turn) => fetch(`${PROXY}?id=${DEVICE}&auth=${AUTH}&turn=${turn}`)
+    .catch(e => console.warn('Shelly proxy:', e));
 
   // Encender
   await sendCmd('on');
