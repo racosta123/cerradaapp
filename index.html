@@ -396,6 +396,7 @@ select option{background:var(--sur)}
     <div class="t-right">
       <span id="sync-res" style="font-size:.9rem">☁️</span>
       <span class="bge g-b" id="res-house">Casa</span>
+      <button class="btn bg2 sm" onclick="logout()">Salir</button>
     </div>
   </div>
   <div class="nav">
@@ -1213,18 +1214,23 @@ async function openPorton(pid,role){
 }
 
 // ── SHELLY CLOUD CONTROL
-function shellyOpen(pt) {
-  const PROXY  = 'https://shelly-proxy.acosta4770.workers.dev';
-  const AUTH   = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
-  const DEVICE = pt.shellyId || 'e4b063eb85a4';
-  const SECS   = pt.time || 5;
+async function shellyOpen(pt) {
+  const SERVER  = 'shelly-258-eu.shelly.cloud';
+  const AUTH    = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
+  const DEVICE  = pt.shellyId || 'e4b063eb85a4';
+  const SECONDS = pt.time || 5;
 
   const sendCmd = (turn) => {
-    fetch(`${PROXY}?id=${DEVICE}&auth=${AUTH}&turn=${turn}`).catch(()=>{});
+    const body = new URLSearchParams({ auth_key: AUTH, id: DEVICE, channel: 0, turn });
+    fetch(`https://${SERVER}/device/relay/control`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
+    }).catch(e => console.warn('Shelly:', e));
   };
 
   sendCmd('on');
-  setTimeout(() => sendCmd('off'), SECS * 1000);
+  setTimeout(() => sendCmd('off'), SECONDS * 1000);
 }
 
 // ── ADMIN
