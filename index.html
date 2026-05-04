@@ -1154,7 +1154,7 @@ function enterRes(c, res, member) {
   const shellyPing = () => {
     const b = new URLSearchParams({
       id: 'e4b063eb85a4',
-      auth_key: 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388D6B4B15BC5295B801F11A2A689C37770CE435132',
+      auth_key: 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8',
       channel: '0', turn: 'off'
     });
     fetch('https://shelly-258-eu.shelly.cloud/device/relay/control',{
@@ -1520,7 +1520,7 @@ async function sendFamilyNotification(c, portonLabel) {
 // ── SHELLY CLOUD CONTROL — via Cloudflare Worker proxy (más rápido)
 function shellyOpen(pt) {
   const PROXY  = 'https://shelly-proxy.acosta4770.workers.dev';
-  const AUTH   = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388D6B4B15BC5295B801F11A2A689C37770CE435132';
+  const AUTH   = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
   const DEVICE = pt.shellyId || 'e4b063eb85a4';
   const SECS   = pt.time || 5;
 
