@@ -396,7 +396,6 @@ select option{background:var(--sur)}
     <div class="t-right">
       <span id="sync-res" style="font-size:.9rem">☁️</span>
       <span class="bge g-b" id="res-house">Casa</span>
-      <button class="btn bg2 sm" onclick="logout()">Salir</button>
     </div>
   </div>
   <div class="nav">
@@ -1214,26 +1213,18 @@ async function openPorton(pid,role){
 }
 
 // ── SHELLY CLOUD CONTROL
-async function shellyOpen(pt) {
-  const PROXY   = 'https://shelly-proxy.acosta4770.workers.dev';
-  const SERVER  = 'shelly-258-eu.shelly.cloud';
-  const AUTH    = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
-  const DEVICE  = pt.shellyId || 'e4b063eb85a4';
-  const SECONDS = pt.time || 5;
+function shellyOpen(pt) {
+  const PROXY  = 'https://shelly-proxy.acosta4770.workers.dev';
+  const AUTH   = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
+  const DEVICE = pt.shellyId || 'e4b063eb85a4';
+  const SECS   = pt.time || 5;
 
   const sendCmd = (turn) => {
-    // Directo a Shelly — rápido, sin esperar respuesta
-    fetch(`https://${SERVER}/device/relay/control`, {
-      method: 'POST', mode: 'no-cors',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: `id=${DEVICE}&auth_key=${AUTH}&channel=0&turn=${turn}`
-    }).catch(()=>{});
-    // Worker en paralelo — como respaldo
     fetch(`${PROXY}?id=${DEVICE}&auth=${AUTH}&turn=${turn}`).catch(()=>{});
   };
 
   sendCmd('on');
-  setTimeout(() => sendCmd('off'), SECONDS * 1000);
+  setTimeout(() => sendCmd('off'), SECS * 1000);
 }
 
 // ── ADMIN
@@ -2333,22 +2324,6 @@ load();seedDemo();renderNcP();
       enterAdm(c); return;
     }
     if (role === 'resident') {
-      // Siempre hacer pull de JSONBin para verificar estado actual
-      if (c.jsonbin?.binId) {
-        try {
-          const r = await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}/latest`,
-            {headers:{'X-Master-Key': c.jsonbin.apiKey}});
-          if (r.ok) {
-            const data = await r.json();
-            if (data.record) {
-              const jb = c.jsonbin;
-              Object.assign(c, data.record);
-              c.jsonbin = jb;
-              save();
-            }
-          }
-        } catch(e) {}
-      }
       const res = c.residents.find(r => r.house === house);
       if (!res || !res.active || res.mora) {
         // Suspendido — limpiar sesión y mostrar pantalla de suspensión
