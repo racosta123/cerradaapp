@@ -1150,21 +1150,19 @@ function enterRes(c, res, member) {
   if(window._workerPingInterval) clearInterval(window._workerPingInterval);
   window._workerPingInterval = setInterval(workerPing, 60 * 1000);
 
-  // Ping al Shelly cada minuto para mantenerlo activo
+  // Ping al Shelly cada minuto — solo consulta estado, NO controla el relay
   const shellyPing = () => {
     const b = new URLSearchParams({
       id: 'e4b063eb85a4',
-      auth_key: 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8',
-      channel: '0', turn: 'off'
+      auth_key: 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8'
     });
-    fetch('https://shelly-258-eu.shelly.cloud/device/relay/control',{
-      method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body: b.toString(), mode:'no-cors'
+    fetch('https://shelly-258-eu.shelly.cloud/device/status?' + b.toString(), {
+      mode: 'no-cors'
     }).catch(()=>{});
   };
   shellyPing();
   if(window._shellyPingInterval) clearInterval(window._shellyPingInterval);
-  window._shellyPingInterval = setInterval(shellyPing, 60 * 1000);
+  window._shellyPingInterval = setInterval(shellyPing, 55 * 1000);
   renderResFin(c);
   renderResHist(c);
   renderMiCuenta(c, res.house);
@@ -1464,8 +1462,10 @@ async function openPorton(pid,role){
   // Control via Shelly Cloud (funciona desde cualquier red)
   shellyOpen(pt);
   toast(`✅ ${pt.label} abierto`);
+  // Sonido agradable al abrir
+  playGateSound();
   // Vibración de éxito
-  if(navigator.vibrate) navigator.vibrate([80,40,80]);
+  if(navigator.vibrate) navigator.vibrate([60, 30, 120]);
   const btn=document.getElementById(`gbtn-${role}-${pid}`);
   if(btn){
     btn.classList.remove('pressing');
@@ -1515,6 +1515,46 @@ async function sendFamilyNotification(c, portonLabel) {
   } catch(e) {
     console.log('Notif error:', e);
   }
+}
+
+// ── SONIDO PORTÓN — acorde agradable con Web Audio API
+function playGateSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.28, ctx.currentTime);
+    master.connect(ctx.destination);
+
+    // Tres notas: Do-Mi-Sol (acorde mayor — sonido de bienvenida)
+    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      // Cada nota entra escalonada 80ms
+      const t = ctx.currentTime + i * 0.08;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.6, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+      osc.connect(gain);
+      gain.connect(master);
+      osc.start(t);
+      osc.stop(t + 0.6);
+    });
+
+    // Pequeño "clic" inicial de confirmación
+    const click = ctx.createOscillator();
+    const cg = ctx.createGain();
+    click.type = 'sine';
+    click.frequency.setValueAtTime(1200, ctx.currentTime);
+    cg.gain.setValueAtTime(0.15, ctx.currentTime);
+    cg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    click.connect(cg); cg.connect(master);
+    click.start(ctx.currentTime); click.stop(ctx.currentTime + 0.07);
+
+    setTimeout(() => ctx.close(), 1500);
+  } catch(e) { /* silencioso si no soportado */ }
 }
 
 // ── SHELLY CLOUD CONTROL — via Cloudflare Worker proxy (más rápido)
