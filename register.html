@@ -39,12 +39,12 @@ input:focus{border-color:#3b82f6}
 <body>
 <div class="card">
   <div class="logo">
-    <div class="logo-ico">&#127960;</div>
+    <div class="logo-ico">🏘️</div>
     <div class="logo-title">CerradaApp</div>
     <div class="logo-sub">Control de acceso comunitario</div>
   </div>
 
-  <!-- Formulario — se muestra inmediatamente sin llamadas de red -->
+  <!-- Formulario -->
   <div class="step on" id="s-form">
     <div class="prog">
       <div class="prog-dot done"></div>
@@ -52,176 +52,127 @@ input:focus{border-color:#3b82f6}
       <div class="prog-dot" id="pd3"></div>
     </div>
     <h2 id="ftitle">Completa tu registro</h2>
-    <div class="badge" id="fhouse">&#127968;</div>
+    <div class="badge" id="fhouse">🏠</div>
     <div class="cerrada-name" id="fcerrada"></div>
     <label>Nombre completo</label>
-    <input id="iname" type="text" placeholder="Juan Perez" autocomplete="name">
-    <label>Correo electronico</label>
+    <input id="iname" type="text" placeholder="Juan Pérez" autocomplete="name">
+    <label>Correo electrónico</label>
     <input id="iemail" type="email" placeholder="juan@correo.com" autocomplete="email">
-    <div class="hint">Lo usaras para iniciar sesion</div>
-    <label>Crea tu PIN (4-8 digitos)</label>
-    <input id="ipin" type="password" maxlength="8" placeholder="****" inputmode="numeric">
+    <div class="hint">Lo usarás para iniciar sesión</div>
+    <label>Crea tu PIN (4-8 dígitos)</label>
+    <input id="ipin" type="password" maxlength="8" placeholder="••••" inputmode="numeric">
     <label>Confirma tu PIN</label>
-    <input id="ipin2" type="password" maxlength="8" placeholder="****" inputmode="numeric">
+    <input id="ipin2" type="password" maxlength="8" placeholder="••••" inputmode="numeric">
     <div id="fmsg"></div>
     <button class="btn btn-blue" id="breg" onclick="doReg()">Completar Registro</button>
   </div>
 
-  <!-- Exito -->
+  <!-- Éxito -->
   <div class="step" id="s-ok">
     <div class="center">
-      <div class="big-ico">&#127881;</div>
-      <h2>Registro exitoso!</h2>
-      <p style="color:#64748b;font-size:14px;margin:8px 0 20px" id="okmsg">Ya puedes abrir el porton.</p>
-      <button class="btn btn-blue" onclick="location.href='https://racosta123.github.io/cerradaapp/'">Ir a la App</button>
+      <div class="big-ico">🎉</div>
+      <h2>¡Registro exitoso!</h2>
+      <p style="color:#64748b;font-size:14px;margin:8px 0 20px" id="okmsg">Ya puedes abrir el portón.</p>
+      <button class="btn btn-blue" onclick="location.href='https://racosta123.github.io/cerradaapp/'">Ir a la App →</button>
     </div>
   </div>
 
   <!-- Error -->
   <div class="step" id="s-err">
     <div class="center">
-      <div class="big-ico">&#9888;</div>
-      <h2 style="color:#dc2626">Link invalido</h2>
-      <p style="color:#64748b;font-size:14px;margin-top:8px" id="errmsg">Link no valido o expirado. Pide al administrador uno nuevo.</p>
+      <div class="big-ico">⚠️</div>
+      <h2 style="color:#dc2626">Link inválido</h2>
+      <p style="color:#64748b;font-size:14px;margin-top:8px" id="errmsg">Link no válido o expirado. Pide al administrador uno nuevo.</p>
     </div>
   </div>
 </div>
 
 <script>
 var REG = null;
-var DATA = null;
-var JB = 'https://api.jsonbin.io/v3/b';
 var WORKER = 'https://shelly-proxy.acosta4770.workers.dev';
 
-function show(id){
-  var steps = document.querySelectorAll('.step');
-  for(var i=0;i<steps.length;i++) steps[i].className='step';
-  document.getElementById(id).className='step on';
+function show(id) {
+  document.querySelectorAll('.step').forEach(function(s){ s.className='step'; });
+  document.getElementById(id).className = 'step on';
 }
 
-function showMsg(t,type){
-  var e=document.getElementById('fmsg');
-  e.className='msg msg-'+(type||'err');
-  e.textContent=t;
+function showMsg(t, type) {
+  var e = document.getElementById('fmsg');
+  e.className = 'msg msg-' + (type || 'err');
+  e.textContent = t;
 }
 
-function decode(raw){
-  try{
-    var b=raw.replace(/-/g,'+').replace(/_/g,'/');
-    var p=b.length%4?b+'==='.slice(b.length%4):b;
+function decode(raw) {
+  try {
+    var b = raw.replace(/-/g,'+').replace(/_/g,'/');
+    var p = b.length % 4 ? b + '==='.slice(b.length % 4) : b;
     return JSON.parse(atob(p));
-  }catch(e){return null;}
+  } catch(e) { return null; }
 }
 
-function norm(t){return(t||'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();}
-
-// Inicializar — mostrar formulario SIN llamadas de red
-function init(){
-  var href = location.href;
-  var qi = href.indexOf('?');
-  if(qi<0){show('s-err');return;}
-  var params = new URLSearchParams(href.slice(qi+1));
+// Inicializar — mostrar formulario sin llamadas de red
+function init() {
+  var params = new URLSearchParams(window.location.search);
   var raw = params.get('reg');
-  if(!raw){show('s-err');return;}
+  if (!raw) { show('s-err'); return; }
 
   REG = decode(raw);
-  if(!REG||!REG.token||!REG.binId||!REG.house){
-    show('s-err');return;
+  if (!REG || !REG.token || !REG.code || !REG.house) {
+    show('s-err'); return;
   }
 
-  // Mostrar datos del payload sin verificar en red (eso se hace al enviar)
+  // Mostrar datos del payload
   var isFam = !!REG.isFamiliar;
   document.getElementById('fhouse').textContent = 'Casa: ' + REG.house;
   document.getElementById('fcerrada').textContent = REG.cerradaName || '';
   document.getElementById('ftitle').textContent = isFam ? 'Registro como familiar' : 'Completa tu registro';
-  if(!isFam && REG.email && REG.email.indexOf('ejemplo') < 0){
-    document.getElementById('iemail').value = REG.email;
-  }
-  // s-form ya esta visible por defecto
 }
 
-function doReg(){
+function doReg() {
   var name  = document.getElementById('iname').value.trim();
   var email = document.getElementById('iemail').value.trim().toLowerCase();
   var pin   = document.getElementById('ipin').value.trim();
   var pin2  = document.getElementById('ipin2').value.trim();
 
-  if(!name){showMsg('Escribe tu nombre');return;}
-  if(!email||email.indexOf('@')<0){showMsg('Correo no valido');return;}
-  if(!pin||pin.length<4){showMsg('PIN minimo 4 digitos');return;}
-  if(!/^\d+$/.test(pin)){showMsg('PIN solo numeros');return;}
-  if(pin!==pin2){showMsg('Los PINes no coinciden');return;}
+  if (!name)                        { showMsg('Escribe tu nombre'); return; }
+  if (!email || email.indexOf('@') < 0) { showMsg('Correo no válido'); return; }
+  if (!pin || pin.length < 4)       { showMsg('PIN mínimo 4 dígitos'); return; }
+  if (!/^\d+$/.test(pin))           { showMsg('PIN solo números'); return; }
+  if (pin !== pin2)                  { showMsg('Los PINes no coinciden'); return; }
 
-  var btn=document.getElementById('breg');
-  btn.disabled=true;
-  btn.innerHTML='<span class="spin"></span>Registrando...';
-  showMsg('Conectando...','ok');
+  var btn = document.getElementById('breg');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Registrando...';
+  showMsg('Conectando...', 'ok');
 
-  // Ahora sí hacemos la llamada a JSONBin
-  fetch(WORKER+'/jb?bin='+REG.binId+'&key='+encodeURIComponent(REG.apiKey))
-    .then(function(r){
-      if(!r.ok) throw new Error('Error de conexion ('+r.status+')');
-      return r.json();
+  // Llamar al Worker — las credenciales de JSONBin nunca salen al cliente
+  fetch(WORKER + '/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      code:       REG.code,
+      house:      REG.house,
+      token:      REG.token,
+      isFamiliar: !!REG.isFamiliar,
+      name:       name,
+      email:      email,
+      pin:        pin
     })
-    .then(function(d){
-      DATA = d.record || d;
-      var rs = DATA.residents||[];
-      var resIdx = -1;
-      for(var i=0;i<rs.length;i++){if(rs[i].house===REG.house){resIdx=i;break;}}
-      if(resIdx<0) throw new Error('Casa no encontrada');
-
-      var res = rs[resIdx];
-      var isFam = !!REG.isFamiliar;
-      var stored = isFam ? res.familiarToken : res.inviteToken;
-      var expires = isFam ? res.familiarTokenExpires : res.inviteExpires;
-      var tokenOk = stored && REG.token && norm(stored)===norm(REG.token);
-      var notExp = !expires || Date.now()<expires;
-
-      console.log('DEBUG isFam:',isFam,'stored:',stored,'link:',REG.token,'ok:',tokenOk,'notExp:',notExp);
-      if(!tokenOk||!notExp){
-        var det = !stored ? 'Sin token guardado' : !tokenOk ? 'Token no coincide' : 'Expirado';
-        throw new Error(det);
-      }
-
-      if(isFam){
-        if(!res.members) res.members=[];
-        var fams=res.members.filter(function(m){return m.role!=='head';});
-        if(fams.length>=4) throw new Error('Maximo 4 familiares por casa');
-        res.members.push({name:name,email:email,pin:pin,role:'member',registeredAt:new Date().toISOString()});
-        res.familiarToken=null; res.familiarTokenExpires=null;
-      } else {
-        res.name=name; res.email=email; res.pin=pin;
-        res.active=true; res.pendingReg=false;
-        if(!res.members) res.members=[];
-        var hi=-1;
-        for(var j=0;j<res.members.length;j++){if(res.members[j].role==='head'){hi=j;break;}}
-        var ho={name:name,email:email,pin:pin,role:'head',registeredAt:new Date().toISOString()};
-        if(hi>=0) res.members[hi]=ho; else res.members.unshift(ho);
-        res.inviteToken=null; res.inviteExpires=null;
-      }
-      DATA.residents[resIdx]=res;
-
-      return fetch(WORKER+'/jb',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({bin:REG.binId,key:REG.apiKey,data:DATA})
-      });
-    })
-    .then(function(r){return r.json();})
-    .then(function(saved){
-      if(!saved.ok) throw new Error('Error al guardar');
-      document.getElementById('pd2').className='prog-dot done';
-      document.getElementById('pd3').className='prog-dot done';
-      document.getElementById('okmsg').textContent =
-        'Bienvenido a '+(DATA&&DATA.name?DATA.name:REG.cerradaName||'la cerrada')+
-        '. Ya puedes abrir el porton.';
-      show('s-ok');
-    })
-    .catch(function(e){
-      showMsg('Error: '+e.message);
-      btn.disabled=false;
-      btn.innerHTML='Completar Registro';
-    });
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (!d.ok) throw new Error(d.error || 'Error al registrar');
+    document.getElementById('pd2').className = 'prog-dot done';
+    document.getElementById('pd3').className = 'prog-dot done';
+    document.getElementById('okmsg').textContent =
+      'Bienvenido a ' + (REG.cerradaName || 'la cerrada') + '. Ya puedes abrir el portón.';
+    show('s-ok');
+  })
+  .catch(function(e) {
+    showMsg('Error: ' + e.message);
+    btn.disabled = false;
+    btn.innerHTML = 'Completar Registro';
+  });
 }
 
 init();

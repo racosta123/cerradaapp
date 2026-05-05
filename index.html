@@ -1066,8 +1066,6 @@ function invitarFamiliar() {
     house: res.house,
     cerradaName: c.name,
     token,
-    binId: c.jsonbin?.binId || '',
-    apiKey: c.jsonbin?.apiKey || '',
     isFamiliar: true
   })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
   const inviteUrl = `https://racosta123.github.io/cerradaapp/register.html?reg=${payload}`;
@@ -1214,19 +1212,13 @@ async function openPorton(pid,role){
 
 // ── SHELLY CLOUD CONTROL
 function shellyOpen(pt) {
-  const SERVER = 'shelly-258-eu.shelly.cloud';
+  const PROXY  = 'https://shelly-proxy.acosta4770.workers.dev';
   const AUTH   = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
   const DEVICE = pt.shellyId || 'e4b063eb85a4';
   const SECS   = pt.time || 5;
 
-  const sendCmd = async (turn) => {
-    const body = new URLSearchParams({ auth_key: AUTH, id: DEVICE, channel: 0, turn });
-    const res = await fetch(`https://${SERVER}/device/relay/control`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString()
-    });
-    return res.json();
+  const sendCmd = (turn) => {
+    fetch(`${PROXY}?id=${DEVICE}&auth=${AUTH}&turn=${turn}`).catch(()=>{});
   };
 
   sendCmd('on');
@@ -1782,12 +1774,8 @@ function sendInvite(i) {
     code: c.code,
     house: res.house,
     cerradaName: c.name,
-    token,
-    binId: c.jsonbin?.binId || '',
-    apiKey: c.jsonbin?.apiKey || ''
+    token
   })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
-  // Forzar apertura en navegador (no en PWA instalada)
-  // En Android usa intent://, en iOS usa el link normal
   const inviteUrl = `${baseUrl}?reg=${payload}`;
   // Versión para forzar Chrome en Android:
   // const intentUrl = `intent://racosta123.github.io/cerradaapp/?reg=${payload}#Intent;scheme=https;package=com.android.chrome;end`;
