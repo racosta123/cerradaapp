@@ -1211,8 +1211,8 @@ async function invitarFamiliar() {
     return;
   }
 
-  // Esperar 3 segundos para que JSONBin procese y esté disponible
-  await new Promise(r => setTimeout(r, 3000));
+  // Esperar 8 segundos para que JSONBin procese y esté disponible
+  await new Promise(r => setTimeout(r, 8000));
 
   // Solo datos no sensibles — sin binId ni apiKey
   const payload = btoa(JSON.stringify({
@@ -2015,8 +2015,8 @@ async function sendInvite(i) {
     return;
   }
 
-  // Esperar 3 segundos para que JSONBin procese y esté disponible
-  await new Promise(r => setTimeout(r, 3000));
+  // Esperar 8 segundos para que JSONBin procese y esté disponible
+  await new Promise(r => setTimeout(r, 8000));
 
   const baseUrl = 'https://racosta123.github.io/cerradaapp/register.html';
   // Solo datos no sensibles — sin binId ni apiKey
