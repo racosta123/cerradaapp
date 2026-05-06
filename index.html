@@ -1366,6 +1366,9 @@ async function addVec(){
   ['nv-h','nv-p','nv-n','nv-t'].forEach(id=>document.getElementById(id).value='');
   renderVec();updateDash();
 }
+
+async function delVec(i){const c=C();if(!c)return;if(!confirm('¿Eliminar?'))return;c.residents.splice(i,1);save();push('adm');renderVec();updateDash();toast('🗑 Eliminado');}
+function openMora(i){document.getElementById('mora-idx').value=i;const c=C();if(c)document.getElementById('mora-note').value=c.residents[i].moraNote||'';openModal('modal-mora');}
 async function toggleVec(i){
   const c=C();if(!c)return;
   const r=c.residents[i];
@@ -1382,9 +1385,8 @@ async function toggleVec(i){
     navigator.serviceWorker.controller.postMessage({type:tipo,house:r.house,cerradaCode:c.code});
   }
 }
-async function delVec(i){const c=C();if(!c)return;if(!confirm('¿Eliminar?'))return;c.residents.splice(i,1);save();push('adm');renderVec();updateDash();toast('🗑 Eliminado');}
-function openMora(i){document.getElementById('mora-idx').value=i;const c=C();if(c)document.getElementById('mora-note').value=c.residents[i].moraNote||'';openModal('modal-mora');}
-async function applyMoraDirecto(i){
+
+function applyMoraDirecto(i){
   const c=C();if(!c)return;
   const r=c.residents[i];
   r.mora=true;r.moraNote='';r.active=false;
