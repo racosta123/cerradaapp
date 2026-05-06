@@ -1390,6 +1390,11 @@ async function toggleVec(i){
     toast(r.active?'🔓 Acceso habilitado':'🔒 Suspendido');
   }
   renderVec();updateDash();
+  // Notificar al SW para que actualice la UI del residente en tiempo real
+  if (navigator.serviceWorker?.controller) {
+    const tipo = r.active ? 'REACTIVATE_USER' : 'SUSPEND_USER';
+    navigator.serviceWorker.controller.postMessage({ type: tipo, house: r.house, cerradaCode: c.code });
+  }
 }
 async function delVec(i){const c=C();if(!c)return;if(!confirm('¿Eliminar?'))return;c.residents.splice(i,1);save();push('adm');renderVec();updateDash();toast('🗑 Eliminado');}
 function openMora(i){document.getElementById('mora-idx').value=i;const c=C();if(c)document.getElementById('mora-note').value=c.residents[i].moraNote||'';openModal('modal-mora');}
@@ -1411,6 +1416,10 @@ async function applyMora(){
   }
   closeModal('modal-mora');renderVec();updateDash();
   toast('🔒 Suspendido — familiares también suspendidos');
+  // Notificar al SW para que actualice la UI del residente en tiempo real
+  if (navigator.serviceWorker?.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'SUSPEND_USER', house: r.house, cerradaCode: c.code });
+  }
 }
 async function quitarMora(i){
   const c=C();if(!c)return;
@@ -1426,6 +1435,10 @@ async function quitarMora(i){
   setSI('adm',ok?'ok':'err');
   renderVec();updateDash();
   toast('✅ Mora levantada — acceso restaurado para toda la familia');
+  // Notificar al SW para que actualice la UI del residente en tiempo real
+  if (navigator.serviceWorker?.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'REACTIVATE_USER', house: r.house, cerradaCode: c.code });
+  }
 }
 function renderAdmHist(){const c=C();if(!c)return;const hist=(c.history||[]).slice(-80).reverse();const list=document.getElementById('adm-hist');if(!hist.length){list.innerHTML=emH('📋','Sin registros');return;}const res=c.residents||[];list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who = h.who || (r?r.name:''); return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${who?' — 👤 '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
 async function clearHist(){const c=C();if(!c)return;if(!confirm('¿Limpiar historial?'))return;c.history=[];save();push('adm');renderAdmHist();updateDash();toast('🗑 Limpiado');}
@@ -2396,6 +2409,27 @@ const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 // Registrar Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/cerradaapp/sw.js').catch(()=>{});
+  // Escuchar mensajes del Service Worker (suspensión/reactivación en tiempo real)
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (!e.data) return;
+    const c = C();
+    if (!c) return;
+    if (e.data.type === 'USER_SUSPENDED' || e.data.type === 'USER_REACTIVATED') {
+      // Recargar datos desde Worker y actualizar botones
+      if (c.jsonbin?.binId) {
+        fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`)
+          .then(r => r.json()).then(data => {
+            if (data.ok && data.record) {
+              const jb = c.jsonbin;
+              Object.assign(c, data.record);
+              c.jsonbin = jb;
+              save();
+              renderGates(c, 'res', 'gate-res');
+            }
+          }).catch(() => {});
+      }
+    }
+  });
 }
 
 // Limpiar "dismissed" expirado (dura solo 24 horas)
