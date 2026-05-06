@@ -880,10 +880,10 @@ async function loginResidente(){
     for(const cerrada of Object.values(S.cerradas)){
       if(cerrada.suspended||!cerrada.active) continue;
       for(const res of cerrada.residents||[]){
-        if(res.email===email && res.password===pass) return {cerrada,res,member:null,mi:-1};
+        if(res.email===email && (res.password===pass||res.pin===pass)) return {cerrada,res,member:null,mi:-1};
         for(let mi=0;mi<(res.members||[]).length;mi++){
           const m=res.members[mi];
-          if(m.email===email && m.password===pass) return {cerrada,res,member:m,mi};
+          if(m.email===email && (m.password===pass||m.pin===pass)) return {cerrada,res,member:m,mi};
         }
       }
     }
