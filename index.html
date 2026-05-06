@@ -988,7 +988,7 @@ function logout(){
 
 // ── JSONBIN
 function setSI(r,st){const m={syncing:'🔄',ok:'☁️',err:'⚠️',off:'💾'};const el=document.getElementById('sync-'+r);if(el)el.textContent=m[st]||'☁️';}
-async function jbPush(c, retries=3){
+async function jbPush(c, retries=10){
   if(!c?.jsonbin?.binId||!c?.jsonbin?.apiKey) return false;
   const p={name:c.name,code:c.code,houses:c.houses,adminPin:c.adminPin,adminName:c.adminName,adminPhone:c.adminPhone,price:c.price,active:c.active,suspended:c.suspended,portones:c.portones||[],residents:c.residents||[],history:(c.history||[]).slice(-500),movements:c.movements||[],cuotas:c.cuotas||{},cuotaConfig:c.cuotaConfig||{},updatedAt:new Date().toISOString()};
   for(let i=0; i<retries; i++){
@@ -1001,7 +1001,6 @@ async function jbPush(c, retries=3){
       const d=await r.json();
       if(d.ok===true) return true;
     }catch(e){}
-    // Esperar 1 segundo antes de reintentar
     if(i < retries-1) await new Promise(r=>setTimeout(r,1000));
   }
   return false;
@@ -1386,42 +1385,45 @@ function openMora(i){document.getElementById('mora-idx').value=i;const c=C();if(
 async function toggleVec(i){
   const c=C();if(!c)return;
   const r=c.residents[i];
-  r.active=!r.active;
-  r.mora=!r.active;
-  if(!r.active && r.members && r.members.length>0) r.members.forEach(m=>m.suspended=true);
-  if(r.active && r.members && r.members.length>0) r.members.forEach(m=>m.suspended=false);
-  save();
-  renderVec();updateDash();
+  const nuevoEstado=!r.active;
+
+  // Mostrar que está procesando
   setSI('adm','syncing');
-  jbPush(c).then(ok=>{
+  toast('⏳ Procesando...');
+
+  // Preparar cambio pero NO aplicar todavía
+  const cCopy = JSON.parse(JSON.stringify(c));
+  const rCopy = cCopy.residents[i];
+  rCopy.active = nuevoEstado;
+  rCopy.mora = !nuevoEstado;
+  if(!nuevoEstado && rCopy.members) rCopy.members.forEach(m=>m.suspended=true);
+  if(nuevoEstado && rCopy.members) rCopy.members.forEach(m=>m.suspended=false);
+
+  // Intentar guardar en la nube primero
+  jbPush(cCopy).then(ok=>{
     if(ok){
-      setSI('adm','ok');
-      toast(r.active?'🔓 Acceso reactivado':'🔒 Suspendido');
-    } else {
-      setSI('adm','err');
-      // Revertir el cambio local porque no se guardó en la nube
-      r.active=!r.active;
-      r.mora=!r.active;
-      if(!r.active && r.members) r.members.forEach(m=>m.suspended=true);
-      if(r.active && r.members) r.members.forEach(m=>m.suspended=false);
+      // Confirmar — aplicar cambio local y actualizar UI
+      r.active = nuevoEstado;
+      r.mora = !nuevoEstado;
+      if(!nuevoEstado && r.members) r.members.forEach(m=>m.suspended=true);
+      if(nuevoEstado && r.members) r.members.forEach(m=>m.suspended=false);
       save();
+      setSI('adm','ok');
       renderVec();updateDash();
-      toast('⚠️ Sin conexión — intenta de nuevo');
+      toast(nuevoEstado?'🔓 Acceso reactivado':'🔒 Suspendido');
+      if(navigator.serviceWorker?.controller){
+        navigator.serviceWorker.controller.postMessage({
+          type: nuevoEstado?'REACTIVATE_USER':'SUSPEND_USER',
+          house: r.house,
+          cerradaCode: c.code
+        });
+      }
+    } else {
+      // Falló — no cambiar nada
+      setSI('adm','err');
+      toast('⚠️ Sin conexión — no se aplicó el cambio');
     }
-  }).catch(()=>{
-    setSI('adm','err');
-    r.active=!r.active;
-    r.mora=!r.active;
-    if(!r.active && r.members) r.members.forEach(m=>m.suspended=true);
-    if(r.active && r.members) r.members.forEach(m=>m.suspended=false);
-    save();
-    renderVec();updateDash();
-    toast('⚠️ Sin conexión — intenta de nuevo');
   });
-  if(navigator.serviceWorker?.controller){
-    const tipo=r.active?'REACTIVATE_USER':'SUSPEND_USER';
-    navigator.serviceWorker.controller.postMessage({type:tipo,house:r.house,cerradaCode:c.code});
-  }
 }
 
 function applyMoraDirecto(i){
