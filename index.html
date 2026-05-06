@@ -1337,7 +1337,7 @@ function renderVec(){
       <div class="ia">
         <button class="btn bb2 xs" onclick="if(navigator.vibrate)navigator.vibrate(30);sendInvite(${i})" title="Invitar por WhatsApp">📲</button>
         
-        <button class="btn ${r.active&&!r.mora?'bd':'bg2'} xs" onclick="if(navigator.vibrate)navigator.vibrate(30);toggleVec(${i})">${r.active&&!r.mora?'🔒':'🔓'}</button>
+        <button class="btn xs" style="background:${r.active&&!r.mora?'#16a34a':'#dc2626'};color:#fff;font-size:1rem" onclick="if(navigator.vibrate)navigator.vibrate(30);toggleVec(${i})">${r.active&&!r.mora?'🔓':'🔒'}</button>
         <button class="btn bd xs" onclick="if(navigator.vibrate)navigator.vibrate(30);delVec(${i})">✕</button>
       </div>
     </div>
@@ -1377,9 +1377,33 @@ async function toggleVec(i){
   if(!r.active && r.members && r.members.length>0) r.members.forEach(m=>m.suspended=true);
   if(r.active && r.members && r.members.length>0) r.members.forEach(m=>m.suspended=false);
   save();
-  toast(r.active?'🔓 Acceso reactivado':'🔒 Suspendido');
   renderVec();updateDash();
-  jbPush(c).then(ok=>setSI('adm',ok?'ok':'err')).catch(()=>setSI('adm','err'));
+  setSI('adm','syncing');
+  jbPush(c).then(ok=>{
+    if(ok){
+      setSI('adm','ok');
+      toast(r.active?'🔓 Acceso reactivado':'🔒 Suspendido');
+    } else {
+      setSI('adm','err');
+      // Revertir el cambio local porque no se guardó en la nube
+      r.active=!r.active;
+      r.mora=!r.active;
+      if(!r.active && r.members) r.members.forEach(m=>m.suspended=true);
+      if(r.active && r.members) r.members.forEach(m=>m.suspended=false);
+      save();
+      renderVec();updateDash();
+      toast('⚠️ Sin conexión — intenta de nuevo');
+    }
+  }).catch(()=>{
+    setSI('adm','err');
+    r.active=!r.active;
+    r.mora=!r.active;
+    if(!r.active && r.members) r.members.forEach(m=>m.suspended=true);
+    if(r.active && r.members) r.members.forEach(m=>m.suspended=false);
+    save();
+    renderVec();updateDash();
+    toast('⚠️ Sin conexión — intenta de nuevo');
+  });
   if(navigator.serviceWorker?.controller){
     const tipo=r.active?'REACTIVATE_USER':'SUSPEND_USER';
     navigator.serviceWorker.controller.postMessage({type:tipo,house:r.house,cerradaCode:c.code});
@@ -1392,9 +1416,10 @@ function applyMoraDirecto(i){
   r.mora=true;r.moraNote='';r.active=false;
   if(r.members&&r.members.length>0) r.members.forEach(m=>m.suspended=true);
   save();
-  if(c.jsonbin?.binId){setSI('adm','syncing');const ok=await jbPush(c);setSI('adm',ok?'ok':'err');}
   renderVec();updateDash();
   toast('🔒 Suspendido');
+  setSI('adm','syncing');
+  jbPush(c).then(ok=>setSI('adm',ok?'ok':'err')).catch(()=>setSI('adm','err'));
   if(navigator.serviceWorker?.controller){
     navigator.serviceWorker.controller.postMessage({type:'SUSPEND_USER',house:r.house,cerradaCode:c.code});
   }
