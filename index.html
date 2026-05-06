@@ -924,10 +924,7 @@ function loginManual(){
   if(c.suspended||!c.active){document.getElementById('susp-msg').textContent='Esta cerrada está suspendida.';showScreen('susp');return;}
   const res=c.residents.find(r=>r.pin===pin);
   if(!res){showErr('m-err','PIN incorrecto.');return;}
-  if(!res.active||res.mora){
-    document.getElementById('susp-msg').textContent=res.mora?`Acceso suspendido por mora. ${res.moraNote}`:'Tu acceso fue suspendido.';
-    showScreen('susp');return;
-  }
+  // Siempre entrar — renderGates mostrará botón rojo si está suspendido
   U={role:'resident',cerradaCode:code,house:res.house,memberIdx:-1,memberName:res.name};
   localStorage.setItem('cerrada_session',JSON.stringify(U));
   enterRes(c,res,null);
@@ -2359,33 +2356,18 @@ load();seedDemo();renderNcP();
     }
     if (role === 'resident') {
       const res = c.residents.find(r => r.house === house);
-      if (!res || !res.active || res.mora) {
-        // Suspendido — mostrar pantalla de suspensión sin borrar sesión
-        document.getElementById('susp-msg').textContent = res?.mora 
-          ? `Acceso suspendido por mora. ${res.moraNote || ''}` 
-          : 'Tu acceso fue suspendido. Contacta al administrador.';
-        showScreen('susp');
-        return;
-      }
-      // Buscar miembro por email (más confiable que por índice)
+      if (!res) return; // Casa no encontrada — mostrar login
+      // Buscar miembro por email
       const savedEmail = sess.email;
       let mi = memberIdx !== undefined ? memberIdx : -1;
       let member = null;
       if (savedEmail && res.members) {
         const emailIdx = res.members.findIndex(m => m.email === savedEmail);
-        if (emailIdx >= 0) {
-          mi = emailIdx;
-          member = res.members[emailIdx];
-          // Verificar si el familiar está suspendido
-          if (member.suspended) {
-            document.getElementById('susp-msg').textContent = 'Tu acceso fue suspendido. Contacta al administrador.';
-            showScreen('susp');
-            return;
-          }
-        }
+        if (emailIdx >= 0) { mi = emailIdx; member = res.members[emailIdx]; }
       } else if (mi >= 0 && res.members) {
         member = res.members[mi];
       }
+      // Siempre entrar — renderGates mostrará botón rojo si está suspendido
       U = { role:'resident', cerradaCode, house, memberIdx: mi, memberName: member?.name || res.name, email: savedEmail };
       enterRes(c, res, member);
     }
