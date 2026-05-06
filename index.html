@@ -1075,6 +1075,21 @@ function enterRes(c, res, member) {
   }
 
   showScreen('res');
+
+  // Verificar estado cada 30 segundos automáticamente
+  if(window._suspInterval) clearInterval(window._suspInterval);
+  window._suspInterval = setInterval(()=>{
+    if(!U || U.role !== 'resident') { clearInterval(window._suspInterval); return; }
+    const c = C();
+    if(!c || !c.jsonbin?.binId) return;
+    fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`)
+      .then(r=>r.json()).then(data=>{
+        if(data.ok && data.record){
+          const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
+          renderGates(c,'res','gate-res');
+        }
+      }).catch(()=>{});
+  }, 30000);
 }
 
 function invitarFamiliar() {
@@ -1131,6 +1146,7 @@ function renderGates(c,role,cid){
           const resC=c.residents.find(r=>r.house===U.house);
           const mSuspC=U.memberIdx>=0&&resC?.members?.[U.memberIdx]?.suspended;
           const isSuspCloud=!resC||!resC.active||resC.mora||mSuspC;
+          console.log('renderGates nube — suspendido:', isSuspCloud, 'mora:', resC?.mora, 'active:', resC?.active);
           if(isSuspCloud!==isSuspLocal) el.innerHTML=_gbtns(pts,role,isSuspCloud);
         }
       }).catch(()=>{});
