@@ -102,12 +102,17 @@ function showMsg(t, type) {
   e.textContent = t;
 }
 
+// FIX: padding base64 correcto
 function decode(raw) {
   try {
     var b = raw.replace(/-/g,'+').replace(/_/g,'/');
-    var p = b.length % 4 ? b + '==='.slice(b.length % 4) : b;
+    // Formula correcta: agrega el padding exacto necesario
+    var p = b + '=='.slice(0, (4 - b.length % 4) % 4);
     return JSON.parse(atob(p));
-  } catch(e) { return null; }
+  } catch(e) {
+    console.log('decode error:', e.message, 'raw:', raw);
+    return null;
+  }
 }
 
 // Inicializar — mostrar formulario sin llamadas de red
@@ -118,6 +123,7 @@ function init() {
 
   REG = decode(raw);
   if (!REG || !REG.token || !REG.code || !REG.house) {
+    console.log('REG inválido:', REG);
     show('s-err'); return;
   }
 
