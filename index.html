@@ -1297,22 +1297,19 @@ async function openPorton(pid,role){
 
 // ── SHELLY CLOUD CONTROL
 function shellyOpen(pt) {
-  const SERVER = 'shelly-258-eu.shelly.cloud';
-  const AUTH   = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
-  const DEVICE = pt.shellyId || 'e4b063eb85a4';
-  const SECS   = pt.time || 5;
+  const WORKER = 'https://shelly-proxy.acosta4770.workers.dev';
+  const c = C();
+  if (!c) return;
 
-  const sendCmd = (turn) => {
-    const body = new URLSearchParams({ auth_key: AUTH, id: DEVICE, channel: 0, turn });
-    fetch(`https://${SERVER}/device/relay/control`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString()
-    }).catch(() => {});
-  };
-
-  sendCmd('on');
-  setTimeout(() => sendCmd('off'), SECS * 1000);
+  fetch(`${WORKER}/shelly`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      shellyId:     pt.shellyId || 'e4b063eb85a4',
+      shellyServer: 'shelly-258-eu.shelly.cloud',
+      seconds:      pt.time || 5
+    })
+  }).catch(() => {});
 }
 
 // ── ADMIN
