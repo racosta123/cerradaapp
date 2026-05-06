@@ -1066,6 +1066,8 @@ function invitarFamiliar() {
     house: res.house,
     cerradaName: c.name,
     token,
+    binId: c.jsonbin?.binId || '',
+    apiKey: c.jsonbin?.apiKey || '',
     isFamiliar: true
   })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
   const inviteUrl = `https://racosta123.github.io/cerradaapp/register.html?reg=${payload}`;
@@ -1154,11 +1156,10 @@ async function openPorton(pid,role){
   // Verificar suspensión solo cada 5 minutos para no ralentizar
   if(role==='res' && c.jsonbin?.binId && (Date.now()-lastSuspCheck > 5*60*1000)){
     try {
-      const r=await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}/latest`,
-        {headers:{'X-Master-Key':c.jsonbin.apiKey}});
+      const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`);
       if(r.ok){
         const data=await r.json();
-        if(data.record){
+        if(data.ok && data.record){
           const jb=c.jsonbin;
           Object.assign(c,data.record);
           c.jsonbin=jb;
@@ -1171,11 +1172,11 @@ async function openPorton(pid,role){
     const res=c.residents.find(r=>r.house===U.house);
     const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
     if(!res||!res.active||res.mora||memberSusp){
-      localStorage.removeItem('cerrada_session');
-      document.getElementById('susp-msg').textContent=res?.mora
-        ?`Acceso suspendido por mora. ${res.moraNote||''}`
-        :'Tu acceso fue suspendido. Contacta al administrador.';
-      showScreen('susp');
+      const btn=document.getElementById(`gbtn-${role}-${pid}`);
+      if(btn){
+        btn.style.background='#dc2626';
+        btn.innerHTML='🔒<br><span style="font-size:.65rem;font-weight:700">Suspendido</span>';
+      }
       return;
     }
   } else if(role==='res'){
@@ -1183,9 +1184,11 @@ async function openPorton(pid,role){
     const res=c.residents.find(r=>r.house===U.house);
     const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
     if(!res||!res.active||res.mora||memberSusp){
-      localStorage.removeItem('cerrada_session');
-      document.getElementById('susp-msg').textContent='Tu acceso fue suspendido.';
-      showScreen('susp');
+      const btn=document.getElementById(`gbtn-${role}-${pid}`);
+      if(btn){
+        btn.style.background='#dc2626';
+        btn.innerHTML='🔒<br><span style="font-size:.65rem;font-weight:700">Suspendido</span>';
+      }
       return;
     }
   }
@@ -1377,7 +1380,7 @@ async function applyMora(){
     setSI('adm',ok?'ok':'err');
   }
   closeModal('modal-mora');renderVec();updateDash();
-  toast('🔒 Suspendido por mora — familiares también suspendidos');
+  toast('🔒 Suspendido — familiares también suspendidos');
 }
 async function quitarMora(i){
   const c=C();if(!c)return;
@@ -1774,8 +1777,12 @@ function sendInvite(i) {
     code: c.code,
     house: res.house,
     cerradaName: c.name,
-    token
+    token,
+    binId: c.jsonbin?.binId || '',
+    apiKey: c.jsonbin?.apiKey || ''
   })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
+  // Forzar apertura en navegador (no en PWA instalada)
+  // En Android usa intent://, en iOS usa el link normal
   const inviteUrl = `${baseUrl}?reg=${payload}`;
   // Versión para forzar Chrome en Android:
   // const intentUrl = `intent://racosta123.github.io/cerradaapp/?reg=${payload}#Intent;scheme=https;package=com.android.chrome;end`;
