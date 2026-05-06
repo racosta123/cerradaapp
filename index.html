@@ -1092,29 +1092,39 @@ function enterRes(c, res, member) {
   }, 10000);
 }
 
-function invitarFamiliar() {
+async function invitarFamiliar() {
   const c = C(); if (!c) return;
   const res = c.residents.find(r => r.house === U.house);
   if (!res) return;
   const members = res.members || [];
   if (members.length >= 5) { toast('⚠️ Ya tienes el máximo de 5 miembros'); return; }
 
-  // Generar token para el familiar — siempre renovar
+  // Generar token para el familiar
   const token = btoa(`${c.code}|${res.house}|fam|${Date.now()}`).replace(/=/g,'');
-  res.inviteToken = token;
-  res.inviteExpires = Date.now() + 24*60*60*1000; // 24 horas
+  res.familiarToken = token;
+  res.familiarTokenExpires = Date.now() + 24*60*60*1000; // 24 horas
   save();
-  if (c.jsonbin?.binId) jbPush(c);
 
+  // Esperar a que el token se guarde en JSONBin ANTES de enviar el link
+  toast('⏳ Generando invitación...');
+  const ok = await jbPush(c);
+  if (!ok) {
+    toast('⚠️ Sin conexión — intenta de nuevo');
+    return;
+  }
+
+  // Esperar 3 segundos para que JSONBin procese y esté disponible
+  await new Promise(r => setTimeout(r, 3000));
+
+  // Solo datos no sensibles — sin binId ni apiKey
   const payload = btoa(JSON.stringify({
     code: c.code,
     house: res.house,
     cerradaName: c.name,
     token,
-    binId: c.jsonbin?.binId || '',
-    apiKey: c.jsonbin?.apiKey || '',
     isFamiliar: true
   })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
+
   const inviteUrl = `https://racosta123.github.io/cerradaapp/register.html?reg=${payload}`;
   const msg = `🏘️ *${c.name}*
 
@@ -1887,32 +1897,37 @@ async function saveMstJsonbin(){
 }
 
 // ── SISTEMA DE INVITACIÓN
-function sendInvite(i) {
+async function sendInvite(i) {
   const c = C(); if (!c) return;
   const res = c.residents[i];
-  // Generar token único — siempre renovar al enviar
+
+  // Generar token único
   const token = btoa(`${c.code}|${res.house}|${Date.now()}`).replace(/=/g,'');
   c.residents[i].inviteToken = token;
+  c.residents[i].inviteExpires = Date.now() + (7 * 24 * 60 * 60 * 1000);
   save();
-  // Push async sin bloquear
-  if(c.jsonbin?.binId) jbPush(c);
+
+  // Esperar a que el token se guarde en JSONBin ANTES de enviar el link
+  toast('⏳ Generando invitación...');
+  const ok = await jbPush(c);
+  if (!ok) {
+    toast('⚠️ Sin conexión — intenta de nuevo');
+    return;
+  }
+
+  // Esperar 3 segundos para que JSONBin procese y esté disponible
+  await new Promise(r => setTimeout(r, 3000));
 
   const baseUrl = 'https://racosta123.github.io/cerradaapp/register.html';
-  // Empaquetar datos en el link
+  // Solo datos no sensibles — sin binId ni apiKey
   const payload = btoa(JSON.stringify({
     code: c.code,
     house: res.house,
     cerradaName: c.name,
-    token,
-    binId: c.jsonbin?.binId || '',
-    apiKey: c.jsonbin?.apiKey || ''
+    token
   })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
-  // Forzar apertura en navegador (no en PWA instalada)
-  // En Android usa intent://, en iOS usa el link normal
-  const inviteUrl = `${baseUrl}?reg=${payload}`;
-  // Versión para forzar Chrome en Android:
-  // const intentUrl = `intent://racosta123.github.io/cerradaapp/?reg=${payload}#Intent;scheme=https;package=com.android.chrome;end`;
 
+  const inviteUrl = `${baseUrl}?reg=${payload}`;
   const msg = `🏘️ *${c.name}*
 
 Hola ${res.name}, ya tienes acceso al portón de tu residencia. 🏠
