@@ -2352,8 +2352,7 @@ load();seedDemo();renderNcP();
     if (role === 'resident') {
       const res = c.residents.find(r => r.house === house);
       if (!res || !res.active || res.mora) {
-        // Suspendido — limpiar sesión y mostrar pantalla de suspensión
-        localStorage.removeItem('cerrada_session');
+        // Suspendido — mostrar pantalla de suspensión sin borrar sesión
         document.getElementById('susp-msg').textContent = res?.mora 
           ? `Acceso suspendido por mora. ${res.moraNote || ''}` 
           : 'Tu acceso fue suspendido. Contacta al administrador.';
@@ -2371,7 +2370,6 @@ load();seedDemo();renderNcP();
           member = res.members[emailIdx];
           // Verificar si el familiar está suspendido
           if (member.suspended) {
-            localStorage.removeItem('cerrada_session');
             document.getElementById('susp-msg').textContent = 'Tu acceso fue suspendido. Contacta al administrador.';
             showScreen('susp');
             return;
