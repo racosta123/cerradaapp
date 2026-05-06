@@ -5,20 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>CerradaApp</title>
 
-<!-- Firebase para notificaciones push -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
-<script>
-firebase.initializeApp({
-  apiKey: "AIzaSyChuftPnUTXr7KmrVufvMxtmeH14Or0HUU",
-  authDomain: "cerradaapp-7179e.firebaseapp.com",
-  projectId: "cerradaapp-7179e",
-  storageBucket: "cerradaapp-7179e.firebasestorage.app",
-  messagingSenderId: "481439052062",
-  appId: "1:481439052062:web:c3a0a104bae74763cf590f"
-});
-</script>
-
 <!-- PWA -->
 <meta name="application-name" content="CerradaApp">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1005,20 +991,44 @@ function setSI(r,st){const m={syncing:'🔄',ok:'☁️',err:'⚠️',off:'💾'
 // ── NOTIFICACIONES FCM
 async function initFCM(c, res, memberIdx) {
   try {
-    // Verificar soporte
     if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
-
-    // Pedir permiso si no está dado
     const perm = await Notification.requestPermission();
     if (perm !== 'granted') return;
 
-    // Obtener token FCM via Firebase
+    // Cargar Firebase SDK dinámicamente
+    await new Promise((resolve, reject) => {
+      if (window.firebase) { resolve(); return; }
+      const s1 = document.createElement('script');
+      s1.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
+      s1.onload = () => {
+        const s2 = document.createElement('script');
+        s2.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js';
+        s2.onload = resolve;
+        s2.onerror = reject;
+        document.head.appendChild(s2);
+      };
+      s1.onerror = reject;
+      document.head.appendChild(s1);
+    });
+
+    // Inicializar Firebase si no está inicializado
+    if (!window.firebase.apps?.length) {
+      window.firebase.initializeApp({
+        apiKey: "AIzaSyChuftPnUTXr7KmrVufvMxtmeH14Or0HUU",
+        authDomain: "cerradaapp-7179e.firebaseapp.com",
+        projectId: "cerradaapp-7179e",
+        storageBucket: "cerradaapp-7179e.firebasestorage.app",
+        messagingSenderId: "481439052062",
+        appId: "1:481439052062:web:c3a0a104bae74763cf590f"
+      });
+    }
+
     const sw = await navigator.serviceWorker.ready;
-    const reg = await firebase.messaging().getToken({
+    const token = await window.firebase.messaging().getToken({
       vapidKey: 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDkBWpmsu1XJFb8xP5FnkmYlnNkFm5RJBvEVm4KkBfqA',
       serviceWorkerRegistration: sw
     });
-    if (!reg) return;
+    if (!token) return;
 
     // Guardar token en el miembro correcto
     const resIdx = c.residents.findIndex(r => r.house === res.house);
@@ -1026,21 +1036,18 @@ async function initFCM(c, res, memberIdx) {
 
     let changed = false;
     if (memberIdx >= 0 && c.residents[resIdx].members?.[memberIdx]) {
-      if (c.residents[resIdx].members[memberIdx].fcmToken !== reg) {
-        c.residents[resIdx].members[memberIdx].fcmToken = reg;
+      if (c.residents[resIdx].members[memberIdx].fcmToken !== token) {
+        c.residents[resIdx].members[memberIdx].fcmToken = token;
         changed = true;
       }
     } else {
-      if (c.residents[resIdx].fcmToken !== reg) {
-        c.residents[resIdx].fcmToken = reg;
+      if (c.residents[resIdx].fcmToken !== token) {
+        c.residents[resIdx].fcmToken = token;
         changed = true;
       }
     }
 
-    if (changed) {
-      save();
-      jbPush(c).catch(() => {});
-    }
+    if (changed) { save(); jbPush(c).catch(() => {}); }
   } catch(e) { console.log('FCM error:', e.message); }
 }
 
