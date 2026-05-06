@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>CerradaApp</title>
 
+<!-- Firebase para notificaciones push -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyChuftPnUTXr7KmrVufvMxtmeH14Or0HUU",
+  authDomain: "cerradaapp-7179e.firebaseapp.com",
+  projectId: "cerradaapp-7179e",
+  storageBucket: "cerradaapp-7179e.firebasestorage.app",
+  messagingSenderId: "481439052062",
+  appId: "1:481439052062:web:c3a0a104bae74763cf590f"
+});
+</script>
+
 <!-- PWA -->
 <meta name="application-name" content="CerradaApp">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -988,6 +1002,80 @@ function logout(){
 
 // ── JSONBIN
 function setSI(r,st){const m={syncing:'🔄',ok:'☁️',err:'⚠️',off:'💾'};const el=document.getElementById('sync-'+r);if(el)el.textContent=m[st]||'☁️';}
+// ── NOTIFICACIONES FCM
+async function initFCM(c, res, memberIdx) {
+  try {
+    // Verificar soporte
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+
+    // Pedir permiso si no está dado
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return;
+
+    // Obtener token FCM via Firebase
+    const sw = await navigator.serviceWorker.ready;
+    const reg = await firebase.messaging().getToken({
+      vapidKey: 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDkBWpmsu1XJFb8xP5FnkmYlnNkFm5RJBvEVm4KkBfqA',
+      serviceWorkerRegistration: sw
+    });
+    if (!reg) return;
+
+    // Guardar token en el miembro correcto
+    const resIdx = c.residents.findIndex(r => r.house === res.house);
+    if (resIdx < 0) return;
+
+    let changed = false;
+    if (memberIdx >= 0 && c.residents[resIdx].members?.[memberIdx]) {
+      if (c.residents[resIdx].members[memberIdx].fcmToken !== reg) {
+        c.residents[resIdx].members[memberIdx].fcmToken = reg;
+        changed = true;
+      }
+    } else {
+      if (c.residents[resIdx].fcmToken !== reg) {
+        c.residents[resIdx].fcmToken = reg;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      save();
+      jbPush(c).catch(() => {});
+    }
+  } catch(e) { console.log('FCM error:', e.message); }
+}
+
+async function notifyFamily(c, res, openerName, portonLabel) {
+  try {
+    // Recopilar todos los tokens de la casa excepto el que abrió
+    const tokens = [];
+    const resObj = c.residents.find(r => r.house === res.house);
+    if (!resObj) return;
+
+    // Token del jefe
+    if (resObj.fcmToken && resObj.name !== openerName) tokens.push(resObj.fcmToken);
+
+    // Tokens de familiares
+    (resObj.members || []).forEach(m => {
+      if (m.fcmToken && m.name !== openerName) tokens.push(m.fcmToken);
+    });
+
+    if (!tokens.length) return;
+
+    const now = new Date();
+    const hora = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+
+    fetch('https://shelly-proxy.acosta4770.workers.dev/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: '🏠 ' + openerName + ' abrió el portón',
+        body: portonLabel + ' · ' + hora,
+        tokens
+      })
+    }).catch(() => {});
+  } catch(e) {}
+}
+
 async function jbPush(c, retries=10){
   if(!c?.jsonbin?.binId||!c?.jsonbin?.apiKey) return false;
   const p={name:c.name,code:c.code,houses:c.houses,adminPin:c.adminPin,adminName:c.adminName,adminPhone:c.adminPhone,price:c.price,active:c.active,suspended:c.suspended,portones:c.portones||[],residents:c.residents||[],history:(c.history||[]).slice(-500),movements:c.movements||[],cuotas:c.cuotas||{},cuotaConfig:c.cuotaConfig||{},updatedAt:new Date().toISOString()};
@@ -1075,6 +1163,9 @@ function enterRes(c, res, member) {
   }
 
   showScreen('res');
+
+  // Inicializar notificaciones FCM en segundo plano
+  initFCM(c, res, U?.memberIdx ?? -1).catch(() => {});
 
   // Verificar estado cada 30 segundos automáticamente
   if(window._suspInterval) clearInterval(window._suspInterval);
@@ -1276,6 +1367,8 @@ async function openPorton(pid,role){
   save();push(role);
   shellyOpen(pt);
   toast(`✅ ${pt.label} abierto`);
+  // Notificar a familiares
+  notifyFamily(c, {house: house}, U.memberName || house, pt.label).catch(() => {});
   if(navigator.vibrate) navigator.vibrate([80,40,80]);
   // Sonido suave tipo "puk" ahogado
   try{
