@@ -988,18 +988,23 @@ function logout(){
 
 // ── JSONBIN
 function setSI(r,st){const m={syncing:'🔄',ok:'☁️',err:'⚠️',off:'💾'};const el=document.getElementById('sync-'+r);if(el)el.textContent=m[st]||'☁️';}
-async function jbPush(c){
+async function jbPush(c, retries=3){
   if(!c?.jsonbin?.binId||!c?.jsonbin?.apiKey) return false;
   const p={name:c.name,code:c.code,houses:c.houses,adminPin:c.adminPin,adminName:c.adminName,adminPhone:c.adminPhone,price:c.price,active:c.active,suspended:c.suspended,portones:c.portones||[],residents:c.residents||[],history:(c.history||[]).slice(-500),movements:c.movements||[],cuotas:c.cuotas||{},cuotaConfig:c.cuotaConfig||{},updatedAt:new Date().toISOString()};
-  try{
-    const r=await fetch('https://shelly-proxy.acosta4770.workers.dev/jb',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({bin:c.jsonbin.binId,key:c.jsonbin.apiKey,data:p})
-    });
-    const d=await r.json();
-    return d.ok===true;
-  }catch(e){return false;}
+  for(let i=0; i<retries; i++){
+    try{
+      const r=await fetch('https://shelly-proxy.acosta4770.workers.dev/jb',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({bin:c.jsonbin.binId,key:c.jsonbin.apiKey,data:p})
+      });
+      const d=await r.json();
+      if(d.ok===true) return true;
+    }catch(e){}
+    // Esperar 1 segundo antes de reintentar
+    if(i < retries-1) await new Promise(r=>setTimeout(r,1000));
+  }
+  return false;
 }
 async function push(role){const c=C();if(!c?.jsonbin?.binId)return;setSI(role,'syncing');setSI(role,await jbPush(c)?'ok':'err');}
 
