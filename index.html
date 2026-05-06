@@ -894,13 +894,13 @@ async function loginResidente(){
   // Buscar primero en local
   let found = buscarEnCerradas();
 
-  // Si no encontró, descargar desde JSONBin
+  // Si no encontró, descargar desde Worker (más rápido que JSONBin directo)
   if(!found){
     toast('🔄 Verificando...');
     for(const [code,cfg] of Object.entries(KNOWN_BINS)){
       try{
-        const r=await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}/latest`,{headers:{'X-Master-Key':cfg.apiKey}});
-        if(r.ok){const data=await r.json();if(data.record){S.cerradas[code]=data.record;S.cerradas[code].jsonbin=cfg;}}
+        const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${cfg.binId}&key=${encodeURIComponent(cfg.apiKey)}`);
+        if(r.ok){const data=await r.json();if(data.ok&&data.record){S.cerradas[code]=data.record;S.cerradas[code].jsonbin=cfg;}}
       }catch(e){}
     }
     save();
@@ -988,7 +988,7 @@ function logout(){
 
 // ── JSONBIN
 function setSI(r,st){const m={syncing:'🔄',ok:'☁️',err:'⚠️',off:'💾'};const el=document.getElementById('sync-'+r);if(el)el.textContent=m[st]||'☁️';}
-async async function jbPush(c){if(!c?.jsonbin?.binId||!c?.jsonbin?.apiKey)return false;const p={name:c.name,code:c.code,houses:c.houses,adminPin:c.adminPin,adminName:c.adminName,adminPhone:c.adminPhone,price:c.price,active:c.active,suspended:c.suspended,portones:c.portones||[],residents:c.residents||[],history:(c.history||[]).slice(-500),movements:c.movements||[],cuotas:c.cuotas||{},cuotaConfig:c.cuotaConfig||{},updatedAt:new Date().toISOString()};try{const r=await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':c.jsonbin.apiKey},body:JSON.stringify(p)});return r.ok;}catch(e){return false;}}
+async function jbPush(c){if(!c?.jsonbin?.binId||!c?.jsonbin?.apiKey)return false;const p={name:c.name,code:c.code,houses:c.houses,adminPin:c.adminPin,adminName:c.adminName,adminPhone:c.adminPhone,price:c.price,active:c.active,suspended:c.suspended,portones:c.portones||[],residents:c.residents||[],history:(c.history||[]).slice(-500),movements:c.movements||[],cuotas:c.cuotas||{},cuotaConfig:c.cuotaConfig||{},updatedAt:new Date().toISOString()};try{const r=await fetch(`https://api.jsonbin.io/v3/b/${c.jsonbin.binId}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':c.jsonbin.apiKey},body:JSON.stringify(p)});return r.ok;}catch(e){return false;}}
 async function push(role){const c=C();if(!c?.jsonbin?.binId)return;setSI(role,'syncing');setSI(role,await jbPush(c)?'ok':'err');}
 
 // ── NAV
