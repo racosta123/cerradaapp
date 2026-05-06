@@ -1369,32 +1369,17 @@ async function addVec(){
 async function toggleVec(i){
   const c=C();if(!c)return;
   const r=c.residents[i];
-  if(r.mora){toast('⚠️ Primero registra el pago');return;}
   r.active=!r.active;
-  // Si se suspende el jefe, suspender también los familiares (members)
-  if (!r.active && r.members && r.members.length > 0) {
-    r.members.forEach(m => m.suspended = true);
-  }
-  // Si se reactiva, reactivar familiares
-  if (r.active && r.members && r.members.length > 0) {
-    r.members.forEach(m => m.suspended = false);
-  }
+  r.mora=!r.active;
+  if(!r.active && r.members && r.members.length>0) r.members.forEach(m=>m.suspended=true);
+  if(r.active && r.members && r.members.length>0) r.members.forEach(m=>m.suspended=false);
   save();
-  // Push inmediato y forzado al JSONBin
-  if(c.jsonbin?.binId){
-    setSI('adm','syncing');
-    const ok = await jbPush(c);
-    setSI('adm', ok?'ok':'err');
-    if(ok) toast(r.active?'🔓 Acceso habilitado — sincronizado':'🔒 Suspendido — sincronizado');
-    else toast(r.active?'🔓 Habilitado (sin conexión)':'🔒 Suspendido (sin conexión)');
-  } else {
-    toast(r.active?'🔓 Acceso habilitado':'🔒 Suspendido');
-  }
+  toast(r.active?'🔓 Acceso reactivado':'🔒 Suspendido');
   renderVec();updateDash();
-  // Notificar al SW para que actualice la UI del residente en tiempo real
-  if (navigator.serviceWorker?.controller) {
-    const tipo = r.active ? 'REACTIVATE_USER' : 'SUSPEND_USER';
-    navigator.serviceWorker.controller.postMessage({ type: tipo, house: r.house, cerradaCode: c.code });
+  jbPush(c).then(ok=>setSI('adm',ok?'ok':'err')).catch(()=>setSI('adm','err'));
+  if(navigator.serviceWorker?.controller){
+    const tipo=r.active?'REACTIVATE_USER':'SUSPEND_USER';
+    navigator.serviceWorker.controller.postMessage({type:tipo,house:r.house,cerradaCode:c.code});
   }
 }
 async function delVec(i){const c=C();if(!c)return;if(!confirm('¿Eliminar?'))return;c.residents.splice(i,1);save();push('adm');renderVec();updateDash();toast('🗑 Eliminado');}
