@@ -1267,23 +1267,20 @@ async function openPorton(pid,role){
   shellyOpen(pt);
   toast(`✅ ${pt.label} abierto`);
   if(navigator.vibrate) navigator.vibrate([80,40,80]);
-  // Sonido elegante al abrir
+  // Sonido suave tipo "puk" ahogado
   try{
     const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    const notas = [261.63, 329.63, 392.00, 523.25]; // Do-Mi-Sol-Do
-    notas.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.12);
-      gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + i * 0.12 + 0.05);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + i * 0.12 + 0.25);
-      osc.start(ctx.currentTime + i * 0.12);
-      osc.stop(ctx.currentTime + i * 0.12 + 0.3);
-    });
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(180, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.35, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.15);
   }catch(e){}
   const btn=document.getElementById(`gbtn-${role}-${pid}`);
   if(btn){
