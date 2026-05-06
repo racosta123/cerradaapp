@@ -1022,6 +1022,16 @@ function enterRes(c, res, member) {
   const sub = document.getElementById('res-sub');
   if (sub) sub.textContent = displayName + ' · ' + res.house;
   setSI('res','ok');
+  // Sincronizar estado con Worker antes de renderizar botones
+  if(c.jsonbin?.binId){
+    fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`)
+      .then(r=>r.json()).then(data=>{
+        if(data.ok && data.record){
+          const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
+          renderGates(c,'res','gate-res');
+        }
+      }).catch(()=>{});
+  }
   renderGates(c,'res','gate-res');
   renderResFin(c);
   renderResHist(c);
@@ -1232,13 +1242,19 @@ async function openPorton(pid,role){
 
 // ── SHELLY CLOUD CONTROL
 function shellyOpen(pt) {
-  const PROXY  = 'https://shelly-proxy.acosta4770.workers.dev';
+  const SERVER = 'shelly-258-eu.shelly.cloud';
   const AUTH   = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
   const DEVICE = pt.shellyId || 'e4b063eb85a4';
   const SECS   = pt.time || 5;
 
-  const sendCmd = (turn) => {
-    fetch(`${PROXY}?id=${DEVICE}&auth=${AUTH}&turn=${turn}`).catch(()=>{});
+  const sendCmd = async (turn) => {
+    const body = new URLSearchParams({ auth_key: AUTH, id: DEVICE, channel: 0, turn });
+    const res = await fetch(`https://${SERVER}/device/relay/control`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
+    });
+    return res.json();
   };
 
   sendCmd('on');
