@@ -92,7 +92,8 @@ select option{background:var(--sur)}
 .bw{background:var(--ocre-lt);border:1.5px solid #dbb85a;color:var(--ocre)}
 .bb2{background:var(--sky-lt);border:1.5px solid #90ccee;color:var(--sky)}
 .sm{padding:.32rem .7rem;font-size:.74rem;border-radius:8px}
-.xs{padding:.22rem .48rem;font-size:.68rem;border-radius:6px}
+.xs{padding:.45rem .7rem;font-size:.78rem;border-radius:8px;min-width:36px;min-height:36px;cursor:pointer;transition:transform .1s,opacity .1s;-webkit-tap-highlight-color:transparent;}
+.xs:active{transform:scale(.88);opacity:.75}
 .wf{width:100%}
 .err{background:var(--rose-lt);border:1.5px solid #f0b0b0;color:#b03030;padding:.52rem .9rem;border-radius:8px;font-size:.79rem;margin-bottom:.8rem;display:none;font-weight:600}
 
@@ -1334,10 +1335,10 @@ function renderVec(){
         </div>
       </div>
       <div class="ia">
-        <button class="btn bb2 xs" onclick="sendInvite(${i})" title="Invitar por WhatsApp">📲</button>
-        ${r.mora?`<button class="btn bg2 xs" onclick="quitarMora(${i})">✓ Pagó</button>`:`<button class="btn bw xs" onclick="openMora(${i})">⚠️</button>`}
-        <button class="btn ${r.active&&!r.mora?'bd':'bg2'} xs" onclick="toggleVec(${i})">${r.active&&!r.mora?'🔒':'🔓'}</button>
-        <button class="btn bd xs" onclick="delVec(${i})">✕</button>
+        <button class="btn bb2 xs" onclick="if(navigator.vibrate)navigator.vibrate(30);sendInvite(${i})" title="Invitar por WhatsApp">📲</button>
+        ${r.mora?`<button class="btn bg2 xs" onclick="if(navigator.vibrate)navigator.vibrate(30);quitarMora(${i})" title="Reactivar">🔓 Reactivar</button>`:`<button class="btn bw xs" onclick="if(navigator.vibrate)navigator.vibrate(30);applyMoraDirecto(${i})" title="Suspender por mora">⚠️</button>`}
+        <button class="btn ${r.active&&!r.mora?'bd':'bg2'} xs" onclick="if(navigator.vibrate)navigator.vibrate(30);toggleVec(${i})">${r.active&&!r.mora?'🔒':'🔓'}</button>
+        <button class="btn bd xs" onclick="if(navigator.vibrate)navigator.vibrate(30);delVec(${i})">✕</button>
       </div>
     </div>
     ${membersHtml}
@@ -1398,6 +1399,20 @@ async function toggleVec(i){
 }
 async function delVec(i){const c=C();if(!c)return;if(!confirm('¿Eliminar?'))return;c.residents.splice(i,1);save();push('adm');renderVec();updateDash();toast('🗑 Eliminado');}
 function openMora(i){document.getElementById('mora-idx').value=i;const c=C();if(c)document.getElementById('mora-note').value=c.residents[i].moraNote||'';openModal('modal-mora');}
+async function applyMoraDirecto(i){
+  const c=C();if(!c)return;
+  const r=c.residents[i];
+  r.mora=true;r.moraNote='';r.active=false;
+  if(r.members&&r.members.length>0) r.members.forEach(m=>m.suspended=true);
+  save();
+  if(c.jsonbin?.binId){setSI('adm','syncing');const ok=await jbPush(c);setSI('adm',ok?'ok':'err');}
+  renderVec();updateDash();
+  toast('🔒 Suspendido');
+  if(navigator.serviceWorker?.controller){
+    navigator.serviceWorker.controller.postMessage({type:'SUSPEND_USER',house:r.house,cerradaCode:c.code});
+  }
+}
+
 async function applyMora(){
   const i=parseInt(document.getElementById('mora-idx').value);
   const note=document.getElementById('mora-note').value.trim();
