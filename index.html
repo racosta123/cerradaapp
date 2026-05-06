@@ -2409,28 +2409,25 @@ const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 // Registrar Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/cerradaapp/sw.js').catch(()=>{});
-  // Escuchar mensajes del Service Worker (suspensión/reactivación en tiempo real)
-  navigator.serviceWorker.addEventListener('message', (e) => {
-    if (!e.data) return;
-    const c = C();
-    if (!c) return;
-    if (e.data.type === 'USER_SUSPENDED' || e.data.type === 'USER_REACTIVATED') {
-      // Recargar datos desde Worker y actualizar botones
-      if (c.jsonbin?.binId) {
-        fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`)
-          .then(r => r.json()).then(data => {
-            if (data.ok && data.record) {
-              const jb = c.jsonbin;
-              Object.assign(c, data.record);
-              c.jsonbin = jb;
-              save();
-              renderGates(c, 'res', 'gate-res');
-            }
-          }).catch(() => {});
-      }
-    }
-  });
 }
+
+// Verificar estado cada vez que la app vuelve al frente
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (!U || U.role !== 'resident') return;
+  const c = C();
+  if (!c || !c.jsonbin?.binId) return;
+  fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`)
+    .then(r => r.json()).then(data => {
+      if (data.ok && data.record) {
+        const jb = c.jsonbin;
+        Object.assign(c, data.record);
+        c.jsonbin = jb;
+        save();
+        renderGates(c, 'res', 'gate-res');
+      }
+    }).catch(() => {});
+});
 
 // Limpiar "dismissed" expirado (dura solo 24 horas)
 const _d = localStorage.getItem('pwa-dismissed');
