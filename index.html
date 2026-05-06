@@ -1224,8 +1224,8 @@ async function openPorton(pid,role){
   const memberName = U.memberName || house;
   c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label,who:memberName});
   save();push(role);
-  // Control via Shelly Cloud (funciona desde cualquier red)
-  shellyOpen(pt);
+  // Control via Worker (verifica suspensión + abre Shelly)
+  shellyOpen(pt, role, pid);
   toast(`✅ ${pt.label} abierto`);
   // Vibración de éxito: patrón largo-corto
   if(navigator.vibrate) navigator.vibrate([80,40,80]);
@@ -1239,24 +1239,38 @@ async function openPorton(pid,role){
 }
 
 // ── SHELLY CLOUD CONTROL
-function shellyOpen(pt) {
-  const SERVER = 'shelly-258-eu.shelly.cloud';
-  const AUTH   = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
-  const DEVICE = pt.shellyId || 'e4b063eb85a4';
-  const SECS   = pt.time || 5;
+function shellyOpen(pt, role, pid) {
+  const c = C();
+  if (!c) return;
 
-  const sendCmd = async (turn) => {
-    const body = new URLSearchParams({ auth_key: AUTH, id: DEVICE, channel: 0, turn });
-    const res = await fetch(`https://${SERVER}/device/relay/control`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString()
-    });
-    return res.json();
-  };
+  const WORKER = 'https://shelly-proxy.acosta4770.workers.dev';
 
-  sendCmd('on');
-  setTimeout(() => sendCmd('off'), SECS * 1000);
+  fetch(WORKER + '/open', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      code:        c.code,
+      house:       U?.house || '',
+      memberIdx:   U?.memberIdx ?? -1,
+      shellyId:    pt.shellyId || 'e4b063eb85a4',
+      shellyAuth:  'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8',
+      shellyServer:'shelly-258-eu.shelly.cloud',
+      seconds:     pt.time || 5
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (!data.ok && data.suspended) {
+      // Suspendido — actualizar botón
+      const btn = document.getElementById(`gbtn-${role}-${pid}`);
+      if (btn) {
+        btn.style.background = '#dc2626';
+        btn.innerHTML = '🔒<br><span style="font-size:.65rem;font-weight:700">Suspendido</span>';
+      }
+      toast('🔒 Acceso suspendido');
+    }
+  })
+  .catch(() => {});
 }
 
 // ── ADMIN
