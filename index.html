@@ -1229,13 +1229,21 @@ async function openPorton(pid,role){
 
   // Verificar suspensión en la nube ANTES de abrir
   if(role==='res' && c.jsonbin?.binId){
+    let verificado = false;
     try{
-      const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`);
+      const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}&ts=${Date.now()}`);
       const data=await r.json();
       if(data.ok && data.record){
         const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
+        verificado = true;
       }
     }catch(e){}
+
+    // Si no se pudo verificar, no abrir por seguridad
+    if(!verificado){
+      toast('⚠️ Sin conexión — intenta de nuevo');
+      return;
+    }
 
     // Verificar con datos actualizados
     const res=c.residents.find(r=>r.house===U.house);
