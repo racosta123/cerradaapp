@@ -999,8 +999,9 @@ async function jbPush(c, retries=10){
         body:JSON.stringify({bin:c.jsonbin.binId,key:c.jsonbin.apiKey,data:p})
       });
       const d=await r.json();
+      console.log('jbPush intento '+(i+1)+':', JSON.stringify(d));
       if(d.ok===true) return true;
-    }catch(e){}
+    }catch(e){ console.log('jbPush error intento '+(i+1)+':', e.message); }
     if(i < retries-1) await new Promise(r=>setTimeout(r,1000));
   }
   return false;
@@ -1116,22 +1117,37 @@ function renderGates(c,role,cid){
   const el=document.getElementById(cid);if(!el)return;
   el.className='gate-grid '+(n===1?'g1':n===2?'g2':n===3?'g3':'g4');
 
-  // Verificar si el residente está suspendido
-  let isSusp = false;
-  if(role==='res' && U?.house){
+  if(role==='res' && U?.house && c.jsonbin?.binId){
+    // Pintar primero con datos locales
     const res=c.residents.find(r=>r.house===U.house);
     const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
-    isSusp = !res||!res.active||res.mora||memberSusp;
+    const isSuspLocal = !res||!res.active||res.mora||memberSusp;
+    el.innerHTML = _gbtns(pts,role,isSuspLocal);
+    // Verificar en la nube y actualizar si cambió
+    fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`)
+      .then(r=>r.json()).then(data=>{
+        if(data.ok && data.record){
+          const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
+          const resC=c.residents.find(r=>r.house===U.house);
+          const mSuspC=U.memberIdx>=0&&resC?.members?.[U.memberIdx]?.suspended;
+          const isSuspCloud=!resC||!resC.active||resC.mora||mSuspC;
+          if(isSuspCloud!==isSuspLocal) el.innerHTML=_gbtns(pts,role,isSuspCloud);
+        }
+      }).catch(()=>{});
+    return;
   }
+  el.innerHTML=_gbtns(pts,role,false);
+}
 
-  el.innerHTML=pts.map(p=>`
+function _gbtns(pts,role,isSusp){
+  return pts.map(p=>`
     <div class="gbtn" id="gbtn-${role}-${p.id}"
-      ${isSusp ? `style="background:#dc2626"` : ''}
+      ${isSusp?`style="background:#dc2626"`:''}
       onmousedown="gS('${p.id}','${role}')" onmouseup="gE('${p.id}')" onmouseleave="gE('${p.id}')"
       ontouchstart="gS('${p.id}','${role}')" ontouchend="gE('${p.id}')">
       ${isSusp
-        ? `<div style="font-size:1.4rem">🔒</div><div class="gbtn-info"><div class="glbl">Suspendido</div></div>`
-        : `<div class="gico-wrap">${p.icon||'🚪'}</div>
+        ?`<div style="font-size:1.4rem">🔒</div><div class="gbtn-info"><div class="glbl">Suspendido</div></div>`
+        :`<div class="gico-wrap">${p.icon||'🚪'}</div>
            <div class="gbtn-info"><div class="glbl">${esc(p.label)}</div><div class="ghint">Mantén ½ segundo para abrir</div></div>
            <div class="gbtn-arrow">›</div>`
       }
