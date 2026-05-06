@@ -452,9 +452,8 @@ select option{background:var(--sur)}
   <div class="nav">
     <button class="ntab on" onclick="admP('dashboard',this)">📊 Panel</button>
     <button class="ntab" onclick="admP('vecinos',this)">👥 Vecinos</button>
-    <button class="ntab" onclick="admP('historial',this)">📋 Historial</button>
     <button class="ntab" onclick="admP('finanzas',this)">💰 Finanzas</button>
-    <button class="ntab" onclick="admP('cuotas',this)">🏦 Cuotas</button>
+    <button class="ntab" onclick="admP('vencimientos',this)">🔔 Vencimientos</button>
     <button class="ntab" onclick="admP('portones',this)">🚪 Portones</button>
     <button class="ntab" onclick="admP('config',this)">⚙️ Config</button>
   </div>
@@ -489,10 +488,12 @@ select option{background:var(--sur)}
       </div>
       <div class="sh"><h3>Vecinos Registrados</h3><span class="bge b-b" id="vec-cnt">0</span></div>
       <div id="vec-list"><div class="empty"><div class="empty-ico">👥</div>Sin vecinos</div></div>
-    </div>
-    <div id="ap-historial" class="panel">
-      <div class="sh"><h3>Historial de Accesos</h3><button class="btn bd sm" onclick="clearHist()">🗑 Limpiar</button></div>
+      <!-- HISTORIAL integrado -->
+      <div class="sh" style="margin-top:1rem"><h3>Historial de Accesos</h3><button class="btn bd sm" onclick="clearHist()">🗑 Limpiar</button></div>
       <div id="adm-hist"><div class="empty"><div class="empty-ico">📋</div>Sin registros</div></div>
+    </div>
+    <div id="ap-historial" class="panel" style="display:none!important">
+      <!-- Historial movido a Vecinos — este panel ya no se usa -->
     </div>
     <div id="ap-finanzas" class="panel">
 
@@ -557,46 +558,8 @@ select option{background:var(--sur)}
       <div id="fn-historial"></div>
 
     </div>
-    <div id="ap-cuotas" class="panel">
-      <!-- RESUMEN DE CUOTAS -->
-      <div class="card">
-        <div class="ch">
-          <div class="ct">🏦 Registro de Cuotas</div>
-          <div style="display:flex;gap:.5rem;align-items:center">
-            <select id="cuota-mes" onchange="renderCuotas()" style="margin:0;font-size:.75rem;padding:.3rem .6rem;width:auto">
-            </select>
-          </div>
-        </div>
-        <!-- Stats cuotas -->
-        <div class="fbar" style="margin-bottom:.75rem">
-          <div class="fc"><div class="fl">Pagadas</div><div class="fv fi" id="cq-pagadas">0</div></div>
-          <div class="fc"><div class="fl">Pendientes</div><div class="fv fe" id="cq-pendientes">0</div></div>
-          <div class="fc"><div class="fl">Recaudado</div><div class="fv fb2" id="cq-total">$0</div></div>
-        </div>
-        <div id="cuotas-list"></div>
-      </div>
-
-      <!-- CONFIGURAR MONTO DE CUOTA -->
-      <div class="card">
-        <div class="ch"><div class="ct">⚙️ Configurar Cuota</div></div>
-        <div class="frow">
-          <div>
-            <label>Monto mensual ($)</label>
-            <input id="cuota-monto" type="number" placeholder="200" min="1">
-          </div>
-          <div>
-            <label>Día de vencimiento</label>
-            <input id="cuota-dia" type="number" placeholder="5" min="1" max="28">
-          </div>
-        </div>
-        <button class="btn bp" onclick="saveCuotaConfig()">💾 Guardar Configuración</button>
-      </div>
-
-      <!-- HISTORIAL 3 MESES -->
-      <div class="card">
-        <div class="ch"><div class="ct">📊 Historial de Pagos</div></div>
-        <div id="cuotas-historial"></div>
-      </div>
+    <div id="ap-cuotas" class="panel" style="display:none!important">
+      <!-- Cuotas movido a Vencimientos — este panel ya no se usa -->
     </div>
 
     <div id="ap-portones" class="panel">
@@ -609,6 +572,44 @@ select option{background:var(--sur)}
         <p style="font-size:.75rem;color:var(--t2);margin-bottom:.75rem">Solo para pruebas técnicas</p>
         <div id="gate-test" class="gate-grid g1"></div>
       </div>
+    </div>
+    <div id="ap-vencimientos" class="panel">
+      <!-- CUOTAS integradas -->
+      <div class="card">
+        <div class="ch">
+          <div class="ct">🏦 Registro de Cuotas</div>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <select id="cuota-mes" onchange="renderCuotas()" style="margin:0;font-size:.75rem;padding:.3rem .6rem;width:auto"></select>
+          </div>
+        </div>
+        <div class="fbar" style="margin-bottom:.75rem">
+          <div class="fc"><div class="fl">Pagadas</div><div class="fv fi" id="cq-pagadas">0</div></div>
+          <div class="fc"><div class="fl">Pendientes</div><div class="fv fe" id="cq-pendientes">0</div></div>
+          <div class="fc"><div class="fl">Recaudado</div><div class="fv fb2" id="cq-total">$0</div></div>
+        </div>
+        <div id="cuotas-list"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">⚙️ Configurar Cuota</div></div>
+        <div class="frow">
+          <div><label>Monto mensual ($)</label><input id="cuota-monto" type="number" placeholder="200" min="1"></div>
+          <div><label>Día de vencimiento</label><input id="cuota-dia" type="number" placeholder="5" min="1" max="28"></div>
+        </div>
+        <button class="btn bp" onclick="saveCuotaConfig()">💾 Guardar Configuración</button>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">📊 Historial de Pagos</div></div>
+        <div id="cuotas-historial"></div>
+      </div>
+      <!-- VENCIMIENTOS -->
+      <div class="sgrid" style="margin-bottom:.85rem;margin-top:.5rem">
+        <div class="sc"><div class="sl">Al corriente</div><div class="sv" style="color:var(--green)" id="vc-ok">0</div></div>
+        <div class="sc"><div class="sl">Por vencer</div><div class="sv" style="color:var(--ocre)" id="vc-warn">0</div></div>
+        <div class="sc"><div class="sl">Vencidos</div><div class="sv" style="color:var(--rose)" id="vc-venc">0</div></div>
+        <div class="sc"><div class="sl">Suspendidos</div><div class="sv" style="color:var(--rose)" id="vc-susp">0</div></div>
+      </div>
+      <div class="sh"><h3>Control de Vencimientos</h3></div>
+      <div id="vc-list"><div class="empty"><div class="empty-ico">🔔</div>Sin vecinos</div></div>
     </div>
     <div id="ap-config" class="panel">
       <div class="card">
@@ -1121,7 +1122,7 @@ function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);set
     renderGates(c,'res','gate-res');
   }
   if(id==='finanzas'){renderResFin(c);renderMiCuenta(c,U?.house);}if(id==='historial')renderResHist(c);}
-function admP(id,el){setPanels('ap-',['dashboard','vecinos','historial','finanzas','portones','config'],id);setTabs('#scr-adm',el);const c=C();if(!c)return;if(id==='dashboard')updateDash();if(id==='vecinos')renderVec();if(id==='historial')renderAdmHist();if(id==='finanzas'){renderAdmFin();}if(id==='cuotas')initCuotasMes();if(id==='portones')renderAdmPortones();if(id==='config')loadCfg();}
+function admP(id,el){setPanels('ap-',['dashboard','vecinos','historial','finanzas','cuotas','portones','vencimientos','config'],id);setTabs('#scr-adm',el);const c=C();if(!c)return;if(id==='dashboard')updateDash();if(id==='vecinos'){renderVec();renderAdmHist();}if(id==='finanzas'){renderAdmFin();}if(id==='vencimientos'){initCuotasMes();renderVencimientos();}if(id==='portones')renderAdmPortones();if(id==='config')loadCfg();}
 function mstP(id,el){setPanels('mp-',['cerradas','negocio','config'],id);setTabs('#scr-mst',el);if(id==='cerradas')renderMstList();if(id==='negocio')renderNegocio();if(id==='config'){document.getElementById('mc-price').value=S.defaultPrice;populateMstJsonbinSelect();}}
 
 // ── RESIDENT
@@ -1170,6 +1171,48 @@ function enterRes(c, res, member) {
   }
 
   showScreen('res');
+
+  // Verificar vencimiento
+  const venc = checkVencimientoResidente(c, res);
+  if (venc) {
+    const { pendientes, monto } = getCuotasPendientes(c, res.house);
+    if (venc.tipo === 'vencido') {
+      // Suspender automáticamente
+      const resIdx = c.residents.findIndex(r => r.house === res.house);
+      if (resIdx >= 0 && !c.residents[resIdx].mora) {
+        c.residents[resIdx].mora = true;
+        c.residents[resIdx].active = false;
+        c.residents[resIdx].moraNote = 'Suspendido automáticamente por vencimiento';
+        if (c.residents[resIdx].members) c.residents[resIdx].members.forEach(m => m.suspended = true);
+        save();
+        jbPush(c).catch(() => {});
+        renderGates(c, 'res', 'gate-res');
+      }
+      // Mostrar banner de vencido — toast largo
+      setTimeout(() => {
+        const msg = pendientes > 0
+          ? `🔒 Acceso suspendido. Debes ${pendientes} cuota${pendientes!==1?'s':''} ($${monto.toFixed(2)}). Contacta al admin.`
+          : '🔒 Acceso suspendido. Contacta al administrador.';
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(el._t);
+        el._t = setTimeout(() => el.classList.remove('show'), 6000);
+      }, 800);
+    } else {
+      // Mostrar aviso de días restantes — toast largo
+      setTimeout(() => {
+        const msg = pendientes > 0
+          ? `⏰ Servicio vence en ${venc.dias} día${venc.dias!==1?'s':''}. Debes ${pendientes} cuota${pendientes!==1?'s':''} ($${monto.toFixed(2)}).`
+          : `⏰ Servicio vence en ${venc.dias} día${venc.dias!==1?'s':''}. Habla con el admin si ya pagaste.`;
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(el._t);
+        el._t = setTimeout(() => el.classList.remove('show'), 6000);
+      }, 800);
+    }
+  }
 
   // Inicializar notificaciones FCM en segundo plano
   initFCM(c, res, U?.memberIdx ?? -1).catch(() => {});
@@ -1627,6 +1670,8 @@ async function quitarMora(i){
   const ok=await jbPush(c);
   setSI('adm',ok?'ok':'err');
   renderVec();updateDash();
+  // Refrescar vencimientos si el panel está visible
+  if(document.getElementById('ap-vencimientos')?.classList.contains('on')) renderVencimientos();
   toast('✅ Mora levantada — acceso restaurado para toda la familia');
   // Notificar al SW para que actualice la UI del residente en tiempo real
   if (navigator.serviceWorker?.controller) {
@@ -2220,7 +2265,148 @@ async function submitRegister() {
   }, 1200);
 }
 
-// ── MÓDULO DE CUOTAS
+// ── MÓDULO DE VENCIMIENTOS
+function getCuotasPendientes(c, house) {
+  const meses = getMeses();
+  const monto = c.cuotaConfig?.monto || 0;
+  let pendientes = 0;
+  meses.forEach(mes => {
+    const pagado = c.cuotas?.[mes.key]?.[house]?.pagado;
+    if (!pagado) pendientes++;
+  });
+  return { pendientes, monto: pendientes * monto };
+}
+
+async function guardarFechaCorte(house, fecha) {
+  const c = C(); if (!c) return;
+  const res = c.residents.find(r => r.house === house);
+  if (!res) return;
+  res.fechaCorte = fecha;
+  save();
+  setSI('adm', 'syncing');
+  const ok = await jbPush(c);
+  setSI('adm', ok ? 'ok' : 'err');
+  renderVencimientos();
+  toast('✅ Fecha de corte guardada');
+}
+
+async function suspenderPorVencimiento(house) {
+  const c = C(); if (!c) return;
+  const resIdx = c.residents.findIndex(r => r.house === house);
+  if (resIdx < 0) return;
+  const r = c.residents[resIdx];
+  r.mora = true;
+  r.moraNote = 'Suspendido automáticamente por vencimiento de cuota';
+  r.active = false;
+  if (r.members) r.members.forEach(m => m.suspended = true);
+  save();
+  setSI('adm', 'syncing');
+  const ok = await jbPush(c);
+  setSI('adm', ok ? 'ok' : 'err');
+  renderVencimientos();
+  updateDash();
+  toast('🔒 ' + house + ' suspendido por vencimiento');
+}
+
+function renderVencimientos() {
+  const c = C(); if (!c) return;
+  const res = c.residents || [];
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  let nOk = 0, nWarn = 0, nVenc = 0, nSusp = 0;
+
+  const rows = res.map((r, i) => {
+    const { pendientes, monto } = getCuotasPendientes(c, r.house);
+    const hn = r.house.replace(/\D/g, '').slice(0, 2) || '?';
+    const fechaCorte = r.fechaCorte ? new Date(r.fechaCorte) : null;
+    if (fechaCorte) fechaCorte.setHours(0, 0, 0, 0);
+
+    let estado = 'ok';
+    let estadoLabel = '✅ Al corriente';
+    let diasRestantes = null;
+
+    if (fechaCorte) {
+      const diff = Math.ceil((fechaCorte - hoy) / (1000 * 60 * 60 * 24));
+      diasRestantes = diff;
+      if (diff <= 0) {
+        estado = 'vencido';
+        estadoLabel = '🔴 Vencido';
+        nVenc++;
+      } else if (diff <= 5) {
+        estado = 'warn';
+        estadoLabel = `⚠️ Vence en ${diff} día${diff !== 1 ? 's' : ''}`;
+        nWarn++;
+      } else {
+        nOk++;
+      }
+    } else {
+      nOk++;
+    }
+
+    if (r.mora) nSusp++;
+
+    const colorAvatar = r.mora ? 'ar' : estado === 'vencido' ? 'ar' : estado === 'warn' ? 'ay' : 'ag';
+    const fechaVal = r.fechaCorte ? r.fechaCorte.split('T')[0] : '';
+
+    return `<div class="card" style="margin-bottom:.6rem;padding:.85rem 1rem">
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.65rem">
+        <div class="av ${colorAvatar}">${esc(hn)}</div>
+        <div style="flex:1;min-width:0">
+          <div class="in">${esc(r.name)}</div>
+          <div class="is">${esc(r.house)}${r.mora ? ' · 🔒 Suspendido' : ''}</div>
+        </div>
+        <span class="bge ${estado === 'vencido' ? 'r-b' : estado === 'warn' ? 'y-b' : 'gr-b'}">${estadoLabel}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.65rem">
+        <div style="background:var(--sur2);border-radius:8px;padding:.5rem .7rem">
+          <div style="font-size:.65rem;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:.15rem">Cuotas pendientes</div>
+          <div style="font-family:var(--fd);font-size:1rem;font-weight:800;color:${pendientes > 0 ? 'var(--rose)' : 'var(--green)'}">
+            ${pendientes} ${pendientes !== 1 ? 'cuotas' : 'cuota'}
+          </div>
+        </div>
+        <div style="background:var(--sur2);border-radius:8px;padding:.5rem .7rem">
+          <div style="font-size:.65rem;color:var(--t3);font-weight:700;text-transform:uppercase;margin-bottom:.15rem">Monto adeudado</div>
+          <div style="font-family:var(--fd);font-size:1rem;font-weight:800;color:${monto > 0 ? 'var(--rose)' : 'var(--green)'}">
+            $${monto.toFixed(2)}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <input type="date" value="${fechaVal}" id="vc-date-${i}"
+          style="margin:0;flex:1;font-size:.8rem;padding:.38rem .6rem"
+          onchange="guardarFechaCorte('${r.house}', document.getElementById('vc-date-${i}').value ? new Date(document.getElementById('vc-date-${i}').value + 'T00:00:00').toISOString() : null)">
+        ${estado === 'vencido' && !r.mora ?
+          `<button class="btn bd sm" onclick="suspenderPorVencimiento('${r.house}')">🔒 Suspender</button>` :
+          r.mora ?
+          `<button class="btn bg2 sm" onclick="quitarMora(${i})">🔓 Reactivar</button>` :
+          `<span style="font-size:.72rem;color:var(--t3)">Sin acción</span>`
+        }
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('vc-ok').textContent = nOk;
+  document.getElementById('vc-warn').textContent = nWarn;
+  document.getElementById('vc-venc').textContent = nVenc;
+  document.getElementById('vc-susp').textContent = nSusp;
+
+  const list = document.getElementById('vc-list');
+  list.innerHTML = rows.length ? rows.join('') : emH('🔔', 'Sin vecinos registrados');
+}
+
+// Verificar vencimiento al entrar como residente
+function checkVencimientoResidente(c, res) {
+  if (!res.fechaCorte) return null;
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const corte = new Date(res.fechaCorte);
+  corte.setHours(0, 0, 0, 0);
+  const diff = Math.ceil((corte - hoy) / (1000 * 60 * 60 * 24));
+  if (diff <= 0) return { tipo: 'vencido', dias: 0 };
+  if (diff <= 9) return { tipo: 'aviso', dias: diff };
+  return null;
+}
 function getMeses() {
   const meses = [];
   const now = new Date();
