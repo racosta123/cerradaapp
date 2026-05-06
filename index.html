@@ -1220,64 +1220,40 @@ async function openPorton(pid,role){
 
   const pt=c.portones.find(p=>p.id===pid);if(!pt)return;
   const house=role==='res'?U.house:'[TEST]';
+  if(!c.history)c.history=[];
   const memberName = U.memberName || house;
-  // Control via Worker (verifica suspensión + abre Shelly)
-  shellyOpen(pt, role, pid, ()=>{
-    // Solo ejecutar si el Worker confirmó que está activo
-    if(!c.history)c.history=[];
-    c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label,who:memberName});
-    save();push(role);
-    toast(`✅ ${pt.label} abierto`);
-    if(navigator.vibrate) navigator.vibrate([80,40,80]);
-    const btn=document.getElementById(`gbtn-${role}-${pid}`);
-    if(btn){
-      btn.classList.remove('pressing');
-      btn.classList.add('ok');
-      setTimeout(()=>btn.classList.remove('ok'),2500);
-    }
-    if(role==='res')renderResHist(c);
-  });
+  c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label,who:memberName});
+  save();push(role);
+  shellyOpen(pt);
+  toast(`✅ ${pt.label} abierto`);
+  if(navigator.vibrate) navigator.vibrate([80,40,80]);
+  const btn=document.getElementById(`gbtn-${role}-${pid}`);
+  if(btn){
+    btn.classList.remove('pressing');
+    btn.classList.add('ok');
+    setTimeout(()=>btn.classList.remove('ok'),2500);
+  }
+  if(role==='res')renderResHist(c);
 }
 
 // ── SHELLY CLOUD CONTROL
-function shellyOpen(pt, role, pid, onSuccess) {
-  const c = C();
-  if (!c) return;
+function shellyOpen(pt) {
+  const SERVER = 'shelly-258-eu.shelly.cloud';
+  const AUTH   = 'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8';
+  const DEVICE = pt.shellyId || 'e4b063eb85a4';
+  const SECS   = pt.time || 5;
 
-  const WORKER = 'https://shelly-proxy.acosta4770.workers.dev';
+  const sendCmd = (turn) => {
+    const body = new URLSearchParams({ auth_key: AUTH, id: DEVICE, channel: 0, turn });
+    fetch(`https://${SERVER}/device/relay/control`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
+    }).catch(() => {});
+  };
 
-  fetch(WORKER + '/open', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      code:        c.code,
-      house:       U?.house || '',
-      memberIdx:   U?.memberIdx ?? -1,
-      shellyId:    pt.shellyId || 'e4b063eb85a4',
-      shellyAuth:  'NDEzZTAzdWlk4C86BD5E1DF2BE2FC2F3C0F4037721A39CDF9388BCD8D94E682C319B9CFBAC42C87DA7511C6D3CB8',
-      shellyServer:'shelly-258-eu.shelly.cloud',
-      seconds:     pt.time || 5
-    })
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.suspended) {
-      // Suspendido — actualizar botón
-      const btn = document.getElementById(`gbtn-${role}-${pid}`);
-      if (btn) {
-        btn.style.background = '#dc2626';
-        btn.innerHTML = '🔒<br><span style="font-size:.65rem;font-weight:700">Suspendido</span>';
-      }
-      toast('🔒 Acceso suspendido');
-    } else if (data.ok) {
-      // Éxito — ejecutar callback
-      if (onSuccess) onSuccess();
-    }
-  })
-  .catch(() => {
-    // Si falla la red, ejecutar callback igual para no bloquear
-    if (onSuccess) onSuccess();
-  });
+  sendCmd('on');
+  setTimeout(() => sendCmd('off'), SECS * 1000);
 }
 
 // ── ADMIN
