@@ -1336,7 +1336,7 @@ function renderVec(){
       </div>
       <div class="ia">
         <button class="btn bb2 xs" onclick="if(navigator.vibrate)navigator.vibrate(30);sendInvite(${i})" title="Invitar por WhatsApp">📲</button>
-        ${r.mora?`<button class="btn bg2 xs" onclick="if(navigator.vibrate)navigator.vibrate(30);quitarMora(${i})" title="Reactivar">🔓 Reactivar</button>`:`<button class="btn bw xs" onclick="if(navigator.vibrate)navigator.vibrate(30);applyMoraDirecto(${i})" title="Suspender por mora">⚠️</button>`}
+        
         <button class="btn ${r.active&&!r.mora?'bd':'bg2'} xs" onclick="if(navigator.vibrate)navigator.vibrate(30);toggleVec(${i})">${r.active&&!r.mora?'🔒':'🔓'}</button>
         <button class="btn bd xs" onclick="if(navigator.vibrate)navigator.vibrate(30);delVec(${i})">✕</button>
       </div>
