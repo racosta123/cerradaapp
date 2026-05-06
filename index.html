@@ -1005,7 +1005,20 @@ async function push(role){const c=C();if(!c?.jsonbin?.binId)return;setSI(role,'s
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('scr-'+id)?.classList.add('active');}
 function setPanels(pre,list,act){list.forEach(p=>{const el=document.getElementById(pre+p);if(el)el.classList.toggle('on',p===act);});}
 function setTabs(scope,el){document.querySelectorAll(scope+' .ntab').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
-function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);setTabs('#scr-res',el);const c=C();if(!c)return;if(id==='finanzas'){renderResFin(c);renderMiCuenta(c,U?.house);}if(id==='historial')renderResHist(c);}
+function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);setTabs('#scr-res',el);const c=C();if(!c)return;if(id==='portones'){
+    // Sincronizar estado en segundo plano sin bloquear UI
+    if(c.jsonbin?.binId){
+      fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`)
+        .then(r=>r.json()).then(data=>{
+          if(data.ok && data.record){
+            const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
+            renderGates(c,'res','gate-res');
+          }
+        }).catch(()=>{});
+    }
+    renderGates(c,'res','gate-res');
+  }
+  if(id==='finanzas'){renderResFin(c);renderMiCuenta(c,U?.house);}if(id==='historial')renderResHist(c);}
 function admP(id,el){setPanels('ap-',['dashboard','vecinos','historial','finanzas','portones','config'],id);setTabs('#scr-adm',el);const c=C();if(!c)return;if(id==='dashboard')updateDash();if(id==='vecinos')renderVec();if(id==='historial')renderAdmHist();if(id==='finanzas'){renderAdmFin();}if(id==='cuotas')initCuotasMes();if(id==='portones')renderAdmPortones();if(id==='config')loadCfg();}
 function mstP(id,el){setPanels('mp-',['cerradas','negocio','config'],id);setTabs('#scr-mst',el);if(id==='cerradas')renderMstList();if(id==='negocio')renderNegocio();if(id==='config'){document.getElementById('mc-price').value=S.defaultPrice;populateMstJsonbinSelect();}}
 
@@ -1086,13 +1099,26 @@ function renderGates(c,role,cid){
   const pts=c.portones||[];const n=pts.length;
   const el=document.getElementById(cid);if(!el)return;
   el.className='gate-grid '+(n===1?'g1':n===2?'g2':n===3?'g3':'g4');
+
+  // Verificar si el residente está suspendido
+  let isSusp = false;
+  if(role==='res' && U?.house){
+    const res=c.residents.find(r=>r.house===U.house);
+    const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
+    isSusp = !res||!res.active||res.mora||memberSusp;
+  }
+
   el.innerHTML=pts.map(p=>`
     <div class="gbtn" id="gbtn-${role}-${p.id}"
+      ${isSusp ? `style="background:#dc2626"` : ''}
       onmousedown="gS('${p.id}','${role}')" onmouseup="gE('${p.id}')" onmouseleave="gE('${p.id}')"
       ontouchstart="gS('${p.id}','${role}')" ontouchend="gE('${p.id}')">
-      <div class="gico-wrap">${p.icon||'🚪'}</div>
-      <div class="gbtn-info"><div class="glbl">${esc(p.label)}</div><div class="ghint">Mantén ½ segundo para abrir</div></div>
-      <div class="gbtn-arrow">›</div>
+      ${isSusp
+        ? `<div style="font-size:1.4rem">🔒</div><div class="gbtn-info"><div class="glbl">Suspendido</div></div>`
+        : `<div class="gico-wrap">${p.icon||'🚪'}</div>
+           <div class="gbtn-info"><div class="glbl">${esc(p.label)}</div><div class="ghint">Mantén ½ segundo para abrir</div></div>
+           <div class="gbtn-arrow">›</div>`
+      }
       <div class="gprog" id="gprog-${p.id}"></div>
     </div>`).join('');
 }
