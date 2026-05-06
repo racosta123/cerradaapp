@@ -1220,26 +1220,27 @@ async function openPorton(pid,role){
 
   const pt=c.portones.find(p=>p.id===pid);if(!pt)return;
   const house=role==='res'?U.house:'[TEST]';
-  if(!c.history)c.history=[];
   const memberName = U.memberName || house;
-  c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label,who:memberName});
-  save();push(role);
   // Control via Worker (verifica suspensión + abre Shelly)
-  shellyOpen(pt, role, pid);
-  toast(`✅ ${pt.label} abierto`);
-  // Vibración de éxito: patrón largo-corto
-  if(navigator.vibrate) navigator.vibrate([80,40,80]);
-  const btn=document.getElementById(`gbtn-${role}-${pid}`);
-  if(btn){
-    btn.classList.remove('pressing');
-    btn.classList.add('ok');
-    setTimeout(()=>btn.classList.remove('ok'),2500);
-  }
-  if(role==='res')renderResHist(c);
+  shellyOpen(pt, role, pid, ()=>{
+    // Solo ejecutar si el Worker confirmó que está activo
+    if(!c.history)c.history=[];
+    c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label,who:memberName});
+    save();push(role);
+    toast(`✅ ${pt.label} abierto`);
+    if(navigator.vibrate) navigator.vibrate([80,40,80]);
+    const btn=document.getElementById(`gbtn-${role}-${pid}`);
+    if(btn){
+      btn.classList.remove('pressing');
+      btn.classList.add('ok');
+      setTimeout(()=>btn.classList.remove('ok'),2500);
+    }
+    if(role==='res')renderResHist(c);
+  });
 }
 
 // ── SHELLY CLOUD CONTROL
-function shellyOpen(pt, role, pid) {
+function shellyOpen(pt, role, pid, onSuccess) {
   const c = C();
   if (!c) return;
 
@@ -1260,7 +1261,7 @@ function shellyOpen(pt, role, pid) {
   })
   .then(r => r.json())
   .then(data => {
-    if (!data.ok && data.suspended) {
+    if (data.suspended) {
       // Suspendido — actualizar botón
       const btn = document.getElementById(`gbtn-${role}-${pid}`);
       if (btn) {
@@ -1268,9 +1269,15 @@ function shellyOpen(pt, role, pid) {
         btn.innerHTML = '🔒<br><span style="font-size:.65rem;font-weight:700">Suspendido</span>';
       }
       toast('🔒 Acceso suspendido');
+    } else if (data.ok) {
+      // Éxito — ejecutar callback
+      if (onSuccess) onSuccess();
     }
   })
-  .catch(() => {});
+  .catch(() => {
+    // Si falla la red, ejecutar callback igual para no bloquear
+    if (onSuccess) onSuccess();
+  });
 }
 
 // ── ADMIN
