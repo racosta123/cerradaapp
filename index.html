@@ -893,6 +893,24 @@ async function openPorton(pid,role){
     let verificado=false;
     try{const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}&ts=${Date.now()}`);const data=await r.json();if(data.ok&&data.record){const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();verificado=true;}}catch(e){}
     if(!verificado){toast('⚠️ Sin conexión — intenta de nuevo');return;}
+    // Restaurar tokens FCM locales que pueden no haber subido aún a JSONBin
+    const localRes=c.residents.find(r=>r.house===U.house);
+    if(localRes){
+      const resIdxLocal=c.residents.findIndex(r=>r.house===U.house);
+      if(resIdxLocal>=0){
+        // Si JSONBin no tiene el token local, restaurarlo
+        const localToken=localRes.fcmToken;
+        if(localToken&&!c.residents[resIdxLocal].fcmToken){
+          c.residents[resIdxLocal].fcmToken=localToken;
+        }
+        // Restaurar tokens de familiares
+        (localRes.members||[]).forEach((m,mi)=>{
+          if(m.fcmToken&&c.residents[resIdxLocal].members?.[mi]&&!c.residents[resIdxLocal].members[mi].fcmToken){
+            c.residents[resIdxLocal].members[mi].fcmToken=m.fcmToken;
+          }
+        });
+      }
+    }
     const res=c.residents.find(r=>r.house===U.house);
     const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
     if(!res||!res.active||res.mora||memberSusp){
@@ -1384,7 +1402,11 @@ async function showRegisterFromPayload(payload){
   let c=S.cerradas[code];
   const KNOWN_BINS={'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
   if(!c){const binConfig=KNOWN_BINS[code];if(binConfig){try{const r=await fetch(`https://api.jsonbin.io/v3/b/${binConfig.binId}/latest`,{headers:{'X-Master-Key':binConfig.apiKey}});if(r.ok){const data=await r.json();if(data.record){S.cerradas[code]=data.record;S.cerradas[code].jsonbin=binConfig;save();c=S.cerradas[code];}}}catch(e){}}}
-  const role=isFamiliar?'family':((c?.residents?.find(r=>r.house===house)?.members?.length||0)===0?'head':'family');
+  // Si isFamiliar=true siempre es miembro, nunca jefe
+  // Si no hay jefe registrado todavía, el primero en registrarse es jefe
+  const resData = c?.residents?.find(r=>r.house===house);
+  const yaHayJefe = (resData?.members||[]).some(m=>m.role==='head');
+  const role = isFamiliar ? 'member' : (yaHayJefe ? 'member' : 'head');
   showRegisterScreen(code,house,token,role);
   if(cerradaName&&c)document.getElementById('reg-subtitle').textContent=house+' · '+cerradaName;
 }
@@ -1425,12 +1447,37 @@ async function submitRegister(){
   if(!c){toast('⚠️ Sin conexión. Intenta de nuevo en unos segundos.');return;}
   const resIdx=c.residents.findIndex(r=>r.house===house);if(resIdx<0){toast('⚠️ Casa no encontrada');return;}
   if(!c.residents[resIdx].members)c.residents[resIdx].members=[];
+
+  // Determinar el rol correcto:
+  // - Si ya hay un jefe registrado (head), este es siempre familiar (member)
+  // - Si no hay jefe, este es el jefe (head)
+  const yaHayJefe = c.residents[resIdx].members.some(m=>m.role==='head');
+  const rolFinal = (role==='head' && !yaHayJefe) ? 'head' : 'member';
+
+  // Verificar que no esté ya registrado con ese email
+  const yaRegistrado = c.residents[resIdx].members.some(m=>m.email===email);
+  if(yaRegistrado){toast('⚠️ Este correo ya está registrado en esta casa');return;}
+
   const memberIdx=c.residents[resIdx].members.length;
-  c.residents[resIdx].members.push({name,address,email,password:pass,role,registeredAt:new Date().toISOString(),suspended:false});
-  if(role==='head'){c.residents[resIdx].name=name;c.residents[resIdx].email=email;c.residents[resIdx].password=pass;c.residents[resIdx].pin=pin;}
+  c.residents[resIdx].members.push({
+    name,address,email,password:pass,
+    role:rolFinal,
+    registeredAt:new Date().toISOString(),
+    suspended:false
+  });
+
+  // Solo actualizar datos principales si es el jefe de familia
+  // NUNCA sobreescribir si ya hay un jefe — eso borraba al residente original
+  if(rolFinal==='head'){
+    c.residents[resIdx].name=name;
+    c.residents[resIdx].email=email;
+    c.residents[resIdx].password=pass;
+    c.residents[resIdx].pin=pin;
+  }
+
   save();if(c.jsonbin?.binId)jbPush(c);
   localStorage.removeItem('cerrada_session');
-  U={role:'resident',cerradaCode:code,house,memberIdx,memberName:name};
+  U={role:'resident',cerradaCode:code,house,memberIdx,memberName:name,email};
   localStorage.setItem('cerrada_session',JSON.stringify(U));
   toast('✅ ¡Registro exitoso! Bienvenido a '+c.name);
   setTimeout(()=>{enterRes(c,c.residents[resIdx],c.residents[resIdx].members[memberIdx]);},1200);
