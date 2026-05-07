@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual de Usuario — CerradaApp</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #2563eb;
+    --blue-lt: #dbeafe;
+    --blue-dk: #1d4ed8;
+    --green: #16a34a;
+    --green-lt: #dcfce7;
+    --sky: #0ea5e9;
+    --gray: #64748b;
+    --gray-lt: #f1f5f9;
+    --dark: #0f172a;
+    --white: #ffffff;
+    --red: #dc2626;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f8faff;
+    color: var(--dark);
+    min-height: 100vh;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #0ea5e9 100%);
+    color: white;
+    padding: 60px 24px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: rgba(255,255,255,.06);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: -40px;
+    width: 250px; height: 250px;
+    background: rgba(255,255,255,.04);
+    border-radius: 50%;
+  }
+  .hero-ico { font-size: 72px; margin-bottom: 16px; line-height: 1; }
+  .hero h1 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+  .hero p {
+    font-size: 1.05rem;
+    opacity: .85;
+    max-width: 400px;
+    margin: 0 auto 24px;
+    line-height: 1.6;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,.2);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: .85rem;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+  }
+
+  /* NAV STEPS */
+  .nav-steps {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 16px;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  }
+  .nav-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: .82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    color: var(--gray);
+  }
+  .nav-btn.active, .nav-btn:hover {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: white;
+  }
+
+  /* CONTENT */
+  .content { max-width: 680px; margin: 0 auto; padding: 32px 16px 80px; }
+
+  /* SECTION */
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn .3s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+
+  .section-title {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--dark);
+    margin-bottom: 6px;
+  }
+  .section-sub {
+    color: var(--gray);
+    font-size: .95rem;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  /* STEP CARD */
+  .step-card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    border: 1px solid #e8eef8;
+    position: relative;
+    overflow: hidden;
+  }
+  .step-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--blue);
+    border-radius: 4px 0 0 4px;
+  }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    background: var(--blue);
+    color: white;
+    border-radius: 50%;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: .9rem;
+    margin-bottom: 12px;
+  }
+  .step-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+    color: var(--dark);
+  }
+  .step-desc {
+    color: var(--gray);
+    font-size: .9rem;
+    line-height: 1.6;
+  }
+
+  /* PHONE MOCKUP */
+  .phone-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  .phone {
+    width: 200px;
+    background: #1a1a2e;
+    border-radius: 32px;
+    padding: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.25);
+    position: relative;
+  }
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 18px; left: 50%;
+    transform: translateX(-50%);
+    width: 60px; height: 6px;
+    background: #333;
+    border-radius: 3px;
+  }
+  .phone-screen {
+    background: white;
+    border-radius: 22px;
+    min-height: 340px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .phone-bar {
+    background: linear-gradient(135deg, #1e3a5f, #2563eb);
+    padding: 20px 12px 14px;
+    color: white;
+    text-align: center;
+  }
+  .phone-bar-ico { font-size: 28px; }
+  .phone-bar-title { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .95rem; margin-top: 4px; }
+  .phone-bar-sub { font-size: .65rem; opacity: .8; }
+  .phone-body { padding: 12px; flex: 1; }
+
+  /* FORM MOCK */
+  .mock-label { font-size: .6rem; color: var(--gray); text-transform: uppercase; font-weight: 700; margin-bottom: 3px; letter-spacing: .5px; }
+  .mock-input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: .75rem;
+    color: #94a3b8;
+    margin-bottom: 10px;
+    background: #f8faff;
+  }
+  .mock-btn {
+    width: 100%;
+    padding: 9px;
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: .8rem;
+    margin-top: 4px;
+    cursor: pointer;
+  }
+  .mock-link { text-align: center; font-size: .65rem; color: var(--blue); margin-top: 8px; }
+
+  /* GATE BUTTON MOCK */
+  .gate-mock {
+    background: linear-gradient(135deg, #2563eb, #0ea5e9);
+    border-radius: 16px;
+    padding: 16px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0;
+  }
+  .gate-ico { font-size: 28px; }
+  .gate-info { flex: 1; }
+  .gate-name { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .85rem; }
+  .gate-hint { font-size: .65rem; opacity: .8; }
+  .gate-arrow { font-size: 1.2rem; opacity: .7; }
+
+  /* GATE BUTTON MOCK RED */
+  .gate-mock.red { background: linear-gradient(135deg, #dc2626, #ef4444); }
+
+  /* INFO BOX */
+  .info-box {
+    background: var(--blue-lt);
+    border: 1.5px solid #bfdbfe;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .info-box.green { background: var(--green-lt); border-color: #86efac; }
+  .info-box.yellow { background: #fefce8; border-color: #fde68a; }
+  .info-box-ico { font-size: 1.4rem; flex-shrink: 0; }
+  .info-box-text { font-size: .88rem; line-height: 1.6; color: var(--dark); }
+  .info-box-text strong { font-weight: 700; }
+
+  /* TIP */
+  .tip {
+    background: #f0fdf4;
+    border-left: 4px solid var(--green);
+    border-radius: 0 12px 12px 0;
+    padding: 14px 16px;
+    margin: 16px 0;
+    font-size: .88rem;
+    color: #166534;
+    line-height: 1.5;
+  }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1.5px dashed #e2e8f0; margin: 24px 0; }
+
+  /* BADGE */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: .75rem;
+    font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+  }
+  .badge-blue { background: var(--blue-lt); color: var(--blue); }
+  .badge-green { background: var(--green-lt); color: var(--green); }
+  .badge-red { background: #fee2e2; color: var(--red); }
+
+  /* PROGRESS BAR MOCK */
+  .prog-bar {
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .prog-fill { height: 100%; background: var(--blue); border-radius: 2px; }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--gray);
+    font-size: .82rem;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 40px;
+  }
+
+  /* NEXT BTN */
+  .next-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 24px;
+    transition: background .2s;
+  }
+  .next-btn:hover { background: var(--blue-dk); }
+
+  /* FAQ */
+  .faq-item {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .faq-q {
+    padding: 16px 20px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: .95rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .faq-a {
+    padding: 0 20px;
+    max-height: 0;
+    overflow: hidden;
+    transition: all .3s;
+    font-size: .88rem;
+    color: var(--gray);
+    line-height: 1.6;
+  }
+  .faq-item.open .faq-a { max-height: 200px; padding: 0 20px 16px; }
+  .faq-arr { transition: transform .3s; }
+  .faq-item.open .faq-arr { transform: rotate(180deg); }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-ico">🏘️</div>
+  <h1>CerradaApp</h1>
+  <p>Guía rápida para vecinos — todo lo que necesitas saber para usar la app</p>
+  <span class="hero-badge">📱 Manual de Usuario</span>
+</div>
+
+<!-- NAV -->
+<div class="nav-steps">
+  <button class="nav-btn active" onclick="goTo(0)">🏠 Inicio</button>
+  <button class="nav-btn" onclick="goTo(1)">📋 Registro</button>
+  <button class="nav-btn" onclick="goTo(2)">🚪 Portón</button>
+  <button class="nav-btn" onclick="goTo(3)">👨‍👩‍👧 Familiares</button>
+  <button class="nav-btn" onclick="goTo(4)">📲 Instalar</button>
+  <button class="nav-btn" onclick="goTo(5)">❓ Ayuda</button>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- SECCIÓN 0: BIENVENIDA -->
+  <div class="section active" id="sec-0">
+    <div class="section-title">¡Bienvenido a CerradaApp! 👋</div>
+    <div class="section-sub">Esta guía te explica paso a paso cómo usar la aplicación para acceder a tu cerrada de forma segura y cómoda.</div>
+
+    <div class="info-box green">
+      <div class="info-box-ico">✅</div>
+      <div class="info-box-text"><strong>¿Qué puedes hacer con la app?</strong><br>Abrir el portón desde tu celular, ver tus estados de cuenta, invitar a tus familiares y mucho más — todo desde donde estés.</div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-title">Recibe tu invitación</div>
+      <div class="step-desc">El administrador de tu cerrada te enviará un link por WhatsApp. Ese link es tu puerta de entrada a la app.</div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-title">Completa tu registro</div>
+      <div class="step-desc">Al abrir el link, llenas tu nombre, correo y creas tu PIN personal de 4 a 8 dígitos.</div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-title">¡Listo! Ya puedes abrir el portón</div>
+      <div class="step-desc">Desde ese momento, con tu correo y PIN entras a la app y abres el portón cuando quieras.</div>
+    </div>
+
+    <div class="tip">💡 <strong>Tip:</strong> Instala la app en tu celular para tenerla siempre a la mano. Cuando la abras, busca la opción "Agregar a pantalla de inicio".</div>
+
+    <button class="next-btn" onclick="goTo(1)">Siguiente: Cómo registrarse →</button>
+  </div>
+
+  <!-- SECCIÓN 1: REGISTRO -->
+  <div class="section" id="sec-1">
+    <div class="section-title">Cómo registrarse 📋</div>
+    <div class="section-sub">El registro solo se hace una vez. Sigue estos pasos con calma.</div>
+
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-title">Abre el link de WhatsApp</div>
+      <div class="step-desc">El administrador te enviará un mensaje con un link. Tócalo para abrirlo en tu navegador.</div>
+      <div class="info-box" style="margin-top:12px">
+        <div class="info-box-ico">📲</div>
+        <div class="info-box-text">El link se ve así en WhatsApp:<br><strong style="color:var(--blue);font-size:.82rem">racosta123.github.io/cerradaapp/register.html?reg=...</strong></div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-title">Verifica tu casa</div>
+      <div class="step-desc">Al abrir el link verás el nombre de tu casa y cerrada. Verifica que sean correctos.</div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-bar">
+              <div class="phone-bar-ico">🏘️</div>
+              <div class="phone-bar-title">CerradaApp</div>
+              <div class="phone-bar-sub">Control de acceso comunitario</div>
+            </div>
+            <div class="phone-body">
+              <div class="prog-bar"><div class="prog-fill" style="width:33%"></div></div>
+              <div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:.85rem;margin-bottom:8px">Completa tu registro</div>
+              <div style="display:inline-block;background:#dbeafe;color:#1d4ed8;font-weight:700;font-size:.7rem;padding:4px 10px;border-radius:6px;margin-bottom:4px">🏠 Casa: California 25</div>
+              <div style="font-size:.65rem;color:#64748b;margin-bottom:10px">Cerrada Samarkanda</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-title">Llena tus datos</div>
+      <div class="step-desc">Escribe tu nombre completo, tu correo electrónico y crea un PIN de 4 a 8 dígitos. <strong>Recuerda bien tu PIN</strong> — lo usarás cada vez que entres.</div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-body" style="padding-top:16px">
+              <div class="mock-label">Nombre completo</div>
+              <div class="mock-input">María García López</div>
+              <div class="mock-label">Correo electrónico</div>
+              <div class="mock-input">maria@gmail.com</div>
+              <div class="mock-label">Crea tu PIN (4-8 dígitos)</div>
+              <div class="mock-input">••••••</div>
+              <div class="mock-label">Confirma tu PIN</div>
+              <div class="mock-input">••••••</div>
+              <button class="mock-btn">Completar Registro</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <div class="step-title">¡Registro exitoso!</div>
+      <div class="step-desc">Verás un mensaje de confirmación. A partir de este momento ya puedes entrar a la app con tu correo y PIN.</div>
+    </div>
+
+    <div class="info-box yellow">
+      <div class="info-box-ico">⚠️</div>
+      <div class="info-box-text"><strong>Importante:</strong> El link de invitación es de un solo uso. Si lo abres dos veces o lo compartes, ya no funcionará. Pide una nueva invitación al administrador si es necesario.</div>
+    </div>
+
+    <button class="next-btn" onclick="goTo(2)">Siguiente: Cómo abrir el portón →</button>
+  </div>
+
+  <!-- SECCIÓN 2: PORTÓN -->
+  <div class="section" id="sec-2">
+    <div class="section-title">Cómo abrir el portón 🚪</div>
+    <div class="section-sub">Abrir el portón es muy fácil — solo necesitas tu celular y conexión a internet.</div>
+
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-title">Abre la app e inicia sesión</div>
+      <div class="step-desc">Ve a la dirección de la app en tu navegador o toca el ícono si ya la instalaste. Escribe tu correo y PIN.</div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-bar">
+              <div class="phone-bar-ico">🏘️</div>
+              <div class="phone-bar-title">CerradaApp</div>
+              <div class="phone-bar-sub">Control de acceso comunitario</div>
+            </div>
+            <div class="phone-body" style="padding-top:16px">
+              <div class="mock-label">Correo electrónico</div>
+              <div class="mock-input">maria@gmail.com</div>
+              <div class="mock-label">Contraseña</div>
+              <div class="mock-input">••••••</div>
+              <button class="mock-btn">Entrar →</button>
+              <div class="mock-link">¿Primera vez? Necesito una invitación</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-title">Mantén presionado el botón del portón</div>
+      <div class="step-desc">En la pantalla principal verás el botón del portón. <strong>Mantenlo presionado medio segundo</strong> hasta que escuches el sonido y sienta la vibración — eso confirma que el portón se abrió.</div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-bar" style="padding:12px">
+              <div style="font-size:.7rem;opacity:.8">Cerrada Samarkanda · California 25</div>
+            </div>
+            <div class="phone-body">
+              <div style="font-size:.7rem;color:#64748b;text-align:center;margin-bottom:8px">Mantén presionado hasta que se ponga verde 🔓</div>
+              <div class="gate-mock">
+                <div class="gate-ico">🚗</div>
+                <div class="gate-info">
+                  <div class="gate-name">Portón Principal</div>
+                  <div class="gate-hint">Mantén hasta que se ponga verde</div>
+                </div>
+                <div class="gate-arrow">›</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box green">
+      <div class="info-box-ico">🔔</div>
+      <div class="info-box-text"><strong>¿Cómo sé que se abrió?</strong><br>El botón se pondrá <strong>verde</strong>, escucharás un sonido suave y tu celular vibrará. También verás el mensaje "✅ Portón abierto".</div>
+    </div>
+
+    <div class="info-box green">
+      <div class="info-box-ico">📲</div>
+      <div class="info-box-text"><strong>Notificaciones entre familiares</strong><br>Cuando tú o cualquier miembro de tu casa abra el portón, los demás recibirán una notificación en su celular — como WhatsApp — indicando quién abrió y a qué hora.</div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="step-title" style="margin-bottom:12px">¿Qué significa el botón rojo? 🔒</div>
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-body" style="padding-top:20px">
+            <div class="gate-mock red">
+              <div style="font-size:1.6rem">🔒</div>
+              <div class="gate-info">
+                <div class="gate-name">Suspendido</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="info-box yellow">
+      <div class="info-box-ico">⚠️</div>
+      <div class="info-box-text">Si el botón aparece <strong>rojo con un candado</strong>, tu acceso está temporalmente suspendido. Comunícate con el administrador de tu cerrada para resolverlo.</div>
+    </div>
+
+    <button class="next-btn" onclick="goTo(3)">Siguiente: Invitar familiares →</button>
+  </div>
+
+  <!-- SECCIÓN 3: FAMILIARES -->
+  <div class="section" id="sec-3">
+    <div class="section-title">Invitar familiares 👨‍👩‍👧</div>
+    <div class="section-sub">Puedes invitar hasta 4 familiares para que también puedan abrir el portón con su propio celular.</div>
+
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-title">Entra a la app y toca "Invitar familiar"</div>
+      <div class="step-desc">En la pantalla principal, debajo del botón del portón, encontrarás el botón <span class="badge badge-blue">👥 Invitar familiar a mi casa</span>.</div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-title">Se genera un link automáticamente</div>
+      <div class="step-desc">La app genera un link único para tu familiar y abre WhatsApp para que se lo envíes directamente.</div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-title">Tu familiar completa su registro</div>
+      <div class="step-desc">Al abrir el link, tu familiar llena sus datos y crea su propio PIN. A partir de ese momento ya puede abrir el portón con su celular.</div>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-ico">👥</div>
+      <div class="info-box-text"><strong>Límite de familiares:</strong> Puedes invitar hasta <strong>4 familiares</strong> adicionales. Cada uno tendrá su propio acceso independiente con su correo y PIN.</div>
+    </div>
+
+    <div class="info-box green">
+      <div class="info-box-ico">🔔</div>
+      <div class="info-box-text"><strong>Notificaciones automáticas:</strong> Cada vez que un miembro de tu casa abra el portón, los demás recibirán una notificación en su celular con el nombre de quien abrió y la hora. Así todos saben cuándo llegan o salen.</div>
+    </div>
+
+    <div class="info-box yellow">
+      <div class="info-box-ico">⚠️</div>
+      <div class="info-box-text"><strong>Importante:</strong> Si el jefe de familia es suspendido por mora, todos los familiares también quedan sin acceso automáticamente.</div>
+    </div>
+
+    <button class="next-btn" onclick="goTo(4)">Siguiente: Instalar la app →</button>
+  </div>
+
+  <!-- SECCIÓN 4: INSTALAR -->
+  <div class="section" id="sec-4">
+    <div class="section-title">Cómo instalar la app 📲</div>
+    <div class="section-sub">No necesitas descargar nada de la tienda. Sigue estos pasos según tu celular.</div>
+
+    <!-- ANDROID -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#3DDC84"/><path d="M10 20h12V14H10v6zm2-4h2v2h-2v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zM9 13l1.5-4h11L23 13H9zm3-2h8l-.7-2h-6.6L12 11z" fill="white"/></svg>
+      <span style="font-family:'Nunito',sans-serif;font-weight:900;font-size:1.1rem">Android — Chrome</span>
+    </div>
+
+    <!-- STEP A1 -->
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-title">Abre la app en Chrome</div>
+      <div class="step-desc">Abre Chrome y ve a la dirección de la app. Verás la pantalla principal de CerradaApp.</div>
+      <div class="phone-wrap" style="margin-top:16px">
+        <div class="phone">
+          <div class="phone-screen">
+            <div style="background:#f1f3f4;padding:8px 10px;display:flex;align-items:center;gap:6px">
+              <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="7" fill="#4285F4"/><path d="M7 3.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z" fill="white"/></svg>
+              <span style="font-size:.58rem;color:#5f6368;background:white;border-radius:4px;padding:2px 6px;flex:1">racosta123.github.io/cerradaapp</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5f6368" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+            </div>
+            <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);padding:20px 12px;text-align:center;color:white">
+              <div style="font-size:32px">🏘️</div>
+              <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:.95rem;margin-top:4px">CerradaApp</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP A2 -->
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-title">Toca los 3 puntos ⋮ del menú</div>
+      <div class="step-desc">En la esquina superior derecha de Chrome verás tres puntos verticales. Tócalos para abrir el menú.</div>
+      <div class="phone-wrap" style="margin-top:16px">
+        <div class="phone">
+          <div class="phone-screen">
+            <div style="background:#f1f3f4;padding:8px 10px;display:flex;align-items:center;gap:6px">
+              <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="7" fill="#4285F4"/></svg>
+              <span style="font-size:.58rem;color:#5f6368;background:white;border-radius:4px;padding:2px 6px;flex:1">racosta123.github.io/...</span>
+              <div style="background:#e8f0fe;border-radius:50%;padding:4px;animation:pulse 1.5s infinite">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2.5"><circle cx="12" cy="5" r="1.5" fill="#4285F4"/><circle cx="12" cy="12" r="1.5" fill="#4285F4"/><circle cx="12" cy="19" r="1.5" fill="#4285F4"/></svg>
+              </div>
+            </div>
+            <div style="background:white;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15);margin:8px;overflow:hidden">
+              <div style="padding:10px 14px;font-size:.65rem;border-bottom:1px solid #f1f3f4;display:flex;align-items:center;gap:8px">
+                <span>⭐</span> Agregar a Favoritos
+              </div>
+              <div style="padding:10px 14px;font-size:.65rem;border-bottom:1px solid #f1f3f4;display:flex;align-items:center;gap:8px;background:#e8f0fe;font-weight:700;color:#1d4ed8">
+                <span>📱</span> <strong>Agregar a pantalla de inicio</strong>
+              </div>
+              <div style="padding:10px 14px;font-size:.65rem;border-bottom:1px solid #f1f3f4;display:flex;align-items:center;gap:8px">
+                <span>🔗</span> Compartir...
+              </div>
+              <div style="padding:10px 14px;font-size:.65rem;display:flex;align-items:center;gap:8px">
+                <span>⚙️</span> Configuración
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP A3 -->
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-title">Toca "Agregar a pantalla de inicio"</div>
+      <div class="step-desc">Se abrirá un cuadro de confirmación. Toca <strong>Agregar</strong> y listo — el ícono de CerradaApp aparecerá en tu pantalla de inicio.</div>
+      <div class="phone-wrap" style="margin-top:16px">
+        <div class="phone">
+          <div class="phone-screen">
+            <div style="background:#f1f3f4;padding:8px 10px;display:flex;align-items:center;gap:6px">
+              <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="7" fill="#4285F4"/></svg>
+              <span style="font-size:.58rem;color:#5f6368;background:white;border-radius:4px;padding:2px 6px;flex:1">racosta123.github.io/...</span>
+            </div>
+            <div style="padding:20px 12px;display:flex;align-items:center;justify-content:center;flex:1">
+              <div style="background:white;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.2);padding:20px;width:160px;text-align:center">
+                <div style="font-size:36px;margin-bottom:8px">🏘️</div>
+                <div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:.8rem;margin-bottom:4px">CerradaApp</div>
+                <div style="font-size:.6rem;color:#64748b;margin-bottom:14px">¿Agregar a pantalla de inicio?</div>
+                <div style="display:flex;gap:8px">
+                  <div style="flex:1;padding:7px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:.6rem;text-align:center;color:#64748b">Cancelar</div>
+                  <div style="flex:1;padding:7px;border-radius:8px;background:#2563eb;color:white;font-size:.6rem;font-weight:700;text-align:center">Agregar</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip">✅ <strong>¡Listo!</strong> El ícono de CerradaApp aparecerá en tu pantalla de inicio como cualquier otra app. Tócalo para entrar sin tener que escribir la dirección.</div>
+
+    <hr class="divider">
+
+    <!-- iOS -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#555"/><path d="M16 6a4 4 0 014 4c0 1.5-.8 2.8-2 3.5V15h-4v-1.5A4 4 0 0116 6zm-2 10h4v10h-4V16z" fill="white"/></svg>
+      <span style="font-family:'Nunito',sans-serif;font-weight:900;font-size:1.1rem">iPhone — Safari</span>
+    </div>
+
+    <!-- STEP I1 -->
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-title">Abre la app en Safari</div>
+      <div class="step-desc">Es importante usar Safari en iPhone — con otros navegadores no funciona la instalación. Ve a la dirección de la app.</div>
+      <div class="phone-wrap" style="margin-top:16px">
+        <div class="phone">
+          <div class="phone-screen">
+            <div style="background:#f2f2f7;padding:8px 10px;display:flex;align-items:center;gap:6px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8l4 4-4 4-4-4 4-4z" fill="#007AFF" stroke="none"/></svg>
+              <span style="font-size:.58rem;color:#8e8e93;background:white;border-radius:8px;padding:3px 8px;flex:1;text-align:center">racosta123.github.io/cerradaapp</span>
+            </div>
+            <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);padding:20px 12px;text-align:center;color:white">
+              <div style="font-size:32px">🏘️</div>
+              <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:.95rem;margin-top:4px">CerradaApp</div>
+            </div>
+            <div style="background:#f2f2f7;padding:6px 10px;display:flex;justify-content:space-around;align-items:center;border-top:1px solid #e5e5ea">
+              <span style="font-size:14px">←</span>
+              <span style="font-size:14px">→</span>
+              <div style="background:#e8f0fe;border-radius:6px;padding:3px;animation:pulse 1.5s infinite">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2"><path d="M12 2v13M8 6l4-4 4 4"/><path d="M4 14v6h16v-6"/></svg>
+              </div>
+              <span style="font-size:14px">⊡</span>
+              <span style="font-size:14px">☰</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP I2 -->
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-title">Toca el ícono de compartir ↑</div>
+      <div class="step-desc">En la barra inferior de Safari, toca el ícono de una flecha hacia arriba. Se abrirá un menú de opciones.</div>
+      <div class="phone-wrap" style="margin-top:16px">
+        <div class="phone">
+          <div class="phone-screen" style="display:flex;flex-direction:column">
+            <!-- Safari bar -->
+            <div style="background:#f2f2f7;padding:8px 10px;display:flex;align-items:center;gap:6px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+              <span style="font-size:.58rem;color:#8e8e93;background:white;border-radius:8px;padding:3px 8px;flex:1;text-align:center">racosta123.github.io/cerradaapp</span>
+            </div>
+            <!-- App content -->
+            <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);padding:30px 12px;text-align:center;color:white;flex:1">
+              <div style="font-size:28px">🏘️</div>
+              <div style="font-family:'Nunito',sans-serif;font-weight:900;font-size:.85rem;margin-top:4px">CerradaApp</div>
+            </div>
+            <!-- Safari bottom bar with share highlighted -->
+            <div style="background:#f2f2f7;padding:8px 10px;display:flex;justify-content:space-around;align-items:center;border-top:1px solid #e5e5ea">
+              <span style="font-size:16px;color:#8e8e93">←</span>
+              <span style="font-size:16px;color:#8e8e93">→</span>
+              <div style="background:#007AFF;border-radius:8px;padding:5px 8px;animation:pulse 1.5s infinite">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2v13M8 7l4-5 4 5"/><path d="M4 14v6h16v-6"/></svg>
+              </div>
+              <span style="font-size:16px;color:#8e8e93">⊡</span>
+              <span style="font-size:16px;color:#8e8e93">☰</span>
+            </div>
+            <!-- Share sheet -->
+            <div style="background:white;border-radius:16px 16px 0 0;padding:14px 10px;border-top:1px solid #e5e5ea">
+              <div style="width:36px;height:4px;background:#e2e8f0;border-radius:2px;margin:0 auto 12px"></div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+                <div style="text-align:center;font-size:.55rem;color:#8e8e93">
+                  <div style="width:40px;height:40px;background:#f2f2f7;border-radius:10px;margin:0 auto 3px;display:flex;align-items:center;justify-content:center;font-size:18px">📋</div>Copiar
+                </div>
+                <div style="text-align:center;font-size:.55rem;color:#007AFF;font-weight:700">
+                  <div style="width:40px;height:40px;background:#dbeafe;border-radius:10px;margin:0 auto 3px;display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid #007AFF">📱</div><strong>Al inicio</strong>
+                </div>
+                <div style="text-align:center;font-size:.55rem;color:#8e8e93">
+                  <div style="width:40px;height:40px;background:#f2f2f7;border-radius:10px;margin:0 auto 3px;display:flex;align-items:center;justify-content:center;font-size:18px">✉️</div>Correo
+                </div>
+                <div style="text-align:center;font-size:.55rem;color:#8e8e93">
+                  <div style="width:40px;height:40px;background:#f2f2f7;border-radius:10px;margin:0 auto 3px;display:flex;align-items:center;justify-content:center;font-size:18px">💬</div>Mensaje
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP I3 -->
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-title">Toca "Agregar a pantalla de inicio"</div>
+      <div class="step-desc">Busca la opción <strong>"Agregar a pantalla de inicio"</strong> en el menú. Tócala, confirma el nombre y toca <strong>Agregar</strong>.</div>
+    </div>
+
+    <div class="tip">✅ <strong>¡Listo en iPhone!</strong> El ícono aparecerá en tu pantalla de inicio. Tócalo para abrir CerradaApp directamente.</div>
+
+    <button class="next-btn" onclick="goTo(5)">Siguiente: Preguntas frecuentes →</button>
+  </div>
+
+  <!-- SECCIÓN 5: FAQ -->
+  <div class="section" id="sec-5">
+    <div class="section-title">Preguntas frecuentes ❓</div>
+    <div class="section-sub">Respuestas rápidas a las dudas más comunes.</div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Necesito internet para abrir el portón? <span class="faq-arr">▼</span></div>
+      <div class="faq-a">Sí, necesitas conexión a internet (WiFi o datos móviles) para que la app se comunique con el portón. Asegúrate de tener señal antes de llegar a la cerrada.</div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Olvidé mi PIN, ¿qué hago? <span class="faq-arr">▼</span></div>
+      <div class="faq-a">Comunícate con el administrador de tu cerrada. Él puede enviarte una nueva invitación para que te registres de nuevo con un PIN nuevo.</div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Puedo usar la app en más de un celular? <span class="faq-arr">▼</span></div>
+      <div class="faq-a">Sí. Puedes iniciar sesión con tu correo y PIN en cualquier celular. No hay límite de dispositivos.</div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">El portón no abrió, ¿qué hago? <span class="faq-arr">▼</span></div>
+      <div class="faq-a">Primero verifica que tienes conexión a internet. Si el botón está verde y tienes señal, intenta de nuevo. Si persiste el problema, avisa al administrador.</div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Cómo instalo la app en mi celular? <span class="faq-arr">▼</span></div>
+      <div class="faq-a">Mira la sección de instalación — tiene instrucciones ilustradas para Android e iOS. Una vez instalada, acepta las notificaciones para recibir avisos cuando tus familiares abran el portón.</div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Mis datos están seguros? <span class="faq-arr">▼</span></div>
+      <div class="faq-a">Sí. La app usa conexiones cifradas y nunca comparte tu información con terceros. Solo el administrador de tu cerrada tiene acceso a los datos de los residentes.</div>
+    </div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">¿Puedo ver el historial de aperturas? <span class="faq-arr">▼</span></div>
+      <div class="faq-a">Sí. En la pestaña "Historial" dentro de la app puedes ver todas las aperturas realizadas desde tu casa con fecha y hora.</div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="info-box green">
+      <div class="info-box-ico">📞</div>
+      <div class="info-box-text"><strong>¿Necesitas más ayuda?</strong><br>Comunícate directamente con el administrador de tu cerrada. Él podrá asistirte con cualquier problema.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div style="font-size:1.5rem;margin-bottom:8px">🏘️</div>
+  <strong>CerradaApp</strong> — Control de Acceso Comunitario<br>
+  Manual de Usuario v1.0
+</div>
+
+<script>
+  let current = 0;
+  const sections = document.querySelectorAll('.section');
+  const navBtns = document.querySelectorAll('.nav-btn');
+
+  function goTo(idx) {
+    sections[current].classList.remove('active');
+    navBtns[current].classList.remove('active');
+    current = idx;
+    sections[current].classList.add('active');
+    navBtns[current].classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleFaq(el) {
+    el.classList.toggle('open');
+  }
+</script>
+</body>
+</html>
