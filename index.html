@@ -689,7 +689,7 @@ select option{background:var(--sur)}
       <div><label>Código único</label><input id="nc-code" placeholder="CERR-001" oninput="this.value=this.value.toUpperCase()"></div>
     </div>
     <div class="frow">
-      <div><label>Nº Casas (máx 50)</label><input id="nc-houses" type="number" placeholder="40" min="1" max="50"></div>
+      <div><label>Nº Casas (máx 900)</label><input id="nc-houses" type="number" placeholder="40" min="1" max="900"></div>
       <div><label>Mensualidad ($)</label><input id="nc-price" type="number" placeholder="20" min="1"></div>
     </div>
     <label>Nombre del Sub-Admin</label><input id="nc-aname" placeholder="Pedro González">
@@ -942,14 +942,14 @@ function loginStaff(){
 
   // ── ADMIN — buscar cerrada por código
   if(user==='Administrador' && pass==='Admin4545'){
-    const code = prompt('Ingresa el código de tu cerrada:','SMARK-001');
+    const code = prompt('Ingresa el código de tu cerrada:','');
     if(!code) return;
     const codeUp = code.trim().toUpperCase();
     
     // Si no tiene la cerrada localmente, crearla con datos mínimos
     const KNOWN_BINS={'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
     if(!S.cerradas[codeUp] && KNOWN_BINS[codeUp]){
-      S.cerradas[codeUp]={name:'Cerrada',code:codeUp,houses:50,adminPin:'1234',adminName:'',price:20,active:true,suspended:false,portones:[],residents:[],history:[],movements:[],cuotas:{},cuotaConfig:{},jsonbin:KNOWN_BINS[codeUp]};
+      S.cerradas[codeUp]={name:'Cerrada',code:codeUp,houses:900,adminPin:'1234',adminName:'',price:20,active:true,suspended:false,portones:[],residents:[],history:[],movements:[],cuotas:{},cuotaConfig:{},jsonbin:KNOWN_BINS[codeUp]};
       save();
     }
     
@@ -1887,7 +1887,7 @@ function createCerrada(){
   const name=document.getElementById('nc-name').value.trim(),code=document.getElementById('nc-code').value.trim().toUpperCase(),houses=parseInt(document.getElementById('nc-houses').value)||0,price=parseFloat(document.getElementById('nc-price').value)||S.defaultPrice,aname=document.getElementById('nc-aname').value.trim(),apin=document.getElementById('nc-apin').value.trim(),aphone=document.getElementById('nc-aphone').value.trim();
   if(!name||!code||!apin){toast('⚠️ Nombre, código y PIN obligatorios');return;}
   if(apin.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}
-  if(houses<1||houses>50){toast('⚠️ Entre 1 y 50 casas');return;}
+  if(houses<1||houses>900){toast('⚠️ Entre 1 y 900 casas');return;}
   if(S.cerradas[code]){toast('⚠️ Código ya existe');return;}
   if(!ncP.length){toast('⚠️ Agrega al menos 1 portón');return;}
   ncP.forEach((p,i)=>{p.label=document.getElementById('npl-'+i)?.value.trim()||'Portón '+(i+1);p.icon=document.getElementById('npi-'+i)?.value||p.icon;});
