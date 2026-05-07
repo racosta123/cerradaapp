@@ -695,7 +695,12 @@ function loginStaff(){
 function showStaffErr(msg){const el=document.getElementById('staff-err');if(el){el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',3000);}}
 function toggleStaff(){const el=document.getElementById('staff-access');el.style.display=el.style.display==='none'?'block':'none';}
 function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',3200);}
-function logout(){U=null;localStorage.removeItem('cerrada_session');showScreen('login');}
+function logout(){
+  U=null;localStorage.removeItem('cerrada_session');
+  if(window._admHistInterval){clearInterval(window._admHistInterval);window._admHistInterval=null;}
+  if(window._suspInterval){clearInterval(window._suspInterval);window._suspInterval=null;}
+  showScreen('login');
+}
 function setSI(r,st){const m={syncing:'🔄',ok:'☁️',err:'⚠️',off:'💾'};const el=document.getElementById('sync-'+r);if(el)el.textContent=m[st]||'☁️';}
 async function initFCM(c,res,memberIdx){
   try{
@@ -769,7 +774,20 @@ function resP(id,el){
 }
 function admP(id,el){
   setPanels('ap-',['dashboard','vecinos','historial','finanzas','portones','config'],id);setTabs('#scr-adm',el);const c=C();if(!c)return;
-  if(id==='dashboard')updateDash();if(id==='vecinos')renderVec();if(id==='historial')renderAdmHist();
+  if(window._admHistInterval){clearInterval(window._admHistInterval);window._admHistInterval=null;}
+  if(id==='dashboard')updateDash();
+  if(id==='vecinos')renderVec();
+  if(id==='historial'){
+    renderAdmHist();
+    window._admHistInterval=setInterval(async()=>{
+      const c=C();if(!c||!c.jsonbin?.binId)return;
+      try{
+        const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`);
+        const data=await r.json();
+        if(data.ok&&data.record){const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();renderAdmHist();}
+      }catch(e){}
+    },60000);
+  }
   if(id==='finanzas')renderAdmFin();if(id==='cuotas')initCuotasMes();if(id==='portones')renderAdmPortones();if(id==='config')loadCfg();
 }
 function mstP(id,el){
