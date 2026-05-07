@@ -133,19 +133,18 @@ select option{background:var(--sur)}
 .gate-grid{display:grid;gap:.5rem;margin-bottom:.8rem}
 .g1{grid-template-columns:1fr}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g4{grid-template-columns:1fr 1fr}
 .gbtn{
-  background:var(--sur);border:2px solid var(--brd);border-radius:var(--rad);
+  background:var(--green-lt);border:2px solid var(--green);border-radius:var(--rad);
   padding:1rem 1.1rem;display:flex;align-items:center;gap:.9rem;
   cursor:pointer;position:relative;overflow:hidden;
   transition:transform .15s,box-shadow .15s,border-color .15s,background .15s;
   user-select:none;-webkit-user-select:none;touch-action:none;
-  box-shadow:0 4px 14px rgba(59,130,196,.12), 0 1px 3px rgba(59,130,196,.08);
-  /* Aspecto clicable: borde inferior más grueso */
-  border-bottom:3px solid var(--brd2);
+  box-shadow:0 4px 14px rgba(59,191,110,.15), 0 1px 3px rgba(59,191,110,.1);
+  border-bottom:3px solid #1e7a35;
 }
 .gbtn:hover{
-  border-color:var(--blue);border-bottom-color:var(--blue-dark);
-  background:var(--blue-lt);
-  box-shadow:0 6px 20px rgba(59,130,196,.18),0 2px 6px rgba(59,130,196,.1);
+  border-color:#1e7a35;border-bottom-color:#155a28;
+  background:#d4f5e4;
+  box-shadow:0 6px 20px rgba(59,191,110,.25),0 2px 6px rgba(59,191,110,.15);
   transform:translateY(-1px);
 }
 /* Estado presionado: hunde el botón */
@@ -178,15 +177,15 @@ select option{background:var(--sur)}
 .gico-wrap{
   width:46px;height:46px;border-radius:13px;
   display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;pointer-events:none;background:var(--blue-lt);
+  flex-shrink:0;pointer-events:none;background:rgba(59,191,110,.2);
   font-size:1.4rem;transition:background .2s;
-  box-shadow:0 2px 6px rgba(59,130,196,.15);
+  box-shadow:0 2px 6px rgba(59,191,110,.2);
 }
 .gbtn-info{flex:1;pointer-events:none}
-.glbl{font-size:1.25rem;font-weight:800;color:var(--t);font-family:var(--fd);pointer-events:none}
-.ghint{font-size:.95rem;color:var(--t2);pointer-events:none;margin-top:.2rem}
+.glbl{font-size:1.25rem;font-weight:800;color:#1a6a35;font-family:var(--fd);pointer-events:none}
+.ghint{font-size:.95rem;color:#1a6a35;pointer-events:none;margin-top:.2rem;opacity:.8}
 .gbtn-arrow{
-  color:var(--blue);font-size:1.3rem;flex-shrink:0;pointer-events:none;
+  color:var(--green);font-size:1.3rem;flex-shrink:0;pointer-events:none;
   font-weight:800;transition:transform .2s;
 }
 .gbtn:hover .gbtn-arrow{transform:translateX(3px)}
@@ -410,8 +409,8 @@ select option{background:var(--sur)}
       <div id="gate-res" class="gate-grid g1"></div>
       <!-- Botón invitar familiares (solo para jefe de familia) -->
       <div id="res-invite-btn" style="display:none;margin-top:.6rem">
-        <button class="btn bb2" onclick="invitarFamiliar()" style="font-size:.82rem;width:100%">
-          👨‍👩‍👧 Invitar familiar a mi casa
+        <button class="btn bp" onclick="invitarFamiliar()" style="font-size:1rem;font-weight:900;width:100%;padding:.85rem;letter-spacing:.3px">
+          👨‍👩‍👧 Invitar Familiar a Mi Casa
         </button>
         <div id="res-members-list" style="margin-top:.6rem"></div>
       </div>
