@@ -591,10 +591,7 @@ select option{background:var(--sur)}
       </div>
       <div class="card">
         <div class="ch"><div class="ct">⚙️ Configurar Cuota</div></div>
-        <div class="frow">
-          <div><label>Monto mensual ($)</label><input id="cuota-monto" type="number" placeholder="200" min="1"></div>
-          <div><label>Día de vencimiento</label><input id="cuota-dia" type="number" placeholder="5" min="1" max="28"></div>
-        </div>
+        <div><label>Monto mensual ($)</label><input id="cuota-monto" type="number" placeholder="200" min="1"></div>
         <button class="btn bp" onclick="saveCuotaConfig()">💾 Guardar Configuración</button>
       </div>
       <div class="card">
@@ -2431,11 +2428,10 @@ function initCuotasMes() {
 function saveCuotaConfig() {
   const c = C(); if (!c) return;
   const monto = parseFloat(document.getElementById('cuota-monto').value);
-  const dia = parseInt(document.getElementById('cuota-dia').value) || 5;
   if (!monto || monto < 1) { toast('⚠️ Ingresa un monto válido'); return; }
-  c.cuotaConfig = { monto, dia };
+  c.cuotaConfig = { monto, dia: 1 };
   save(); push('adm');
-  toast('✅ Configuración guardada — $' + monto + ' vence el día ' + dia);
+  toast('✅ Monto guardado — $' + monto);
   renderCuotas();
 }
 
@@ -2453,9 +2449,7 @@ function renderCuotas() {
   // Cargar config en campos
   if (c.cuotaConfig) {
     const montoEl = document.getElementById('cuota-monto');
-    const diaEl = document.getElementById('cuota-dia');
     if (montoEl) montoEl.value = c.cuotaConfig.monto;
-    if (diaEl) diaEl.value = c.cuotaConfig.dia;
   }
 
   const pagadas = res.filter(r => c.cuotas[mesKey][r.house]?.pagado).length;
