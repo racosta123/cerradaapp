@@ -960,7 +960,7 @@ function loginStaff(){
 
   // ── ADMIN — buscar cerrada por código
   if(user==='Administrador' && pass==='Admin4545'){
-    const code = prompt('Ingresa el código de tu cerrada:','SMARK-001');
+    const code = prompt('Ingresa el código de tu cerrada:');
     if(!code) return;
     const codeUp = code.trim().toUpperCase();
     
@@ -1386,6 +1386,8 @@ async function openPorton(pid,role){
   const memberName = U.memberName || house;
   c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label,who:memberName});
   save();push(role);
+  // Actualizar historial inmediatamente
+  if(role==='res') renderResHist(c);
   shellyOpen(pt);
   toast(`✅ ${pt.label} abierto`);
   // Notificar a familiares
@@ -1473,7 +1475,10 @@ async function enterAdm(c){
 function updateDash(){
   const c=C();if(!c)return;const res=c.residents||[];
   document.getElementById('ds-tot').textContent=res.length;
-  document.getElementById('ds-act').textContent=res.filter(r=>r.active&&!r.mora).length;
+  document.getElementById('ds-act').textContent=res.filter(r=>r.active&&!r.mora).reduce((sum,r)=>{
+    const fams=(r.members||[]).filter(m=>!m.suspended).length;
+    return sum+(fams>0?fams:1);
+  },0);
   document.getElementById('ds-mora').textContent=res.filter(r=>r.mora).length;
   const today=new Date().toDateString();
   document.getElementById('ds-open').textContent=(c.history||[]).filter(h=>new Date(h.ts).toDateString()===today).length;
