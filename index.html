@@ -912,7 +912,7 @@ async function loginResidente(){
     toast('🔄 Verificando...');
     for(const [code,cfg] of Object.entries(KNOWN_BINS)){
       try{
-        const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${cfg.binId}&key=${encodeURIComponent(cfg.apiKey)}`);
+        const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${cfg.binId}&key=${encodeURIComponent(cfg.apiKey)}`);
         if(r.ok){const data=await r.json();if(data.ok&&data.record){S.cerradas[code]=data.record;S.cerradas[code].jsonbin=cfg;}}
       }catch(e){}
     }
@@ -1060,7 +1060,7 @@ async function initFCM(c, res, memberIdx) {
       }
     }
 
-    if (changed) { save(); jbPush(c).catch(() => {}); }
+    if (changed) { save(); fsPush(c).catch(() => {}); }
   } catch(e) { console.log('FCM error:', e.message); }
 }
 
@@ -1096,25 +1096,25 @@ async function notifyFamily(c, res, openerName, portonLabel) {
   } catch(e) {}
 }
 
-async function jbPush(c, retries=10){
-  if(!c?.jsonbin?.binId||!c?.jsonbin?.apiKey) return false;
+async function fsPush(c, retries=10){
+  if(!c?.code) return false;
   const p={name:c.name,code:c.code,houses:c.houses,adminPin:c.adminPin,adminName:c.adminName,adminPhone:c.adminPhone,price:c.price,active:c.active,suspended:c.suspended,portones:c.portones||[],residents:c.residents||[],history:(c.history||[]).slice(-500),movements:c.movements||[],cuotas:c.cuotas||{},cuotaConfig:c.cuotaConfig||{},updatedAt:new Date().toISOString()};
   for(let i=0; i<retries; i++){
     try{
       const r=await fetch('https://shelly-proxy.acosta4770.workers.dev/jb',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({bin:c.jsonbin.binId,key:c.jsonbin.apiKey,data:p})
+        body:JSON.stringify({code:c.code,data:p})	
       });
       const d=await r.json();
-      console.log('jbPush intento '+(i+1)+':', JSON.stringify(d));
+      console.log('fsPush intento '+(i+1)+':', JSON.stringify(d));
       if(d.ok===true) return true;
-    }catch(e){ console.log('jbPush error intento '+(i+1)+':', e.message); }
+    }catch(e){ console.log('fsPush error intento '+(i+1)+':', e.message); }
     if(i < retries-1) await new Promise(r=>setTimeout(r,1000));
   }
   return false;
 }
-async function push(role){const c=C();if(!c?.jsonbin?.binId)return;setSI(role,'syncing');setSI(role,await jbPush(c)?'ok':'err');}
+async function push(role){const c=C();if(!c?.jsonbin?.binId)return;setSI(role,'syncing');setSI(role,await fsPush(c)?'ok':'err');}
 
 // ── NAV
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('scr-'+id)?.classList.add('active');}
@@ -1122,8 +1122,8 @@ function setPanels(pre,list,act){list.forEach(p=>{const el=document.getElementBy
 function setTabs(scope,el){document.querySelectorAll(scope+' .ntab').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
 function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);setTabs('#scr-res',el);const c=C();if(!c)return;if(id==='portones'){
     // Sincronizar estado en segundo plano sin bloquear UI
-    if(c.jsonbin?.binId){
-      fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`)
+    if(c.code){
+      fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
         .then(r=>r.json()).then(data=>{
           if(data.ok && data.record){
             const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
@@ -1146,8 +1146,8 @@ function enterRes(c, res, member) {
   if (sub) sub.textContent = displayName + ' · ' + res.house;
   setSI('res','ok');
   // Sincronizar estado con Worker antes de renderizar botones
-  if(c.jsonbin?.binId){
-    fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`)
+  if(c.code){
+    fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
       .then(r=>r.json()).then(data=>{
         if(data.ok && data.record){
           const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
@@ -1192,8 +1192,8 @@ function enterRes(c, res, member) {
   window._suspInterval = setInterval(()=>{
     if(!U || U.role !== 'resident') { clearInterval(window._suspInterval); return; }
     const c = C();
-    if(!c || !c.jsonbin?.binId) return;
-    fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`)
+    if(!c || !c.code) return;
+    fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
       .then(r=>r.json()).then(data=>{
         if(data.ok && data.record){
           const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
@@ -1218,7 +1218,7 @@ async function invitarFamiliar() {
 
   // Esperar a que el token se guarde en JSONBin ANTES de enviar el link
   toast('⏳ Generando invitación...');
-  const ok = await jbPush(c);
+  const ok = await fsPush(c);
   if (!ok) {
     toast('⚠️ Sin conexión — intenta de nuevo');
     return;
@@ -1253,14 +1253,14 @@ function renderGates(c,role,cid){
   const el=document.getElementById(cid);if(!el)return;
   el.className='gate-grid '+(n===1?'g1':n===2?'g2':n===3?'g3':'g4');
 
-  if(role==='res' && U?.house && c.jsonbin?.binId){
+  if(role==='res' && U?.house && c.code){
     // Pintar primero con datos locales
     const res=c.residents.find(r=>r.house===U.house);
     const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
     const isSuspLocal = !res||!res.active||res.mora||memberSusp;
     el.innerHTML = _gbtns(pts,role,isSuspLocal);
     // Verificar en la nube y actualizar si cambió
-    fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`)
+    fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
       .then(r=>r.json()).then(data=>{
         if(data.ok && data.record){
           const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
@@ -1349,10 +1349,10 @@ async function openPorton(pid,role){
   const c=C();if(!c)return;
 
   // Verificar suspensión en la nube ANTES de abrir
-  if(role==='res' && c.jsonbin?.binId){
+  if(role==='res' && c.code){
     let verificado = false;
     try{
-      const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}&ts=${Date.now()}`);
+      const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}&ts=${Date.now()}`);
       const data=await r.json();
       if(data.ok && data.record){
         const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
@@ -1444,11 +1444,11 @@ async function enterAdm(c){
 
   // Siempre sincronizar con JSONBin al entrar como Admin
   const KNOWN_BINS={'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
-  const cfg = c.jsonbin?.binId ? c.jsonbin : KNOWN_BINS[c.code];
+  const cfg = c.code ? c.jsonbin : KNOWN_BINS[c.code];
 
   if(cfg){
     // Asegurar que la cerrada tiene jsonbin configurado
-    if(!c.jsonbin?.binId) { c.jsonbin = cfg; save(); }
+    if(!c.code) { c.jsonbin = cfg; save(); }
     try{
       const r=await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}/latest`,
         {headers:{'X-Master-Key':cfg.apiKey}});
@@ -1537,7 +1537,7 @@ async function addVec(){
   c.residents.push({house,name,phone,active:true,mora:false,moraNote:'',members:[],pendingReg:true});
   save();
   setSI('adm','syncing');
-  const ok=await jbPush(c);
+  const ok=await fsPush(c);
   setSI('adm',ok?'ok':'err');
   if(ok) toast('✅ Vecino agregado — envía la invitación 📲');
   else toast('✅ Vecino agregado (sin conexión — sincronizará después)');
@@ -1561,7 +1561,7 @@ function delVecConfirm(){
   const c=C();if(!c)return;
   c.residents.splice(i,1);
   save();
-  jbPush(c).catch(()=>{});
+  fsPush(c).catch(()=>{});
   renderVec();updateDash();
   toast('🗑 Vecino eliminado');
   closeModal('modal-del-vec');
@@ -1586,7 +1586,7 @@ async function toggleVec(i){
   if(nuevoEstado && rCopy.members) rCopy.members.forEach(m=>m.suspended=false);
 
   // Intentar guardar en la nube primero
-  jbPush(cCopy).then(ok=>{
+  fsPush(cCopy).then(ok=>{
     if(ok){
       // Confirmar — aplicar cambio local y actualizar UI
       r.active = nuevoEstado;
@@ -1621,7 +1621,7 @@ function applyMoraDirecto(i){
   renderVec();updateDash();
   toast('🔒 Suspendido');
   setSI('adm','syncing');
-  jbPush(c).then(ok=>setSI('adm',ok?'ok':'err')).catch(()=>setSI('adm','err'));
+  fsPush(c).then(ok=>setSI('adm',ok?'ok':'err')).catch(()=>setSI('adm','err'));
   if(navigator.serviceWorker?.controller){
     navigator.serviceWorker.controller.postMessage({type:'SUSPEND_USER',house:r.house,cerradaCode:c.code});
   }
@@ -1638,9 +1638,9 @@ async function applyMora(){
     r.members.forEach(m => m.suspended = true);
   }
   save();
-  if(c.jsonbin?.binId){
+  if(c.code){
     setSI('adm','syncing');
-    const ok=await jbPush(c);
+    const ok=await fsPush(c);
     setSI('adm',ok?'ok':'err');
   }
   closeModal('modal-mora');renderVec();updateDash();
@@ -1660,7 +1660,7 @@ async function quitarMora(i){
   }
   save();
   setSI('adm','syncing');
-  const ok=await jbPush(c);
+  const ok=await fsPush(c);
   setSI('adm',ok?'ok':'err');
   renderVec();updateDash();
   toast('✅ Mora levantada — acceso restaurado para toda la familia');
@@ -1803,7 +1803,7 @@ async function delMov(id){
   c.movements=c.movements.filter((m,i)=>(m.id||String(i))!==String(id));
   save();
   setSI('adm','syncing');
-  const ok=await jbPush(c);
+  const ok=await fsPush(c);
   setSI('adm',ok?'ok':'err');
   renderAdmFin();updateDash();
   toast('🗑 Movimiento eliminado');
@@ -1827,7 +1827,7 @@ async function addMov(){
   });
   save();
   setSI('adm','syncing');
-  const ok=await jbPush(c);
+  const ok=await fsPush(c);
   setSI('adm',ok?'ok':'err');
   renderAdmFin();updateDash();
   document.getElementById('fn-a').value='';
@@ -1989,7 +1989,7 @@ function saveMstPortones(code){
   });
   save();
   // Si tiene JSONBin, sincronizar
-  if(c.jsonbin?.binId) jbPush(c);
+  if(c.code) fsPush(c);
   toast('✅ IPs guardadas para '+c.name);
 }
 
@@ -2010,7 +2010,7 @@ function populateMstJsonbinSelect(){
   if(!sel)return;
   const cerradas=Object.values(S.cerradas);
   sel.innerHTML='<option value="">— Selecciona una cerrada —</option>'+
-    cerradas.map(c=>`<option value="${c.code}">${c.name} (${c.code}) ${c.jsonbin?.binId?'☁️':''}</option>`).join('');
+    cerradas.map(c=>`<option value="${c.code}">${c.name} (${c.code}) ${c.code?'☁️':''}</option>`).join('');
   document.getElementById('mc-bin-fields').style.display='none';
 }
 
@@ -2023,7 +2023,7 @@ async function saveMstJsonbin(){
   const c=S.cerradas[code];if(!c)return;
   c.jsonbin={binId,apiKey};save();
   toast('🔄 Probando conexión...');
-  const ok=await jbPush(c);
+  const ok=await fsPush(c);
   if(ok){
     toast('✅ JSONBin conectado para '+c.name);
     populateMstJsonbinSelect();
@@ -2045,7 +2045,7 @@ async function sendInvite(i) {
 
   // Esperar a que el token se guarde en JSONBin ANTES de enviar el link
   toast('⏳ Generando invitación...');
-  const ok = await jbPush(c);
+  const ok = await fsPush(c);
   if (!ok) {
     toast('⚠️ Sin conexión — intenta de nuevo');
     return;
@@ -2241,7 +2241,7 @@ async function submitRegister() {
   }
 
   save();
-  if (c.jsonbin?.binId) jbPush(c);
+  if (c.code) fsPush(c);
 
   // Mantener el token activo por si necesita registrar más familiares
   // Solo limpiar sesión anterior y guardar nueva como residente
@@ -2650,8 +2650,8 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
   if (!U || U.role !== 'resident') return;
   const c = C();
-  if (!c || !c.jsonbin?.binId) return;
-  fetch(`https://shelly-proxy.acosta4770.workers.dev/jb?bin=${c.jsonbin.binId}&key=${encodeURIComponent(c.jsonbin.apiKey)}`)
+  if (!c || !c.code) return;
+  fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
     .then(r => r.json()).then(data => {
       if (data.ok && data.record) {
         const jb = c.jsonbin;
