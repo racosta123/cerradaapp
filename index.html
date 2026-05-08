@@ -890,7 +890,7 @@ async function loginResidente(){
   const KNOWN_BINS={'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
 
   // Función para buscar en cerradas cargadas
-  function buscarEnCerradas(){
+  async function buscarEnCerradas(){
     for(const cerrada of Object.values(S.cerradas)){
       if(cerrada.suspended||!cerrada.active) continue;
       for(const res of cerrada.residents||[]){
@@ -905,7 +905,7 @@ async function loginResidente(){
   }
 
   // Buscar primero en local
-  let found = buscarEnCerradas();
+  let found = await buscarEnCerradas();
 
   // Si no encontró, descargar desde Worker (más rápido que JSONBin directo)
   if(!found){
@@ -917,7 +917,7 @@ async function loginResidente(){
       }catch(e){}
     }
     save();
-    found = buscarEnCerradas();
+    found = await buscarEnCerradas();
   }
 
   if(!found){showErr('m-err','Correo o contraseña incorrectos.');return;}
@@ -1200,7 +1200,7 @@ function enterRes(c, res, member) {
           renderGates(c,'res','gate-res');
         }
       }).catch(()=>{});
-  }, 10000);
+  }, 120000);
 }
 
 async function invitarFamiliar() {
@@ -1516,7 +1516,7 @@ function renderVec(){
         </div>
       </div>
       <div class="ia">
-        <button class="btn bb2 xs" onclick="if(navigator.vibrate)navigator.vibrate(30);sendInvite(${i})" title="Invitar por WhatsApp">📲</button>
+        ${r.pendingReg!==false?`<button class="btn bb2 xs" onclick="if(navigator.vibrate)navigator.vibrate(30);sendInvite(${i})" title="Invitar por WhatsApp">📲</button>`:''}
         
         <button class="btn xs" style="background:${r.active&&!r.mora?'#16a34a':'#dc2626'};color:#fff;font-size:1rem" onclick="if(navigator.vibrate)navigator.vibrate(30);toggleVec(${i})">${r.active&&!r.mora?'🔓':'🔒'}</button>
         <button class="btn bd xs" onclick="if(navigator.vibrate)navigator.vibrate(30);delVec(${i})">✕</button>
