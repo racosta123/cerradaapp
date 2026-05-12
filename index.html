@@ -889,7 +889,7 @@ async function loginResidente(){
   const pass  = document.getElementById('r-pass').value;
   if(!email||!pass){showErr('m-err','Ingresa tu correo y contraseña.');return;}
 
-  const KNOWN_BINS={'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
+  const KNOWN_CODES=['SMARK-001'];
 
   // Función para buscar en cerradas cargadas
   async function buscarEnCerradas(){
@@ -906,21 +906,16 @@ async function loginResidente(){
     return null;
   }
 
-  // Buscar primero en local
-  let found = await buscarEnCerradas();
-
-  // Si no encontró, descargar desde Worker (más rápido que JSONBin directo)
-  if(!found){
-    toast('🔄 Verificando...');
-    for(const [code,cfg] of Object.entries(KNOWN_BINS)){
-      try{
-        const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${cfg.binId}&key=${encodeURIComponent(cfg.apiKey)}`);
-        if(r.ok){const data=await r.json();if(data.ok&&data.record){S.cerradas[code]=data.record;S.cerradas[code].jsonbin=cfg;}}
-      }catch(e){}
-    }
-    save();
-    found = await buscarEnCerradas();
+  // Siempre descargar datos frescos de Firestore antes de buscar
+  toast('🔄 Verificando...');
+  for(const code of KNOWN_CODES){
+    try{
+      const r=await fetch(`${WORKER}/fs?code=${code}`);
+      if(r.ok){const data=await r.json();if(data.ok&&data.record){S.cerradas[code]=data.record;}}
+    }catch(e){}
   }
+  save();
+  let found = await buscarEnCerradas();
 
   if(!found){showErr('m-err','Correo o contraseña incorrectos.');return;}
 
@@ -966,7 +961,7 @@ function loginStaff(){
     const codeUp = code.trim().toUpperCase();
     
     // Si no tiene la cerrada localmente, crearla con datos mínimos
-    const KNOWN_BINS={'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
+    const KNOWN_CODES=['SMARK-001'];
     if(!S.cerradas[codeUp] && KNOWN_BINS[codeUp]){
       S.cerradas[codeUp]={name:'Cerrada',code:codeUp,houses:50,adminPin:'1234',adminName:'',price:20,active:true,suspended:false,portones:[],residents:[],history:[],movements:[],cuotas:{},cuotaConfig:{},jsonbin:KNOWN_BINS[codeUp]};
       save();
