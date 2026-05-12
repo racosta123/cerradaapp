@@ -852,7 +852,7 @@ function seedDemo(){
       {ts:new Date().toISOString(),type:'income',amount:60,category:'Cuota mensual',desc:'Casas 1, 2 y 3'},
       {ts:new Date(Date.now()-86400000).toISOString(),type:'expense',amount:25,category:'Mantenimiento',desc:'Aceite para portón'},
     ],
-    jsonbin:{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'},createdAt:new Date().toISOString()
+    createdAt:new Date().toISOString()
   };
   save();
 }
@@ -1101,10 +1101,10 @@ async function fsPush(c, retries=10){
   const p={name:c.name,code:c.code,houses:c.houses,adminPin:c.adminPin,adminName:c.adminName,adminPhone:c.adminPhone,price:c.price,active:c.active,suspended:c.suspended,portones:c.portones||[],residents:c.residents||[],history:(c.history||[]).slice(-500),movements:c.movements||[],cuotas:c.cuotas||{},cuotaConfig:c.cuotaConfig||{},updatedAt:new Date().toISOString()};
   for(let i=0; i<retries; i++){
     try{
-      const r=await fetch('https://shelly-proxy.acosta4770.workers.dev/jb',{
+      const r=await fetch('https://shelly-proxy.acosta4770.workers.dev/fs',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({code:c.code,data:p})	
+        body:JSON.stringify({code:c.code,data:p})
       });
       const d=await r.json();
       console.log('fsPush intento '+(i+1)+':', JSON.stringify(d));
@@ -1113,6 +1113,13 @@ async function fsPush(c, retries=10){
     if(i < retries-1) await new Promise(r=>setTimeout(r,1000));
   }
   return false;
+}
+async function fsGet(code){
+  try{
+    const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${code}`);
+    if(r.ok){const data=await r.json();if(data.ok&&data.record) return data.record;}
+  }catch(e){}
+  return null;
 }
 async function push(role){const c=C();if(!c?.jsonbin?.binId)return;setSI(role,'syncing');setSI(role,await fsPush(c)?'ok':'err');}
 
@@ -1126,7 +1133,7 @@ function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);set
       fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
         .then(r=>r.json()).then(data=>{
           if(data.ok && data.record){
-            const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
+            Object.assign(c,data.record);save();
             renderGates(c,'res','gate-res');
           }
         }).catch(()=>{});
@@ -1150,7 +1157,7 @@ function enterRes(c, res, member) {
     fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
       .then(r=>r.json()).then(data=>{
         if(data.ok && data.record){
-          const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
+          Object.assign(c,data.record);save();
           renderGates(c,'res','gate-res');
         }
       }).catch(()=>{});
@@ -1196,7 +1203,7 @@ function enterRes(c, res, member) {
     fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
       .then(r=>r.json()).then(data=>{
         if(data.ok && data.record){
-          const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
+          Object.assign(c,data.record);save();
           renderGates(c,'res','gate-res');
         }
       }).catch(()=>{});
@@ -1263,7 +1270,7 @@ function renderGates(c,role,cid){
     fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
       .then(r=>r.json()).then(data=>{
         if(data.ok && data.record){
-          const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
+          Object.assign(c,data.record);save();
           const resC=c.residents.find(r=>r.house===U.house);
           const mSuspC=U.memberIdx>=0&&resC?.members?.[U.memberIdx]?.suspended;
           const isSuspCloud=!resC||!resC.active||resC.mora||mSuspC;
@@ -1355,7 +1362,7 @@ async function openPorton(pid,role){
       const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}&ts=${Date.now()}`);
       const data=await r.json();
       if(data.ok && data.record){
-        const jb=c.jsonbin;Object.assign(c,data.record);c.jsonbin=jb;save();
+        Object.assign(c,data.record);save();
         verificado = true;
       }
     }catch(e){}
@@ -1442,31 +1449,15 @@ async function enterAdm(c){
   document.getElementById('adm-cname').textContent=c.name;
   setSI('adm','syncing');
 
-  // Siempre sincronizar con JSONBin al entrar como Admin
-  const KNOWN_BINS={'SMARK-001':{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'}};
-  const cfg = c.code ? c.jsonbin : KNOWN_BINS[c.code];
-
-  if(cfg){
-    // Asegurar que la cerrada tiene jsonbin configurado
-    if(!c.code) { c.jsonbin = cfg; save(); }
-    try{
-      const r=await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}/latest`,
-        {headers:{'X-Master-Key':cfg.apiKey}});
-      if(r.ok){
-        const data=await r.json();
-        if(data.record){
-          const jb=c.jsonbin;
-          Object.assign(c,data.record);
-          c.jsonbin=jb;
-          save();
-          toast('☁️ Datos sincronizados');
-        }
-      }
-      setSI('adm','ok');
-    }catch(e){ setSI('adm','err'); }
-  } else {
-    setSI('adm','off');
-  }
+  // Sincronizar con Firestore al entrar como Admin
+  try{
+    const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}`);
+    if(r.ok){
+      const data=await r.json();
+      if(data.ok&&data.record){Object.assign(c,data.record);save();toast('☁️ Datos sincronizados');}
+    }
+    setSI('adm','ok');
+  }catch(e){setSI('adm','err');}
 
   updateDash();
   showScreen('adm');
@@ -1887,7 +1878,7 @@ function createCerrada(){
   if(S.cerradas[code]){toast('⚠️ Código ya existe');return;}
   if(!ncP.length){toast('⚠️ Agrega al menos 1 portón');return;}
   ncP.forEach((p,i)=>{p.label=document.getElementById('npl-'+i)?.value.trim()||'Portón '+(i+1);p.icon=document.getElementById('npi-'+i)?.value||p.icon;});
-  S.cerradas[code]={name,code,houses,adminPin:apin,adminName:aname,adminPhone:aphone,price,active:true,suspended:false,portones:JSON.parse(JSON.stringify(ncP)),residents:[],history:[],movements:[],jsonbin:{binId:'69f0a4b9856a6821898101f0',apiKey:'$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'},createdAt:new Date().toISOString()};
+  S.cerradas[code]={name,code,houses,adminPin:apin,adminName:aname,adminPhone:aphone,price,active:true,suspended:false,portones:JSON.parse(JSON.stringify(ncP)),residents:[],history:[],movements:[],createdAt:new Date().toISOString()};
   save();ncP=[];renderNcP();closeModal('modal-nueva');
   ['nc-name','nc-code','nc-houses','nc-price','nc-aname','nc-apin','nc-aphone'].forEach(id=>document.getElementById(id).value='');
   renderMstList();renderNegocio();toast(`✅ "${name}" creada`);
@@ -2198,20 +2189,11 @@ async function submitRegister() {
 
   let c = S.cerradas[code];
 
-  // Si no existe o tenemos credenciales, sincronizar desde JSONBin
-  if (binId && apiKey) {
+  // Si no existe localmente, sincronizar desde Firestore
+  if (!c) {
     try {
-      const r = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`,
-        {headers:{'X-Master-Key': apiKey}});
-      if (r.ok) {
-        const data = await r.json();
-        if (data.record) {
-          S.cerradas[code] = data.record;
-          S.cerradas[code].jsonbin = { binId, apiKey };
-          save();
-          c = S.cerradas[code];
-        }
-      }
+      const record = await fsGet(code);
+      if (record) { S.cerradas[code] = record; save(); c = S.cerradas[code]; }
     } catch(e) {}
   }
 
@@ -2480,48 +2462,18 @@ load();seedDemo();renderNcP();
         toast('🔄 Cargando datos...');
         // El Bin ID y API Key están hardcodeados para SMARK-001
         // Para otras cerradas el admin debe configurarlos
-        const KNOWN_BINS = {
-          'SMARK-001': {
-            binId: '69f0a4b9856a6821898101f0',
-            apiKey: '$2a$10$MBzdra7snHCzHPRJGdCDWulHh83GdjMZMaRuaUeqLz2jeKcDQyi3y'
-          }
-        };
-        const binConfig = KNOWN_BINS[code];
-        if (binConfig) {
-          try {
-            const r = await fetch(`https://api.jsonbin.io/v3/b/${binConfig.binId}/latest`,
-              {headers:{'X-Master-Key': binConfig.apiKey}});
-            if (r.ok) {
-              const data = await r.json();
-              if (data.record && data.record.code) {
-                S.cerradas[code] = data.record;
-                S.cerradas[code].jsonbin = binConfig;
-                save();
-                cerrada = S.cerradas[code];
-              }
-            }
+        try {
+            const record = await fsGet(code);
+            if (record) { S.cerradas[code] = record; save(); cerrada = S.cerradas[code]; }
           } catch(e) { console.log('Error cargando cerrada:', e); }
-        }
       }
 
       if (cerrada) {
         // Cerrada encontrada — intentar pull de JSONBin para datos frescos
-        if (cerrada.jsonbin?.binId) {
-          try {
-            const r = await fetch(`https://api.jsonbin.io/v3/b/${cerrada.jsonbin.binId}/latest`,
-              {headers:{'X-Master-Key': cerrada.jsonbin.apiKey}});
-            if (r.ok) {
-              const data = await r.json();
-              if (data.record) {
-                const jb = cerrada.jsonbin;
-                Object.assign(cerrada, data.record);
-                cerrada.jsonbin = jb;
-                S.cerradas[code] = cerrada;
-                save();
-              }
-            }
+        try {
+            const record = await fsGet(code);
+            if (record) { Object.assign(cerrada, record); S.cerradas[code] = cerrada; save(); }
           } catch(e) {}
-        }
 
         const res = cerrada.residents.find(r => r.house === house);
         if (res) {
