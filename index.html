@@ -23,6 +23,8 @@
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 :root{
   --blue:#3B82C4;--blue-dark:#2d6aad;--blue-lt:#EBF4FF;
@@ -996,6 +998,7 @@ function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg
 function logout(){
   U=null;
   localStorage.removeItem('cerrada_session');
+  stopRealtimeListener();
   showScreen('login');
 }
 
@@ -1195,19 +1198,7 @@ function enterRes(c, res, member) {
   initFCM(c, res, U?.memberIdx ?? -1).catch(() => {});
 
   // Verificar estado cada 30 segundos automáticamente
-  if(window._suspInterval) clearInterval(window._suspInterval);
-  window._suspInterval = setInterval(()=>{
-    if(!U || U.role !== 'resident') { clearInterval(window._suspInterval); return; }
-    const c = C();
-    if(!c || !c.code) return;
-    fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
-      .then(r=>r.json()).then(data=>{
-        if(data.ok && data.record){
-          Object.assign(c,data.record);save();
-          renderGates(c,'res','gate-res');
-        }
-      }).catch(()=>{});
-  }, 120000);
+  startRealtimeListener(c.code);
 }
 
 async function invitarFamiliar() {
@@ -1430,6 +1421,46 @@ async function openPorton(pid,role){
 // ── SHELLY CLOUD CONTROL
 function shellyOpen(pt) {
   const WORKER = 'https://shelly-proxy.acosta4770.workers.dev';
+
+// ── FIREBASE CONFIG para listener en tiempo real
+const FB_CONFIG = {
+  apiKey: "AIzaSyChuftPnUTXr7KmrVufvMxtmeH14Or0HUU",
+  authDomain: "cerradaapp-7179e.firebaseapp.com",
+  projectId: "cerradaapp-7179e",
+  storageBucket: "cerradaapp-7179e.firebasestorage.app",
+  messagingSenderId: "481439052062",
+  appId: "1:481439052062:web:c3a0a104bae74763cf590f"
+};
+let _db = null;
+let _fsListener = null;
+
+function getDb(){
+  if(_db) return _db;
+  if(!window.firebase.apps?.length) window.firebase.initializeApp(FB_CONFIG);
+  _db = window.firebase.firestore();
+  return _db;
+}
+
+function startRealtimeListener(cerradaCode){
+  if(_fsListener){ _fsListener(); _fsListener=null; }
+  try{
+    const db = getDb();
+    _fsListener = db.collection('cerradas').doc(cerradaCode).onSnapshot(snap=>{
+      if(!snap.exists) return;
+      const record = snap.data();
+      if(!record) return;
+      const c = S.cerradas[cerradaCode];
+      if(!c) return;
+      Object.assign(c, record);
+      save();
+      renderGates(c,'res','gate-res');
+    }, err=>{ console.log('Listener error:', err.message); });
+  }catch(e){ console.log('startRealtimeListener error:', e.message); }
+}
+
+function stopRealtimeListener(){
+  if(_fsListener){ _fsListener(); _fsListener=null; }
+};
   const c = C();
   if (!c) return;
 
@@ -2599,20 +2630,10 @@ if ('serviceWorker' in navigator) {
 
 // Verificar estado cada vez que la app vuelve al frente
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState !== 'visible') return;
-  if (!U || U.role !== 'resident') return;
-  const c = C();
-  if (!c || !c.code) return;
-  fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
-    .then(r => r.json()).then(data => {
-      if (data.ok && data.record) {
-        const jb = c.jsonbin;
-        Object.assign(c, data.record);
-        c.jsonbin = jb;
-        save();
-        renderGates(c, 'res', 'gate-res');
-      }
-    }).catch(() => {});
+  if(document.visibilityState !== 'visible') return;
+  if(!U || U.role !== 'resident') return;
+  const c = C(); if(!c || !c.code) return;
+  if(!_fsListener) startRealtimeListener(c.code);
 });
 
 // Limpiar "dismissed" expirado (dura solo 24 horas)
