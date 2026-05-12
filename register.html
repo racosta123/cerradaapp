@@ -106,7 +106,6 @@ function showMsg(t, type) {
 function decode(raw) {
   try {
     var b = raw.replace(/-/g,'+').replace(/_/g,'/');
-    // Formula correcta: agrega el padding exacto necesario
     var p = b + '=='.slice(0, (4 - b.length % 4) % 4);
     return JSON.parse(atob(p));
   } catch(e) {
@@ -115,7 +114,6 @@ function decode(raw) {
   }
 }
 
-// Inicializar — mostrar formulario sin llamadas de red
 function init() {
   var params = new URLSearchParams(window.location.search);
   var raw = params.get('reg');
@@ -127,7 +125,6 @@ function init() {
     show('s-err'); return;
   }
 
-  // Mostrar datos del payload
   var isFam = !!REG.isFamiliar;
   document.getElementById('fhouse').textContent = 'Casa: ' + REG.house;
   document.getElementById('fcerrada').textContent = REG.cerradaName || '';
@@ -140,18 +137,17 @@ function doReg() {
   var pin   = document.getElementById('ipin').value.trim();
   var pin2  = document.getElementById('ipin2').value.trim();
 
-  if (!name)                        { showMsg('Escribe tu nombre'); return; }
+  if (!name)                          { showMsg('Escribe tu nombre'); return; }
   if (!email || email.indexOf('@') < 0) { showMsg('Correo no válido'); return; }
-  if (!pin || pin.length < 4)       { showMsg('PIN mínimo 4 dígitos'); return; }
-  if (!/^\d+$/.test(pin))           { showMsg('PIN solo números'); return; }
-  if (pin !== pin2)                  { showMsg('Los PINes no coinciden'); return; }
+  if (!pin || pin.length < 4)         { showMsg('PIN mínimo 4 dígitos'); return; }
+  if (!/^\d+$/.test(pin))             { showMsg('PIN solo números'); return; }
+  if (pin !== pin2)                   { showMsg('Los PINes no coinciden'); return; }
 
   var btn = document.getElementById('breg');
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span>Registrando...';
   showMsg('Conectando...', 'ok');
 
-  // Llamar al Worker — las credenciales de JSONBin nunca salen al cliente
   fetch(WORKER + '/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
