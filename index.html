@@ -1128,7 +1128,7 @@ function setTabs(scope,el){document.querySelectorAll(scope+' .ntab').forEach(t=>
 function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);setTabs('#scr-res',el);const c=C();if(!c)return;if(id==='portones'){
     // Sincronizar estado en segundo plano sin bloquear UI
     if(c.code){
-      fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
+      fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}`)
         .then(r=>r.json()).then(data=>{
           if(data.ok && data.record){
             Object.assign(c,data.record);save();
@@ -1152,7 +1152,7 @@ function enterRes(c, res, member) {
   setSI('res','ok');
   // Sincronizar estado con Worker antes de renderizar botones
   if(c.code){
-    fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
+    fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}`)
       .then(r=>r.json()).then(data=>{
         if(data.ok && data.record){
           Object.assign(c,data.record);save();
@@ -1253,7 +1253,7 @@ function renderGates(c,role,cid){
     const isSuspLocal = !res||!res.active||res.mora||memberSusp;
     el.innerHTML = _gbtns(pts,role,isSuspLocal);
     // Verificar en la nube y actualizar si cambió
-    fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}`)
+    fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}`)
       .then(r=>r.json()).then(data=>{
         if(data.ok && data.record){
           Object.assign(c,data.record);save();
@@ -1345,7 +1345,7 @@ async function openPorton(pid,role){
   if(role==='res' && c.code){
     let verificado = false;
     try{
-      const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&key=${encodeURIComponent()}&ts=${Date.now()}`);
+      const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&ts=${Date.now()}`);
       const data=await r.json();
       if(data.ok && data.record){
         Object.assign(c,data.record);save();
@@ -1413,9 +1413,8 @@ async function openPorton(pid,role){
   if(role==='res')renderResHist(c);
 }
 
-// ── SHELLY CLOUD CONTROL
-function shellyOpen(pt) {
-  const WORKER = 'https://shelly-proxy.acosta4770.workers.dev';
+// ── CONSTANTES GLOBALES
+const WORKER = 'https://shelly-proxy.acosta4770.workers.dev';
 
 // ── FIREBASE CONFIG para listener en tiempo real
 const FB_CONFIG = {
@@ -1455,7 +1454,10 @@ function startRealtimeListener(cerradaCode){
 
 function stopRealtimeListener(){
   if(_fsListener){ _fsListener(); _fsListener=null; }
-};
+}
+
+// ── SHELLY CLOUD CONTROL
+function shellyOpen(pt) {
   const c = C();
   if (!c) return;
 
