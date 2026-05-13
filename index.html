@@ -1522,7 +1522,10 @@ function renderVec(){
       ${members.map((m,mi)=>`
         <div style="display:flex;align-items:center;justify-content:space-between;padding:.25rem 0;font-size:.72rem">
           <span style="color:var(--t2)">👤 ${esc(m.name)} <span style="color:var(--t3)">${m.role==='head'?'Jefe':'Familiar'}</span></span>
-          <span style="color:var(--t3)">${m.email||''}</span>
+          <div style="display:flex;align-items:center;gap:.4rem">
+            <span style="color:var(--t3)">${m.email||''}</span>
+            <button class="btn bd xs" style="padding:.2rem .45rem;font-size:.68rem;min-height:unset;min-width:unset" onclick="if(navigator.vibrate)navigator.vibrate(30);delMember(${i},${mi})">✕</button>
+          </div>
         </div>`).join('')}
     </div>` : '';
   return`<div class="li" style="flex-direction:column;align-items:stretch">
@@ -1586,6 +1589,20 @@ function delVecConfirm(){
   closeModal('modal-del-vec');
   window._delVecIdx = undefined;
 }
+async function delMember(resIdx, memberIdx){
+  const c=C();if(!c)return;
+  const res=c.residents[resIdx];if(!res)return;
+  const m=res.members?.[memberIdx];if(!m)return;
+  if(!confirm(`¿Eliminar a ${m.name||m.email} de ${res.house}?`))return;
+  res.members.splice(memberIdx,1);
+  save();
+  setSI('adm','syncing');
+  const ok=await fsPush(c);
+  setSI('adm',ok?'ok':'err');
+  renderVec();
+  toast('🗑 Familiar eliminado');
+}
+
 function openMora(i){document.getElementById('mora-idx').value=i;const c=C();if(c)document.getElementById('mora-note').value=c.residents[i].moraNote||'';openModal('modal-mora');}
 async function toggleVec(i){
   const c=C();if(!c)return;
