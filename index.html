@@ -1286,7 +1286,7 @@ function _gbtns(pts,role,isSusp){
 }
 function renderDevInfo(c){const el=document.getElementById('res-devinfo');if(!el)return;const pts=c.portones||[];if(!pts.length){el.innerHTML=emH('🔌','Sin dispositivos');return;}el.innerHTML=pts.map(p=>`<div class="li"><div class="lil"><div class="av ag">${p.icon||'🚪'}</div><div><div class="in">${esc(p.label)}</div><div class="is">${p.ip||'Sin IP configurada'} · ${p.time||10}s</div></div></div></div>`).join('');}
 function renderResFin(c){const{income,expense,mvs}=calcFin(c);document.getElementById('rf-i').textContent='$'+income.toFixed(2);document.getElementById('rf-e').textContent='$'+expense.toFixed(2);document.getElementById('rf-b').textContent='$'+(income-expense).toFixed(2);const list=document.getElementById('rf-list');if(!mvs.length){list.innerHTML=emH('💰','Sin movimientos este mes');return;}list.innerHTML=mvs.slice(-20).reverse().map(m=>`<div class="hi"><div class="hd" style="background:${m.type==='income'?'var(--green)':'var(--rose)'}"></div><div class="hinfo"><div class="hdesc">${esc(m.category)}${m.desc?' — '+esc(m.desc):''}</div><div class="htime">${fd(m.ts)}</div></div><span style="font-size:.76rem;font-weight:700;color:${m.type==='income'?'var(--green)':'var(--rose)'}">${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}</span></div>`).join('');}
-function renderResHist(c){const hist=(c.history||[]).filter(h=>h.house===U?.house).slice(-30).reverse();const list=document.getElementById('rh-list');if(!hist.length){list.innerHTML=emH('📋','Sin registros aún');return;}list.innerHTML=hist.map(h=>`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label||h.portonId)}</div><div class="htime">${fd(h.ts)}</div></div></div>`).join('');}
+function renderResHist(c){const hist=(c.history||[]).filter(h=>h.house===U?.house).slice(-30).reverse();const list=document.getElementById('rh-list');if(!hist.length){list.innerHTML=emH('📋','Sin registros aún');return;}list.innerHTML=hist.map(h=>`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label||h.portonId)}${h.who?' · 👤 '+esc(h.who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`).join('');}
 
 // ── GATE HOLD — Sistema estable
 const HOLD=500;
@@ -1377,7 +1377,8 @@ async function openPorton(pid,role){
   if(!c.history)c.history=[];
   const memberName = U.memberName || house;
   c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:pt.label,who:memberName});
-  save();push(role);
+  save();
+  if(c.code) fsPush(c).catch(()=>{});
   // Actualizar historial inmediatamente
   if(role==='res') renderResHist(c);
   shellyOpen(pt);
@@ -1448,6 +1449,7 @@ function startRealtimeListener(cerradaCode){
       Object.assign(c, record);
       save();
       renderGates(c,'res','gate-res');
+      renderResHist(c);
     }, err=>{ console.log('Listener error:', err.message); });
   }catch(e){ console.log('startRealtimeListener error:', e.message); }
 }
