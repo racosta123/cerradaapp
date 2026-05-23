@@ -1039,6 +1039,25 @@ select option{background:var(--sur)}
   </div>
 </div>
 
+<!-- MODAL INVITAR FAMILIAR -->
+<div class="mover" id="modal-invite-fam" onclick="mbg(event,'modal-invite-fam')">
+  <div class="mdl">
+    <div class="mtitle">👨‍👩‍👧 Invitar familiar</div>
+    <p style="font-size:.8rem;color:var(--t2);margin-bottom:.9rem;line-height:1.55">
+      Ingresa los datos de tu familiar. Verificaremos que no esté registrado en otra casa antes de enviar la invitación.
+    </p>
+    <label>Correo del familiar <span style="color:var(--rose)">*</span></label>
+    <input id="fam-email" type="email" placeholder="familiar@correo.com" autocomplete="off">
+    <label>Teléfono (opcional)</label>
+    <input id="fam-phone" type="tel" placeholder="+502 1234 5678" autocomplete="off">
+    <div class="err" id="fam-err"></div>
+    <div class="frow" style="margin-top:.3rem">
+      <button class="btn bg2" onclick="closeModal('modal-invite-fam')">Cancelar</button>
+      <button class="btn bp" onclick="confirmarInviteFamiliar()">Verificar y enviar →</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <!-- BANNER INSTALAR APP -->
@@ -1750,33 +1769,82 @@ function enterRes(c, res, member) {
   startRealtimeListener(c.code);
 }
 
-async function invitarFamiliar() {
+function invitarFamiliar() {
   const c = C(); if (!c) return;
   const res = c.residents.find(r => r.house === U.house);
   if (!res) return;
   const members = res.members || [];
   if (members.length >= 5) { toast('⚠️ Ya tienes el máximo de 5 miembros'); return; }
+  // Limpiar campos del modal y abrir
+  document.getElementById('fam-email').value = '';
+  document.getElementById('fam-phone').value = '';
+  const errEl = document.getElementById('fam-err');
+  if (errEl) errEl.style.display = 'none';
+  openModal('modal-invite-fam');
+}
 
-  // Generar token para el familiar
+async function confirmarInviteFamiliar() {
+  const c = C(); if (!c) return;
+  const email = document.getElementById('fam-email').value.trim().toLowerCase();
+  const phone = document.getElementById('fam-phone').value.trim().replace(/\s/g, '');
+  const errEl = document.getElementById('fam-err');
+
+  // Validar formato básico
+  if (!email) { errEl.textContent = 'El correo es obligatorio.'; errEl.style.display = 'block'; return; }
+  if (!email.includes('@')) { errEl.textContent = 'Ingresa un correo válido.'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+
+  // Refrescar datos desde Firestore para tener el estado más reciente
+  toast('🔄 Verificando...');
+  try {
+    const record = await fsGet(c.code);
+    if (record) { Object.assign(c, record); save(); }
+  } catch(e) {}
+
+  const res = c.residents.find(r => r.house === U.house);
+  if (!res) return;
+
+  // Buscar email o teléfono en jefes de familia de OTRAS casas
+  const otrasCasas = (c.residents || []).filter(r => r.house !== U.house);
+  for (const r of otrasCasas) {
+    const resEmail = (r.email || '').toLowerCase();
+    const headMember = (r.members || []).find(m => m.role === 'head');
+    const headEmail  = (headMember?.email || '').toLowerCase();
+    const resPhone   = (r.phone || '').replace(/\s/g, '');
+
+    const emailMatch = email && (resEmail === email || headEmail === email);
+    const phoneMatch = phone && resPhone && resPhone === phone;
+
+    if (emailMatch || phoneMatch) {
+      const campo = emailMatch ? 'correo' : 'teléfono';
+      errEl.textContent = `Este ${campo} ya está registrado como residente de otra casa en esta cerrada.`;
+      errEl.style.display = 'block';
+      return;
+    }
+  }
+
+  // Validación superada — cerrar modal y generar invitación
+  closeModal('modal-invite-fam');
+  await _generarInviteFamiliar(c, res, email);
+}
+
+async function _generarInviteFamiliar(c, res, emailFamiliar) {
   const token = btoa(`${c.code}|${res.house}|fam|${Date.now()}`).replace(/=/g,'');
   res.familiarToken = token;
-  res.familiarTokenExpires = Date.now() + 24*60*60*1000; // 24 horas
+  res.familiarTokenExpires = Date.now() + 24*60*60*1000;
   save();
 
   toast('⏳ Generando invitación...');
   const ok = await fsPush(c);
-  if (!ok) {
-    toast('⚠️ Sin conexión — intenta de nuevo');
-    return;
-  }
+  if (!ok) { toast('⚠️ Sin conexión — intenta de nuevo'); return; }
 
-  // Solo datos no sensibles — sin binId ni apiKey
   const payload = btoa(JSON.stringify({
     code: c.code,
     house: res.house,
     cerradaName: c.name,
     token,
-    isFamiliar: true
+    isFamiliar: true,
+    emailSugerido: emailFamiliar
   })).replace(/[+/=]/g, m => ({'+':`-`,'/':'_','=':''}[m]));
 
   const inviteUrl = `https://racosta123.github.io/cerradaapp/register.html?reg=${payload}`;
