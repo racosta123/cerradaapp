@@ -2558,6 +2558,10 @@ function viewCerrada(code){const c=S.cerradas[code];if(!c)return;document.getEle
       <div id="mcer-portones-cfg"></div>
       <button class="btn bp wf" style="margin-top:.6rem" onclick="saveMstPortones('${c.code}')">💾 Guardar IPs</button>
     </div>
+    <div style="border-top:1px solid var(--brd);padding-top:.85rem;margin-top:.5rem">
+      <p style="font-family:var(--fd);font-size:.88rem;font-weight:800;color:var(--t);margin-bottom:.6rem">👥 Residentes y PINs</p>
+      <div id="mcer-res-pins"></div>
+    </div>
     `;
   // Cargar campos de IP para cada portón
   const plist = document.getElementById('mcer-portones-cfg');
@@ -2572,6 +2576,37 @@ function viewCerrada(code){const c=S.cerradas[code];if(!c)return;document.getEle
           title="Segundos abierto" style="margin:0;width:48px;font-size:.75rem;padding:.36rem .45rem">
         <span style="font-size:.65rem;color:var(--t3)">s</span>
       </div>`).join('');
+  }
+  // Cargar residentes con sus PINs y familiares
+  const rpins = document.getElementById('mcer-res-pins');
+  if(rpins){
+    const res = c.residents || [];
+    if(!res.length){
+      rpins.innerHTML = '<p style="font-size:.78rem;color:var(--t3);text-align:center;padding:.65rem">Sin residentes registrados</p>';
+    } else {
+      rpins.innerHTML = res.map(r => {
+        const rPin = esc(r.pin || r.password || '—');
+        const members = r.members || [];
+        const membersHtml = members.length
+          ? '<div style="border-top:1px solid var(--brd);padding-top:.42rem;margin-top:.42rem;display:flex;flex-direction:column;gap:.3rem">'
+            + members.map(m => {
+                const mPin = esc(m.pin || m.password || '—');
+                return '<div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem">'
+                  + '<span style="font-size:.74rem;color:var(--t2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">↳ ' + esc(m.name) + '</span>'
+                  + '<span style="font-family:monospace;font-size:.76rem;font-weight:800;flex-shrink:0;color:var(--sky);background:var(--sky-lt);border:1px solid rgba(91,173,224,.2);border-radius:6px;padding:.05rem .38rem">' + mPin + '</span>'
+                  + '</div>';
+              }).join('')
+            + '</div>'
+          : '';
+        return '<div style="background:var(--sur2);border:1px solid var(--brd);border-radius:12px;padding:.65rem .85rem;margin-bottom:.5rem">'
+          + '<div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.1rem">'
+          + '<span style="font-size:.8rem;font-weight:800;color:var(--t);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🏠 ' + esc(r.house) + ' — ' + esc(r.name) + '</span>'
+          + '<span style="font-family:monospace;font-size:.78rem;font-weight:800;flex-shrink:0;color:var(--blue);background:var(--blue-lt);border:1px solid rgba(59,130,196,.2);border-radius:6px;padding:.05rem .4rem">' + rPin + '</span>'
+          + '</div>'
+          + membersHtml
+          + '</div>';
+      }).join('');
+    }
   }
   openModal('modal-cer');}
 function renderNegocio(){const cerradas=Object.values(S.cerradas);const active=cerradas.filter(c=>c.active&&!c.suspended);document.getElementById('nb-tot').textContent=cerradas.length;document.getElementById('nb-act').textContent=active.length;document.getElementById('nb-rev').textContent='$'+active.reduce((s,c)=>s+c.price,0);document.getElementById('nb-hs').textContent=cerradas.reduce((s,c)=>s+c.houses,0);const p=S.defaultPrice;document.getElementById('nb-price').textContent='$'+p+'/mes';document.getElementById('nb-p10').textContent='$'+(p*10)+'/mes';document.getElementById('nb-p25').textContent='$'+(p*25)+'/mes';document.getElementById('nb-p50').textContent='$'+(p*50)+'/mes';}
