@@ -43,7 +43,7 @@ self.addEventListener('message', (e) => {
     });
   }
 });
-const CACHE = 'cerradaapp-v7';
+const CACHE = 'cerradaapp-v8';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/cerradaapp/','/cerradaapp/index.html'])));
   self.skipWaiting();
