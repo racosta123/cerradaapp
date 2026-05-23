@@ -1018,7 +1018,7 @@ const ICONS=['🚗','🚶','🚪','🏠','🔑','🚧','🛻','🏍'];
 let S={masterKey:'MASTER2025',masterUser:'MASTER',defaultPrice:20,cerradas:{}};
 let U=null,ncP=[];
 
-function load(){try{const d=localStorage.getItem(SK);if(d)S=JSON.parse(d);}catch(e){}}
+function load(){try{const d=localStorage.getItem(SK);if(d){const p=JSON.parse(d);S={...S,...p};if(!S.masterKey)S.masterKey='MASTER2025';if(!S.masterUser)S.masterUser='MASTER';}}catch(e){}}
 function save(){localStorage.setItem(SK,JSON.stringify(S));}
 function C(){return S.cerradas[U?.cerradaCode];}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
