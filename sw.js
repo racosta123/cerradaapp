@@ -29,9 +29,10 @@ self.addEventListener('notificationclick', (e) => {
     })
   );
 });
-// ── Mensajes silenciosos desde la app (suspensión/reactivación)
+// ── Mensajes silenciosos desde la app (suspensión/reactivación/actualización)
 self.addEventListener('message', (e) => {
   if (!e.data) return;
+  if (e.data.type === 'SKIP_WAITING') { self.skipWaiting(); return; }
   if (e.data.type === 'SUSPEND_USER') {
     self.clients.matchAll({type:'window',includeUncontrolled:true}).then(cs => {
       cs.forEach(c => c.postMessage({ type: 'USER_SUSPENDED', house: e.data.house, cerradaCode: e.data.cerradaCode }));

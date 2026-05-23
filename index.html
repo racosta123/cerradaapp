@@ -1060,6 +1060,11 @@ select option{background:var(--sur)}
 
 <div id="toast"></div>
 
+<div id="sw-update-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1d4ed8;color:#fff;padding:.75rem 1rem;z-index:9999;align-items:center;gap:.75rem;font-size:.85rem;box-shadow:0 -2px 12px rgba(0,0,0,.25)">
+  <span style="flex:1">📦 Nueva versión disponible</span>
+  <button id="sw-update-btn" style="background:#fff;color:#1d4ed8;border:none;border-radius:6px;padding:.4rem .9rem;font-weight:700;cursor:pointer;flex-shrink:0">Actualizar app</button>
+</div>
+
 <!-- BANNER INSTALAR APP -->
 <div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;
   background:var(--blue);color:#fff;padding:.85rem 1.15rem;z-index:10000;
@@ -3715,9 +3720,44 @@ let deferredPrompt = null;
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
-// Registrar Service Worker
+// Registrar Service Worker con detección agresiva de actualizaciones
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/cerradaapp/sw.js').catch(()=>{});
+  navigator.serviceWorker.register('/cerradaapp/sw.js', { updateViaCache: 'none' })
+    .then(reg => {
+      // Forzar chequeo de nueva versión en cada carga
+      reg.update();
+
+      function showUpdateBar(worker) {
+        const bar = document.getElementById('sw-update-bar');
+        const btn = document.getElementById('sw-update-btn');
+        if (!bar || !btn) return;
+        bar.style.display = 'flex';
+        btn.onclick = () => {
+          btn.textContent = 'Actualizando...';
+          btn.disabled = true;
+          worker.postMessage({ type: 'SKIP_WAITING' });
+        };
+      }
+
+      // SW ya esperando (venía de sesión anterior)
+      if (reg.waiting) showUpdateBar(reg.waiting);
+
+      // SW recién descargado pasa a waiting
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing;
+        w.addEventListener('statechange', () => {
+          if (w.state === 'installed' && navigator.serviceWorker.controller) showUpdateBar(w);
+        });
+      });
+    }).catch(() => {});
+
+  // Cuando el nuevo SW toma control, recargar la página para servir JS fresco
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    location.reload();
+  });
 }
 
 // Verificar estado cada vez que la app vuelve al frente
