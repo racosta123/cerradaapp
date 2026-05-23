@@ -3172,6 +3172,9 @@ async function doMarkPaid(mesKey, house, metodo, nota) {
   const mesLabel = new Date(parseInt(year), parseInt(month)-1).toLocaleString('es',{month:'long',year:'numeric'});
   c.movements.push({ id:movId, ts:new Date().toISOString(), type:'income', amount:monto, category:'Cuota mensual', desc:house+' — '+mesLabel+(nota?' · '+nota:'') });
   save();
+  // Compartir recibo automáticamente — debe llamarse antes de cualquier await
+  // para que el contexto de gesto del usuario (clic en Confirmar Pago) siga activo
+  compartirReciboWhatsApp(house, mesKey).catch(() => {});
   setSI('adm','syncing');
   fsPush(c).then(ok => setSI('adm', ok?'ok':'err')).catch(()=>setSI('adm','err'));
   toast('✅ Cuota registrada — ' + house);
