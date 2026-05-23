@@ -546,6 +546,7 @@ select option{background:var(--sur)}
     <div class="t-right">
       <span id="sync-res" style="font-size:.9rem">☁️</span>
       <span class="bge g-b" id="res-house">Casa</span>
+      <button id="btn-switch-adm" class="btn bg2 sm" onclick="switchToAdmin()" style="display:none;background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35);padding:.3rem .65rem;font-size:.74rem">🛡️ Admin</button>
       <button class="btn bg2 sm" onclick="confirmLogoutRes()" style="background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35);padding:.3rem .65rem;font-size:.74rem">Salir</button>
     </div>
   </div>
@@ -596,6 +597,7 @@ select option{background:var(--sur)}
     <div class="t-right">
       <span id="sync-adm" style="font-size:.9rem">☁️</span>
       <span class="bge b-b">Sub-Admin</span>
+      <button id="btn-switch-res" class="btn bg2 sm" onclick="switchToResident()" style="display:none;background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35);padding:.3rem .65rem;font-size:.74rem">🏠 Res.</button>
       <button class="btn bg2 sm" onclick="logout()">Salir</button>
     </div>
   </div>
@@ -738,6 +740,11 @@ select option{background:var(--sur)}
             <input id="cuota-dia" type="number" placeholder="5" min="1" max="28">
           </div>
         </div>
+        <label>Mes de inicio de cobro</label>
+        <input id="cuota-inicio" type="month" style="margin-bottom:.5rem">
+        <p style="font-size:.71rem;color:var(--t3);margin-bottom:.85rem;line-height:1.5">
+          El adeudo solo se contará a partir de este mes. Sin fecha de inicio, solo se cuentan los meses que hayas abierto manualmente.
+        </p>
         <button class="btn bp" onclick="saveCuotaConfig()">💾 Guardar Configuración</button>
       </div>
 
@@ -813,17 +820,14 @@ select option{background:var(--sur)}
     </div>
     <div id="mp-config" class="panel">
       <div class="card">
-        <div class="ch"><div class="ct">☁️ JSONBin por Cerrada</div></div>
-        <p style="font-size:.78rem;color:var(--t2);margin-bottom:.85rem">Conecta cada cerrada a la nube para que los datos estén disponibles en cualquier dispositivo. Selecciona la cerrada y pega sus credenciales de <b>jsonbin.io</b>.</p>
-        <label>Seleccionar Cerrada</label>
-        <select id="mc-bin-cerrada" onchange="loadMstJsonbinFields()"></select>
-        <div id="mc-bin-fields" style="display:none">
-          <label>Bin ID</label>
-          <input id="mc-bin-id" placeholder="ID del bin">
-          <label>API Key</label>
-          <input id="mc-bin-key" type="password" placeholder="$2b$...">
-          <button class="btn bp" onclick="saveMstJsonbin()">☁️ Conectar JSONBin</button>
+        <div class="ch"><div class="ct">☁️ Sincronización Firestore</div><span class="bge gr-b">Activo</span></div>
+        <p style="font-size:.78rem;color:var(--t2);margin-bottom:.85rem">Los datos de cada cerrada se sincronizan automáticamente con Firestore. Si iniciaste sesión en un dispositivo nuevo, ingresa el código de la cerrada para importarla.</p>
+        <label>Código de cerrada</label>
+        <div style="display:flex;gap:.5rem">
+          <input id="mc-fs-code" placeholder="Ej: SMARK-001" style="margin:0;flex:1" oninput="this.value=this.value.toUpperCase()">
+          <button class="btn bp" style="white-space:nowrap" onclick="loadMstFirestore()">🔄 Importar</button>
         </div>
+        <div id="mc-fs-msg" style="margin-top:.6rem;font-size:.78rem;color:var(--t2);display:none"></div>
       </div>
       <div class="card"><div class="ch"><div class="ct">🔑 Acceso Master</div></div>
         <label>Usuario master</label>
@@ -955,6 +959,86 @@ select option{background:var(--sur)}
   </div>
 </div>
 
+<!-- MODAL EDITAR VECINO -->
+<div class="mover" id="modal-edit-vec" onclick="mbg(event,'modal-edit-vec')">
+  <div class="mdl">
+    <div class="mtitle">✏️ Editar Vecino</div>
+    <input type="hidden" id="ev-idx">
+    <label>Casa / Lote</label>
+    <input id="ev-house" placeholder="Casa 12">
+    <label>Nombre completo</label>
+    <input id="ev-name" placeholder="Juan Pérez">
+    <label>Teléfono</label>
+    <input id="ev-phone" type="tel" placeholder="+502 1234 5678">
+    <label>Correo electrónico</label>
+    <input id="ev-email" type="email" placeholder="juan@correo.com">
+    <p style="font-size:.71rem;color:var(--t3);margin-top:-.4rem;margin-bottom:.85rem;line-height:1.5">
+      El correo solo se puede cambiar si el residente aún no se ha registrado en la app.
+    </p>
+    <div class="err" id="ev-err"></div>
+    <div class="frow">
+      <button class="btn bg2" onclick="closeModal('modal-edit-vec')">Cancelar</button>
+      <button class="btn bp" onclick="saveEditVec()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REGISTRAR PAGO DE CUOTA -->
+<div class="mover" id="modal-pago" onclick="mbg(event,'modal-pago')">
+  <div class="mdl">
+    <div class="mtitle">✅ Registrar Pago de Cuota</div>
+    <div id="pago-desc" style="background:var(--blue-lt);border:1.5px solid rgba(59,130,196,.18);border-radius:12px;padding:.85rem 1rem;margin-bottom:.9rem;font-size:.85rem;color:var(--t);line-height:1.6"></div>
+    <label>Método de pago</label>
+    <select id="pago-metodo" style="margin-bottom:.8rem">
+      <option value="Efectivo">💵 Efectivo</option>
+      <option value="Transferencia">📱 Transferencia</option>
+      <option value="Depósito">🏦 Depósito bancario</option>
+      <option value="Cheque">📝 Cheque</option>
+      <option value="Otro">Otro</option>
+    </select>
+    <label>Nota / Referencia (opcional)</label>
+    <input id="pago-nota" placeholder="Ej: Recibo #001, referencia 4567..." style="margin-bottom:.6rem">
+    <div class="frow" style="margin-top:.3rem">
+      <button class="btn bg2" onclick="closeModal('modal-pago')">Cancelar</button>
+      <button class="btn bp" onclick="confirmarPago()">✅ Confirmar Pago</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMBIAR A ADMIN -->
+<div class="mover" id="modal-switch-adm" onclick="mbg(event,'modal-switch-adm')">
+  <div class="mdl">
+    <div class="mtitle">🛡️ Acceso Administrador</div>
+    <p style="font-size:.8rem;color:var(--t2);margin-bottom:.9rem;line-height:1.5">Ingresa tu código de cerrada y PIN de administrador.</p>
+    <label>Código de cerrada</label>
+    <input id="sw-adm-code" placeholder="Ej: SMARK-001" autocomplete="off" oninput="this.value=this.value.toUpperCase()" style="margin-bottom:.8rem">
+    <label>PIN de administrador</label>
+    <input id="sw-adm-pin" type="password" placeholder="••••" style="margin-bottom:.6rem">
+    <div class="err" id="sw-adm-err"></div>
+    <div class="frow" style="margin-top:.3rem">
+      <button class="btn bg2" onclick="closeModal('modal-switch-adm')">Cancelar</button>
+      <button class="btn bp" onclick="doSwitchToAdmin()">Entrar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMBIAR A RESIDENTE -->
+<div class="mover" id="modal-switch-res" onclick="mbg(event,'modal-switch-res')">
+  <div class="mdl">
+    <div class="mtitle">🏠 Acceso Residente</div>
+    <p style="font-size:.8rem;color:var(--t2);margin-bottom:.9rem;line-height:1.5">Ingresa tu correo y contraseña de residente.</p>
+    <label>Correo electrónico</label>
+    <input id="sw-res-email" type="email" placeholder="tu@correo.com" autocomplete="email" style="margin-bottom:.8rem">
+    <label>Contraseña</label>
+    <input id="sw-res-pass" type="password" placeholder="••••••••" style="margin-bottom:.6rem">
+    <div class="err" id="sw-res-err"></div>
+    <div class="frow" style="margin-top:.3rem">
+      <button class="btn bg2" onclick="closeModal('modal-switch-res')">Cancelar</button>
+      <button class="btn bp" onclick="doSwitchToResident()">Entrar →</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <!-- BANNER INSTALAR APP -->
@@ -1017,8 +1101,9 @@ const SK='cerradaapp_v4';
 const ICONS=['🚗','🚶','🚪','🏠','🔑','🚧','🛻','🏍'];
 let S={masterKey:'MASTER2025',masterUser:'MASTER',defaultPrice:20,cerradas:{}};
 let U=null,ncP=[];
+let DUAL_ADM=null,DUAL_RES=null;
 
-function load(){try{const d=localStorage.getItem(SK);if(d){const p=JSON.parse(d);S={...S,...p};if(!S.masterKey)S.masterKey='MASTER2025';if(!S.masterUser)S.masterUser='MASTER';}}catch(e){}}
+function load(){try{const d=localStorage.getItem(SK);if(d){const p=JSON.parse(d);S={...S,...p};if(!S.masterKey)S.masterKey='MASTER2025';if(!S.masterUser)S.masterUser='MASTER';}}catch(e){}try{DUAL_ADM=JSON.parse(localStorage.getItem('cerrada_session_adm'));}catch(e){DUAL_ADM=null;}try{DUAL_RES=JSON.parse(localStorage.getItem('cerrada_session_res'));}catch(e){DUAL_RES=null;}}
 function save(){localStorage.setItem(SK,JSON.stringify(S));}
 function C(){return S.cerradas[U?.cerradaCode];}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
@@ -1124,7 +1209,9 @@ async function loginResidente(){
   const {cerrada,res,member,mi} = found;
   // Si está suspendido, deja entrar igual — renderGates mostrará el botón rojo
   U={role:'resident',cerradaCode:cerrada.code,house:res.house,memberIdx:mi,memberName:member?.name||res.name,email};
+  DUAL_RES={...U};
   localStorage.setItem('cerrada_session',JSON.stringify(U));
+  saveDual();
   enterRes(cerrada,res,member);
 }
 
@@ -1139,7 +1226,9 @@ function loginManual(){
   if(!res){showErr('m-err','PIN incorrecto.');return;}
   // Siempre entrar — renderGates mostrará botón rojo si está suspendido
   U={role:'resident',cerradaCode:code,house:res.house,memberIdx:-1,memberName:res.name};
+  DUAL_RES={...U};
   localStorage.setItem('cerrada_session',JSON.stringify(U));
+  saveDual();
   enterRes(c,res,null);
 }
 
@@ -1153,6 +1242,15 @@ async function loginStaff(){
     U={role:'master'};
     localStorage.setItem('cerrada_session', JSON.stringify({role:'master'}));
     showScreen('mst');renderMstList();renderNegocio();
+    // Refrescar todas las cerradas conocidas desde Firestore en segundo plano
+    const knownCodes=Object.keys(S.cerradas);
+    if(knownCodes.length){
+      Promise.all(knownCodes.map(c=>fsGet(c))).then(records=>{
+        let changed=false;
+        records.forEach(r=>{if(r&&r.code){S.cerradas[r.code]=r;changed=true;}});
+        if(changed){save();renderMstList();renderNegocio();}
+      }).catch(()=>{});
+    }
     return;
   }
 
@@ -1172,7 +1270,9 @@ async function loginStaff(){
   }
   if(cerrada.suspended){ showStaffErr('Cerrada suspendida'); return; }
   U={role:'subadmin',cerradaCode:cerrada.code};
+  DUAL_ADM={...U};
   localStorage.setItem('cerrada_session', JSON.stringify(U));
+  saveDual();
   enterAdm(cerrada);
 }
 
@@ -1188,10 +1288,129 @@ function toggleStaff(){
 
 function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',3200);}
 function logout(){
-  U=null;
+  U=null;DUAL_ADM=null;DUAL_RES=null;
   localStorage.removeItem('cerrada_session');
+  localStorage.removeItem('cerrada_session_adm');
+  localStorage.removeItem('cerrada_session_res');
   stopRealtimeListener();
   showScreen('login');
+}
+
+function saveDual(){
+  if(DUAL_ADM)localStorage.setItem('cerrada_session_adm',JSON.stringify(DUAL_ADM));
+  else localStorage.removeItem('cerrada_session_adm');
+  if(DUAL_RES)localStorage.setItem('cerrada_session_res',JSON.stringify(DUAL_RES));
+  else localStorage.removeItem('cerrada_session_res');
+}
+function updateModeButtons(){
+  const ba=document.getElementById('btn-switch-adm');
+  const br=document.getElementById('btn-switch-res');
+  if(ba)ba.style.display=U?.role==='resident'?'inline-flex':'none';
+  if(br)br.style.display=U?.role==='subadmin'?'inline-flex':'none';
+}
+function switchToAdmin(){
+  if(DUAL_ADM){
+    const c=S.cerradas[DUAL_ADM.cerradaCode];
+    if(!c){openSwitchAdmModal();return;}
+    if(U?.role==='resident'){DUAL_RES={...U};saveDual();}
+    U={...DUAL_ADM};
+    localStorage.setItem('cerrada_session',JSON.stringify(U));
+    stopRealtimeListener();
+    enterAdm(c,true);
+  }else{openSwitchAdmModal();}
+}
+function openSwitchAdmModal(){
+  const el=document.getElementById('sw-adm-code');
+  if(el&&U?.cerradaCode)el.value=U.cerradaCode;
+  const pi=document.getElementById('sw-adm-pin');if(pi)pi.value='';
+  const er=document.getElementById('sw-adm-err');if(er)er.style.display='none';
+  openModal('modal-switch-adm');
+}
+async function doSwitchToAdmin(){
+  const code=(document.getElementById('sw-adm-code')?.value||'').trim().toUpperCase();
+  const pin=(document.getElementById('sw-adm-pin')?.value||'').trim();
+  if(!code||!pin){showErr('sw-adm-err','Completa los campos');return;}
+  let cerrada=S.cerradas[code];
+  if(!cerrada){
+    showErr('sw-adm-err','Buscando...');
+    try{const rec=await fsGet(code);if(rec){S.cerradas[code]=rec;save();cerrada=rec;}}catch(e){}
+  }
+  if(!cerrada||String(cerrada.adminPin)!==pin){showErr('sw-adm-err','Código o PIN incorrecto');return;}
+  if(cerrada.suspended){showErr('sw-adm-err','Cerrada suspendida');return;}
+  if(U?.role==='resident'){DUAL_RES={...U};}
+  U={role:'subadmin',cerradaCode:cerrada.code};
+  DUAL_ADM={...U};
+  localStorage.setItem('cerrada_session',JSON.stringify(U));
+  saveDual();
+  closeModal('modal-switch-adm');
+  stopRealtimeListener();
+  enterAdm(cerrada,true);
+}
+function switchToResident(){
+  if(DUAL_RES){
+    const c=S.cerradas[DUAL_RES.cerradaCode];
+    if(!c){openSwitchResModal();return;}
+    const res=c.residents?.find(r=>r.house===DUAL_RES.house);
+    if(!res){openSwitchResModal();return;}
+    if(U?.role==='subadmin'){DUAL_ADM={...U};saveDual();}
+    U={...DUAL_RES};
+    localStorage.setItem('cerrada_session',JSON.stringify(U));
+    stopRealtimeListener();
+    const member=DUAL_RES.memberIdx>=0?res.members?.[DUAL_RES.memberIdx]:null;
+    enterRes(c,res,member);
+  }else{openSwitchResModal();}
+}
+function openSwitchResModal(){
+  const em=document.getElementById('sw-res-email');if(em)em.value='';
+  const ps=document.getElementById('sw-res-pass');if(ps)ps.value='';
+  const er=document.getElementById('sw-res-err');if(er)er.style.display='none';
+  openModal('modal-switch-res');
+}
+async function doSwitchToResident(){
+  const email=(document.getElementById('sw-res-email')?.value||'').trim().toLowerCase();
+  const pass=(document.getElementById('sw-res-pass')?.value||'').trim();
+  if(!email||!pass){showErr('sw-res-err','Completa los campos');return;}
+  let found=null;
+  for(const cerrada of Object.values(S.cerradas)){
+    if(cerrada.suspended||!cerrada.active)continue;
+    for(const res of cerrada.residents||[]){
+      if(res.email===email&&(res.password===pass||res.pin===pass)){found={cerrada,res,member:null,mi:-1};break;}
+      for(let mi=0;mi<(res.members||[]).length;mi++){
+        const m=res.members[mi];
+        if(m.email===email&&(m.password===pass||m.pin===pass)){found={cerrada,res,member:m,mi};break;}
+      }
+      if(found)break;
+    }
+    if(found)break;
+  }
+  if(!found){
+    toast('🔄 Verificando en la nube...');
+    const codes=[...new Set(['SMARK-001',...Object.keys(S.cerradas)])];
+    for(const code of codes){try{const rec=await fsGet(code);if(rec){S.cerradas[code]=rec;}}catch(e){}}
+    save();
+    for(const cerrada of Object.values(S.cerradas)){
+      if(cerrada.suspended||!cerrada.active)continue;
+      for(const res of cerrada.residents||[]){
+        if(res.email===email&&(res.password===pass||res.pin===pass)){found={cerrada,res,member:null,mi:-1};break;}
+        for(let mi=0;mi<(res.members||[]).length;mi++){
+          const m=res.members[mi];
+          if(m.email===email&&(m.password===pass||m.pin===pass)){found={cerrada,res,member:m,mi};break;}
+        }
+        if(found)break;
+      }
+      if(found)break;
+    }
+  }
+  if(!found){showErr('sw-res-err','Correo o contraseña incorrectos');return;}
+  const{cerrada,res,member,mi}=found;
+  if(U?.role==='subadmin'){DUAL_ADM={...U};}
+  U={role:'resident',cerradaCode:cerrada.code,house:res.house,memberIdx:mi,memberName:member?.name||res.name,email};
+  DUAL_RES={...U};
+  localStorage.setItem('cerrada_session',JSON.stringify(U));
+  saveDual();
+  closeModal('modal-switch-res');
+  stopRealtimeListener();
+  enterRes(cerrada,res,member);
 }
 
 // ── SALIR RESIDENTE CON VERIFICACIÓN DE CONTRASEÑA
@@ -1474,7 +1693,7 @@ function resP(id,el){setPanels('rp-',['portones','finanzas','historial'],id);set
   }
   if(id==='finanzas'){renderResFin(c);renderMiCuenta(c,U?.house);}if(id==='historial')renderResHist(c);}
 function admP(id,el){setPanels('ap-',['dashboard','vecinos','historial','finanzas','cuotas','portones','config'],id);setTabs('#scr-adm',el);const c=C();if(!c)return;if(id==='dashboard')updateDash();if(id==='vecinos')renderVec();if(id==='historial')renderAdmHist();if(id==='finanzas'){renderAdmFin();}if(id==='cuotas')initCuotasMes();if(id==='portones')renderAdmPortones();if(id==='config')loadCfg();}
-function mstP(id,el){setPanels('mp-',['cerradas','negocio','config'],id);setTabs('#scr-mst',el);if(id==='cerradas')renderMstList();if(id==='negocio')renderNegocio();if(id==='config'){document.getElementById('mc-price').value=S.defaultPrice;const mu=document.getElementById('mc-user');if(mu)mu.placeholder=S.masterUser||'MASTER';populateMstJsonbinSelect();}}
+function mstP(id,el){setPanels('mp-',['cerradas','negocio','config'],id);setTabs('#scr-mst',el);if(id==='cerradas')renderMstList();if(id==='negocio')renderNegocio();if(id==='config'){document.getElementById('mc-price').value=S.defaultPrice;const mu=document.getElementById('mc-user');if(mu)mu.placeholder=S.masterUser||'MASTER';}}
 
 // ── RESIDENT
 function enterRes(c, res, member) {
@@ -1522,6 +1741,7 @@ function enterRes(c, res, member) {
   }
 
   showScreen('res');
+  updateModeButtons();
 
   // Inicializar notificaciones FCM en segundo plano
   initFCM(c, res, U?.memberIdx ?? -1).catch(() => {});
@@ -1816,7 +2036,7 @@ function shellyOpen(pt) {
 }
 
 // ── ADMIN
-async function enterAdm(c){
+async function enterAdm(c,silent=false){
   document.getElementById('adm-cname').textContent=c.name;
   setSI('adm','syncing');
 
@@ -1825,7 +2045,7 @@ async function enterAdm(c){
     const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}`);
     if(r.ok){
       const data=await r.json();
-      if(data.ok&&data.record){Object.assign(c,data.record);save();toast('☁️ Datos sincronizados');}
+      if(data.ok&&data.record){Object.assign(c,data.record);save();if(!silent)toast('☁️ Datos sincronizados');}
     }
     setSI('adm','ok');
   }catch(e){setSI('adm','err');}
@@ -1833,6 +2053,7 @@ async function enterAdm(c){
   startRealtimeListener(c.code);
   updateDash();
   showScreen('adm');
+  updateModeButtons();
 }
 function updateDash(){
   const c=C();if(!c)return;const res=c.residents||[];
@@ -1886,6 +2107,7 @@ function renderVec(){
       </div>
       <div class="ia">
         ${r.pendingReg!==false?`<button class="btn bb2 xs" onclick="if(navigator.vibrate)navigator.vibrate(30);sendInvite(${i})" title="Invitar por WhatsApp">📲</button>`:''}
+        <button class="btn bg2 xs" onclick="if(navigator.vibrate)navigator.vibrate(20);editVec(${i})" title="Editar datos">✏️</button>
         <button class="btn bw xs" onclick="if(navigator.vibrate)navigator.vibrate(20);openPinModal(${i},-1)" title="Ver/resetear contraseña">🔑</button>
         <button class="btn xs" style="background:${r.active&&!r.mora?'#16a34a':'#dc2626'};color:#fff;font-size:1rem" onclick="if(navigator.vibrate)navigator.vibrate(30);toggleVec(${i})">${r.active&&!r.mora?'🔓':'🔒'}</button>
         <button class="btn bd xs" onclick="if(navigator.vibrate)navigator.vibrate(30);delVec(${i})">✕</button>
@@ -1894,6 +2116,53 @@ function renderVec(){
     ${membersHtml}
   </div>`;}).join('');
 }
+function editVec(i){
+  const c=C();if(!c)return;
+  const r=c.residents[i];if(!r)return;
+  document.getElementById('ev-idx').value=i;
+  document.getElementById('ev-house').value=r.house;
+  document.getElementById('ev-name').value=r.name;
+  document.getElementById('ev-phone').value=r.phone||'';
+  document.getElementById('ev-email').value=r.email||'';
+  const err=document.getElementById('ev-err');if(err)err.style.display='none';
+  openModal('modal-edit-vec');
+}
+async function saveEditVec(){
+  const c=C();if(!c)return;
+  const i=parseInt(document.getElementById('ev-idx').value);
+  const r=c.residents[i];if(!r)return;
+  const house=(document.getElementById('ev-house').value||'').trim();
+  const name=(document.getElementById('ev-name').value||'').trim();
+  const phone=(document.getElementById('ev-phone').value||'').trim();
+  const email=(document.getElementById('ev-email').value||'').trim().toLowerCase();
+  if(!house||!name){showErr('ev-err','Casa y nombre son obligatorios');return;}
+  // Verificar que la nueva casa no esté en uso por otro vecino
+  if(house!==r.house && c.residents.some((x,j)=>j!==i&&x.house===house)){
+    showErr('ev-err','Esa casa ya está asignada a otro vecino');return;
+  }
+  // Actualizar casa en historial y cuotas si cambió
+  if(house!==r.house){
+    (c.history||[]).forEach(h=>{if(h.house===r.house)h.house=house;});
+    if(c.cuotas){
+      for(const mes of Object.values(c.cuotas)){
+        if(r.house in mes){mes[house]=mes[r.house];delete mes[r.house];}
+      }
+    }
+  }
+  r.house=house;
+  r.name=name;
+  r.phone=phone;
+  // Solo actualizar email si el residente no se ha registrado aún
+  if(!r.email||r.pendingReg!==false) r.email=email||r.email;
+  save();
+  setSI('adm','syncing');
+  const ok=await fsPush(c);
+  setSI('adm',ok?'ok':'err');
+  closeModal('modal-edit-vec');
+  renderVec();updateDash();
+  toast(ok?'✅ Datos actualizados':'✅ Actualizado (sin conexión — sincronizará después)');
+}
+
 async function addVec(){
   const c=C();if(!c)return;
   const house=document.getElementById('nv-h').value.trim();
@@ -2248,8 +2517,7 @@ async function savePortones(){
   renderGates(c,'test','gate-test');
   toast('✅ Nombre del portón actualizado');
 }
-function loadCfg(){} // JSONBin movido al Master
-// saveJsonbin movido al Master como saveMstJsonbin
+function loadCfg(){}
 async function changePin(){
   const c=C();if(!c)return;
   const old=document.getElementById('cfg-pin-old').value.trim();
@@ -2280,10 +2548,10 @@ function createCerrada(){
   ['nc-name','nc-code','nc-houses','nc-price','nc-aname','nc-apin','nc-aphone'].forEach(id=>document.getElementById(id).value='');
   renderMstList();renderNegocio();toast(`✅ "${name}" creada`);
 }
-function renderMstList(){const list=document.getElementById('mst-list');const cerradas=Object.values(S.cerradas);if(!cerradas.length){list.innerHTML=emH('🏘️','Sin cerradas');return;}list.innerHTML=cerradas.map(c=>`<div class="mcard"><div style="flex:1;min-width:0"><div class="mn">${esc(c.name)}</div><div class="mm">${esc(c.code)} · ${c.houses} casas · ${(c.portones||[]).length} portones · ${(c.residents||[]).length} vecinos · $${c.price}/mes</div><div class="mm">Admin: ${esc(c.adminName||'—')}${c.adminPhone?' · '+esc(c.adminPhone):''}</div></div><div style="display:flex;flex-direction:column;gap:.3rem;align-items:flex-end;flex-shrink:0"><span class="bge ${c.suspended?'r-b':c.active?'gr-b':'r-b'}">${c.suspended?'Suspendida':c.active?'Activa':'Inactiva'}</span><div style="display:flex;gap:.3rem"><button class="btn ${c.suspended?'bg2':'bw'} xs" onclick="toggleSusp('${c.code}')">${c.suspended?'🔓':'⏸'}</button><button class="btn bg2 xs" onclick="viewCerrada('${c.code}')">👁</button><button class="btn bd xs" onclick="delCerrada('${c.code}')">🗑</button></div></div></div>`).join('');}
+function renderMstList(){const list=document.getElementById('mst-list');const cerradas=Object.values(S.cerradas);if(!cerradas.length){list.innerHTML=emH('🏘️','Sin cerradas');return;}list.innerHTML=cerradas.map(c=>`<div class="mcard"><div style="flex:1;min-width:0"><div class="mn">${esc(c.name)}</div><div class="mm">${esc(c.code)} · ${c.houses} casas · ${(c.portones||[]).length} portones · ${(c.residents||[]).length} vecinos · $${c.price}/mes</div><div class="mm">Admin: ${esc(c.adminName||'—')}${c.adminPhone?' · '+esc(c.adminPhone):''}</div><div class="mm" style="display:flex;align-items:center;gap:.35rem;margin-top:.18rem"><span style="color:var(--t3);font-size:.66rem">PIN admin:</span><span style="font-family:monospace;font-size:.8rem;font-weight:800;color:var(--blue);background:var(--blue-lt);border:1px solid rgba(59,130,196,.2);border-radius:6px;padding:.05rem .4rem;letter-spacing:.08em">${esc(c.adminPin||'—')}</span></div></div><div style="display:flex;flex-direction:column;gap:.3rem;align-items:flex-end;flex-shrink:0"><span class="bge ${c.suspended?'r-b':c.active?'gr-b':'r-b'}">${c.suspended?'Suspendida':c.active?'Activa':'Inactiva'}</span><div style="display:flex;gap:.3rem"><button class="btn ${c.suspended?'bg2':'bw'} xs" onclick="toggleSusp('${c.code}')">${c.suspended?'🔓':'⏸'}</button><button class="btn bg2 xs" onclick="viewCerrada('${c.code}')">👁</button><button class="btn bd xs" onclick="delCerrada('${c.code}')">🗑</button></div></div></div>`).join('');}
 function toggleSusp(code){const c=S.cerradas[code];if(!c)return;c.suspended=!c.suspended;save();renderMstList();renderNegocio();toast(c.suspended?'⏸ Suspendida':'✅ Reactivada');}
 function delCerrada(code){const c=S.cerradas[code];if(!c)return;if(!confirm(`¿Eliminar "${c.name}"?`))return;delete S.cerradas[code];save();renderMstList();renderNegocio();toast('🗑 Eliminada');}
-function viewCerrada(code){const c=S.cerradas[code];if(!c)return;document.getElementById('mcer-title').textContent=c.name;const{income,expense}=calcFin(c);const pts=c.portones||[];document.getElementById('mcer-body').innerHTML=`<div class="li"><div class="lil"><div class="av ab">📋</div><div><div class="in">Código</div><div class="is">${esc(c.code)}</div></div></div></div><div class="li"><div class="lil"><div class="av ag">🏠</div><div><div class="in">Casas / Vecinos</div><div class="is">${c.houses} · ${(c.residents||[]).length} registrados</div></div></div></div><div class="li"><div class="lil"><div class="av ay">💰</div><div><div class="in">Mensualidad</div><div class="is">$${c.price}/mes</div></div></div></div><div class="li"><div class="lil"><div class="av ag">📈</div><div><div class="in">Finanzas del Mes</div><div class="is">+$${income.toFixed(2)} · -$${expense.toFixed(2)}</div></div></div></div><div class="li"><div class="lil"><div class="av ab">🚪</div><div><div class="in">Portones (${pts.length})</div><div class="is">${pts.map(p=>p.icon+' '+esc(p.label)).join(' · ')||'—'}</div></div></div></div><div class="li"><div class="lil"><div class="av ${c.suspended?'ar':'ag'}">${c.suspended?'⏸':'✓'}</div><div><div class="in">Estado</div><div class="is">${c.suspended?'Suspendida':'Activa'}</div></div></div><button class="btn ${c.suspended?'bg2':'bw'} xs" onclick="toggleSusp('${c.code}');viewCerrada('${c.code}')">${c.suspended?'🔓 Reactivar':'⏸ Suspender'}</button></div>
+function viewCerrada(code){const c=S.cerradas[code];if(!c)return;document.getElementById('mcer-title').textContent=c.name;const{income,expense}=calcFin(c);const pts=c.portones||[];document.getElementById('mcer-body').innerHTML=`<div class="li"><div class="lil"><div class="av ab">📋</div><div><div class="in">Código</div><div class="is">${esc(c.code)}</div></div></div></div><div class="li"><div class="lil"><div class="av ag">🏠</div><div><div class="in">Casas / Vecinos</div><div class="is">${c.houses} · ${(c.residents||[]).length} registrados</div></div></div></div><div class="li"><div class="lil"><div class="av ay">💰</div><div><div class="in">Mensualidad</div><div class="is">$${c.price}/mes</div></div></div></div><div class="li"><div class="lil"><div class="av ag">📈</div><div><div class="in">Finanzas del Mes</div><div class="is">+$${income.toFixed(2)} · -$${expense.toFixed(2)}</div></div></div></div><div class="li"><div class="lil"><div class="av ab">🚪</div><div><div class="in">Portones (${pts.length})</div><div class="is">${pts.map(p=>p.icon+' '+esc(p.label)).join(' · ')||'—'}</div></div></div></div><div class="li"><div class="lil"><div class="av ay">🔑</div><div><div class="in">PIN de Admin</div><div class="is" style="font-family:monospace;font-size:.85rem;font-weight:800;color:var(--blue);letter-spacing:.08em">${esc(c.adminPin||'—')}</div></div></div><button class="btn bb2 xs" onclick="navigator.clipboard?.writeText('${esc(c.adminPin||'')}').then(()=>toast('📋 PIN copiado'))">📋</button></div><div class="li"><div class="lil"><div class="av ${c.suspended?'ar':'ag'}">${c.suspended?'⏸':'✓'}</div><div><div class="in">Estado</div><div class="is">${c.suspended?'Suspendida':'Activa'}</div></div></div><button class="btn ${c.suspended?'bg2':'bw'} xs" onclick="toggleSusp('${c.code}');viewCerrada('${c.code}')">${c.suspended?'🔓 Reactivar':'⏸ Suspender'}</button></div>
     <div style="border-top:1px solid var(--brd);padding-top:.85rem;margin-top:.5rem">
       <p style="font-family:var(--fd);font-size:.88rem;font-weight:800;color:var(--t);margin-bottom:.6rem">🔌 Configuración de Portones</p>
       <p style="font-size:.73rem;color:var(--t2);margin-bottom:.75rem">IP y tiempo de apertura de cada portón. No visible para el Sub-Admin.</p>
@@ -2391,42 +2659,19 @@ function saveMstPortones(code){
 }
 
 // ── MASTER JSONBIN
-function loadMstJsonbinFields(){
-  const sel=document.getElementById('mc-bin-cerrada');
-  const code=sel.value;
-  const fields=document.getElementById('mc-bin-fields');
-  if(!code){fields.style.display='none';return;}
-  fields.style.display='block';
-  const c=S.cerradas[code];
-  document.getElementById('mc-bin-id').value=c?.jsonbin?.binId||'';
-  document.getElementById('mc-bin-key').value=c?.jsonbin?.apiKey||'';
-}
-
-function populateMstJsonbinSelect(){
-  const sel=document.getElementById('mc-bin-cerrada');
-  if(!sel)return;
-  const cerradas=Object.values(S.cerradas);
-  sel.innerHTML='<option value="">— Selecciona una cerrada —</option>'+
-    cerradas.map(c=>`<option value="${c.code}">${c.name} (${c.code}) ${c.code?'☁️':''}</option>`).join('');
-  document.getElementById('mc-bin-fields').style.display='none';
-}
-
-async function saveMstJsonbin(){
-  const code=document.getElementById('mc-bin-cerrada').value;
-  const binId=document.getElementById('mc-bin-id').value.trim();
-  const apiKey=document.getElementById('mc-bin-key').value.trim();
-  if(!code){toast('⚠️ Selecciona una cerrada');return;}
-  if(!binId||!apiKey){toast('⚠️ Completa Bin ID y API Key');return;}
-  const c=S.cerradas[code];if(!c)return;
-  c.jsonbin={binId,apiKey};save();
-  toast('🔄 Probando conexión...');
-  const ok=await fsPush(c);
-  if(ok){
-    toast('✅ JSONBin conectado para '+c.name);
-    populateMstJsonbinSelect();
-  } else {
-    toast('❌ Error — verifica las credenciales');
-  }
+async function loadMstFirestore(){
+  const codeInput=document.getElementById('mc-fs-code');
+  const msg=document.getElementById('mc-fs-msg');
+  const code=(codeInput?.value||'').trim().toUpperCase();
+  if(!code){toast('⚠️ Ingresa el código de la cerrada');return;}
+  msg.style.display='block';msg.style.color='var(--t2)';msg.textContent='🔄 Buscando en Firestore...';
+  const record=await fsGet(code);
+  if(!record){msg.style.color='var(--rose)';msg.textContent='❌ Cerrada no encontrada en Firestore.';return;}
+  S.cerradas[code]=record;save();
+  msg.style.color='var(--green)';msg.textContent=`✅ "${record.name}" importada correctamente.`;
+  if(codeInput) codeInput.value='';
+  renderMstList();renderNegocio();
+  toast(`✅ "${record.name}" importada`);
 }
 
 // ── SISTEMA DE INVITACIÓN
@@ -2641,10 +2886,17 @@ async function submitRegister() {
 }
 
 // ── MÓDULO DE CUOTAS
-function getMeses() {
+function getMeses(count=3, includeFuture=false) {
   const meses = [];
   const now = new Date();
-  for (let i = 0; i < 3; i++) {
+  if (includeFuture) {
+    const f = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    meses.push({
+      key: `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}`,
+      label: '🔜 ' + f.toLocaleString('es', {month:'long', year:'numeric'})
+    });
+  }
+  for (let i = 0; i < count; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     meses.push({
       key: `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,
@@ -2657,8 +2909,10 @@ function getMeses() {
 function initCuotasMes() {
   const sel = document.getElementById('cuota-mes');
   if (!sel) return;
-  const meses = getMeses();
+  const meses = getMeses(12, true);
   sel.innerHTML = meses.map(m => `<option value="${m.key}">${m.label}</option>`).join('');
+  const now = new Date();
+  sel.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   renderCuotas();
 }
 
@@ -2666,8 +2920,9 @@ function saveCuotaConfig() {
   const c = C(); if (!c) return;
   const monto = parseFloat(document.getElementById('cuota-monto').value);
   const dia = parseInt(document.getElementById('cuota-dia').value) || 5;
+  const inicio = document.getElementById('cuota-inicio')?.value || '';
   if (!monto || monto < 1) { toast('⚠️ Ingresa un monto válido'); return; }
-  c.cuotaConfig = { monto, dia };
+  c.cuotaConfig = { monto, dia, mesInicio: inicio };
   save();
   setSI('adm','syncing');
   fsPush(c).then(ok => setSI('adm', ok ? 'ok' : 'err')).catch(() => setSI('adm','err'));
@@ -2681,7 +2936,6 @@ function renderCuotas() {
   if (!sel) return;
   const mesKey = sel.value;
   const monto = c.cuotaConfig?.monto || 0;
-  const dia = c.cuotaConfig?.dia || 5;
   const res = c.residents || [];
   if (!c.cuotas) c.cuotas = {};
   if (!c.cuotas[mesKey]) c.cuotas[mesKey] = {};
@@ -2689,124 +2943,349 @@ function renderCuotas() {
   // Cargar config en campos
   if (c.cuotaConfig) {
     const montoEl = document.getElementById('cuota-monto');
-    const diaEl = document.getElementById('cuota-dia');
+    const diaEl   = document.getElementById('cuota-dia');
+    const inicioEl = document.getElementById('cuota-inicio');
     if (montoEl) montoEl.value = c.cuotaConfig.monto;
-    if (diaEl) diaEl.value = c.cuotaConfig.dia;
+    if (diaEl)   diaEl.value   = c.cuotaConfig.dia;
+    if (inicioEl && c.cuotaConfig.mesInicio) inicioEl.value = c.cuotaConfig.mesInicio;
   }
 
-  const pagadas = res.filter(r => c.cuotas[mesKey][r.house]?.pagado).length;
+  const pagadas   = res.filter(r => c.cuotas[mesKey][r.house]?.pagado).length;
   const pendientes = res.length - pagadas;
-  const total = pagadas * monto;
+  const total     = pagadas * monto;
 
-  document.getElementById('cq-pagadas').textContent = pagadas;
+  document.getElementById('cq-pagadas').textContent   = pagadas;
   document.getElementById('cq-pendientes').textContent = pendientes;
-  document.getElementById('cq-total').textContent = '$' + total.toFixed(2);
+  document.getElementById('cq-total').textContent      = '$' + total.toFixed(2);
 
   const list = document.getElementById('cuotas-list');
   if (!list) return;
 
   if (!res.length) { list.innerHTML = emH('👥', 'Sin vecinos registrados'); return; }
-  if (!monto) { list.innerHTML = emH('⚙️', 'Configura el monto de la cuota abajo'); return; }
+  if (!monto)      { list.innerHTML = emH('⚙️', 'Configura el monto de la cuota abajo'); return; }
 
-  list.innerHTML = res.map(r => {
-    const cuota = c.cuotas[mesKey][r.house] || {};
-    const pagado = cuota.pagado || false;
-    const fechaPago = cuota.fecha ? new Date(cuota.fecha).toLocaleDateString('es') : '';
-    const hn = r.house.replace(/\D/g,'').slice(0,2) || '?';
+  const unpaidCount = res.filter(r => !c.cuotas[mesKey][r.house]?.pagado).length;
+  let html = '';
+  if (unpaidCount > 0) {
+    html += `<button class="btn bp wf" onclick="marcarTodosMes()" style="margin-bottom:.75rem;font-size:.82rem">
+      ✅ Marcar todos como pagados (${unpaidCount} pendiente${unpaidCount!==1?'s':''})
+    </button>`;
+  }
+
+  html += res.map(r => {
+    const cuota    = c.cuotas[mesKey][r.house] || {};
+    const pagado   = cuota.pagado || false;
+    const fechaPago = cuota.fecha ? new Date(cuota.fecha).toLocaleDateString('es',{day:'2-digit',month:'short'}) : '';
+    const metodo   = cuota.metodo || '';
+    const nota     = cuota.nota   || '';
+    const hn       = r.house.replace(/\D/g,'').slice(0,2) || '?';
+    const phone    = (r.phone || '').replace(/\D/g,'');
+    const houseEsc = r.house.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     return `<div class="li">
       <div class="lil">
-        <div class="av ${pagado ? 'ag' : 'ar'}">${esc(hn)}</div>
+        <div class="av ${pagado?'ag':'ar'}">${esc(hn)}</div>
         <div>
           <div class="in">${esc(r.name)}</div>
-          <div class="is">${esc(r.house)} · ${pagado ? '✅ Pagó el '+fechaPago : '⏳ Pendiente — $'+monto}</div>
+          <div class="is">${esc(r.house)} · ${pagado?'✅ '+fechaPago+(metodo?' · '+metodo:''):'⏳ Pendiente — $'+monto}</div>
+          ${nota?`<div class="is" style="color:var(--t3);font-style:italic">${esc(nota)}</div>`:''}
         </div>
       </div>
-      <button class="btn ${pagado ? 'bd' : 'bp'} sm" 
-        onclick="toggleCuota('${mesKey}','${r.house}')" style="min-width:80px">
-        ${pagado ? '↩ Revertir' : '✓ Marcar Pago'}
-      </button>
+      <div style="display:flex;gap:.35rem;align-items:center">
+        ${pagado?`<button class="btn bg2 xs" onclick="generarReciboPDF('${houseEsc}','${mesKey}')" title="Descargar recibo PDF" style="padding:.28rem .5rem;font-size:.8rem;min-height:unset">📄</button>`:''}
+        ${pagado&&phone?`<button class="btn bb2 xs" onclick="enviarReciboCuota('${houseEsc}')" title="Enviar recibo por WhatsApp" style="padding:.28rem .5rem;font-size:.8rem;min-height:unset">📲</button>`:''}
+        <button class="btn ${pagado?'bd':'bp'} sm"
+          onclick="toggleCuota('${mesKey}','${houseEsc}')" style="min-width:78px;font-size:.77rem">
+          ${pagado?'↩ Revertir':'✓ Pago'}
+        </button>
+      </div>
     </div>`;
   }).join('');
 
-  // Historial 3 meses + adeudo por casa
+  list.innerHTML = html;
   renderCuotasHistorial();
   renderAdeudoPorCasa();
 }
 
-async function toggleCuota(mesKey, house) {
+function toggleCuota(mesKey, house) {
   const c = C(); if (!c) return;
   if (!c.cuotas) c.cuotas = {};
   if (!c.cuotas[mesKey]) c.cuotas[mesKey] = {};
-
   const cuota = c.cuotas[mesKey][house];
-  const monto = c.cuotaConfig?.monto || 0;
-
   if (cuota?.pagado) {
-    // Revertir pago
-    c.cuotas[mesKey][house] = { pagado: false };
-    // Eliminar el movimiento de ingreso correspondiente
-    if (cuota.movId && c.movements) {
-      c.movements = c.movements.filter(m => m.id !== cuota.movId);
-    }
-    toast('↩ Pago revertido — ' + house);
+    doRevertPago(mesKey, house);
   } else {
-    // Marcar como pagado
-    const movId = 'cq-' + Date.now();
-    c.cuotas[mesKey][house] = {
-      pagado: true,
-      fecha: new Date().toISOString(),
-      monto,
-      movId
-    };
-    // Agregar automáticamente como ingreso en finanzas
-    if (!c.movements) c.movements = [];
+    window._pendingPago = { mesKey, house };
+    const res = c.residents?.find(r => r.house === house);
+    const monto = c.cuotaConfig?.monto || 0;
     const [year, month] = mesKey.split('-');
-    c.movements.push({
-      id: movId,
-      ts: new Date().toISOString(),
-      type: 'income',
-      amount: monto,
-      category: 'Cuota mensual',
-      desc: house + ' — ' + new Date(parseInt(year), parseInt(month)-1).toLocaleString('es',{month:'long',year:'numeric'})
-    });
-    toast('✅ Cuota registrada — ' + house);
+    const mesLabel = new Date(parseInt(year), parseInt(month)-1).toLocaleString('es',{month:'long',year:'numeric'});
+    const descEl = document.getElementById('pago-desc');
+    if (descEl) descEl.innerHTML = `<b>${esc(res?.name||house)}</b> · ${esc(house)}<br>Cuota de <b style="text-transform:capitalize">${mesLabel}</b> · <b style="color:var(--blue)">$${monto.toFixed(2)}</b>`;
+    const met = document.getElementById('pago-metodo'); if(met) met.value = 'Efectivo';
+    const not = document.getElementById('pago-nota');   if(not) not.value = '';
+    openModal('modal-pago');
   }
+}
 
+async function doRevertPago(mesKey, house) {
+  const c = C(); if (!c) return;
+  const cuota = c.cuotas?.[mesKey]?.[house];
+  if (!cuota?.pagado) return;
+  c.cuotas[mesKey][house] = { pagado: false };
+  if (cuota.movId && c.movements) c.movements = c.movements.filter(m => m.id !== cuota.movId);
   save();
   setSI('adm','syncing');
-  fsPush(c).then(ok => setSI('adm', ok ? 'ok' : 'err')).catch(() => setSI('adm','err'));
-  renderCuotas();
-  updateDash();
+  fsPush(c).then(ok => setSI('adm', ok?'ok':'err')).catch(()=>setSI('adm','err'));
+  toast('↩ Pago revertido — ' + house);
+  renderCuotas(); updateDash();
+}
+
+function confirmarPago() {
+  const pending = window._pendingPago; if (!pending) return;
+  const metodo = document.getElementById('pago-metodo')?.value || 'Efectivo';
+  const nota   = (document.getElementById('pago-nota')?.value || '').trim();
+  closeModal('modal-pago');
+  doMarkPaid(pending.mesKey, pending.house, metodo, nota);
+}
+
+async function doMarkPaid(mesKey, house, metodo, nota) {
+  const c = C(); if (!c) return;
+  if (!c.cuotas) c.cuotas = {};
+  if (!c.cuotas[mesKey]) c.cuotas[mesKey] = {};
+  const monto = c.cuotaConfig?.monto || 0;
+  const movId = 'cq-' + Date.now();
+  c.cuotas[mesKey][house] = { pagado:true, fecha:new Date().toISOString(), monto, metodo, nota:nota||'', movId };
+  if (!c.movements) c.movements = [];
+  const [year, month] = mesKey.split('-');
+  const mesLabel = new Date(parseInt(year), parseInt(month)-1).toLocaleString('es',{month:'long',year:'numeric'});
+  c.movements.push({ id:movId, ts:new Date().toISOString(), type:'income', amount:monto, category:'Cuota mensual', desc:house+' — '+mesLabel+(nota?' · '+nota:'') });
+  save();
+  setSI('adm','syncing');
+  fsPush(c).then(ok => setSI('adm', ok?'ok':'err')).catch(()=>setSI('adm','err'));
+  toast('✅ Cuota registrada — ' + house);
+  notifyResident(c, house, '✅ Cuota registrada', `Recibimos tu pago de $${monto} · ${metodo}${nota?' · '+nota:''}`).catch(()=>{});
+  renderCuotas(); updateDash();
+}
+
+async function marcarTodosMes() {
+  const c = C(); if (!c) return;
+  const sel = document.getElementById('cuota-mes'); if (!sel) return;
+  const mesKey = sel.value;
+  if (!c.cuotas) c.cuotas = {};
+  if (!c.cuotas[mesKey]) c.cuotas[mesKey] = {};
+  const res = c.residents || [];
+  const unpaid = res.filter(r => !c.cuotas[mesKey][r.house]?.pagado);
+  if (!unpaid.length) { toast('✅ Todos ya pagaron este mes'); return; }
+  if (!confirm(`¿Marcar ${unpaid.length} casa${unpaid.length!==1?'s':''} como pagadas en efectivo?`)) return;
+  const monto = c.cuotaConfig?.monto || 0;
+  const [year, month] = mesKey.split('-');
+  const mesLabel = new Date(parseInt(year), parseInt(month)-1).toLocaleString('es',{month:'long',year:'numeric'});
+  unpaid.forEach((r,idx) => {
+    const movId = 'cq-bulk-' + Date.now() + '-' + idx;
+    c.cuotas[mesKey][r.house] = { pagado:true, fecha:new Date().toISOString(), monto, metodo:'Efectivo', nota:'', movId };
+    if (!c.movements) c.movements = [];
+    c.movements.push({ id:movId, ts:new Date().toISOString(), type:'income', amount:monto, category:'Cuota mensual', desc:r.house+' — '+mesLabel });
+  });
+  save();
+  setSI('adm','syncing');
+  fsPush(c).then(ok => setSI('adm', ok?'ok':'err')).catch(()=>setSI('adm','err'));
+  toast(`✅ ${unpaid.length} cuota${unpaid.length!==1?'s':''} registradas`);
+  renderCuotas(); updateDash();
+}
+
+function enviarReciboCuota(house) {
+  const c = C(); if (!c) return;
+  const sel = document.getElementById('cuota-mes'); if (!sel) return;
+  const mesKey = sel.value;
+  const res = c.residents?.find(r => r.house === house);
+  if (!res?.phone) { toast('⚠️ Sin teléfono registrado'); return; }
+  const cuota  = c.cuotas?.[mesKey]?.[house] || {};
+  const monto  = cuota.monto || c.cuotaConfig?.monto || 0;
+  const metodo = cuota.metodo || 'Efectivo';
+  const nota   = cuota.nota || '';
+  const fecha  = cuota.fecha ? new Date(cuota.fecha).toLocaleDateString('es',{day:'2-digit',month:'long',year:'numeric'}) : new Date().toLocaleDateString('es');
+  const [year, month] = mesKey.split('-');
+  const mesLabel = new Date(parseInt(year), parseInt(month)-1).toLocaleString('es',{month:'long',year:'numeric'});
+  const phone  = res.phone.replace(/\D/g,'');
+  const msg = `✅ *${c.name}*\n\nHola ${res.name}, confirmamos tu pago de cuota:\n\n📅 *Mes:* ${mesLabel.charAt(0).toUpperCase()+mesLabel.slice(1)}\n💵 *Monto:* $${monto}\n💳 *Método:* ${metodo}\n📆 *Fecha:* ${fecha}${nota?'\n📝 *Nota:* '+nota:''}\n\n_Gracias por tu pago._`;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+  toast('📲 Abriendo WhatsApp...');
+}
+
+function generarReciboPDF(house, mesKey) {
+  const c = C(); if (!c) return;
+  const res = c.residents?.find(r => r.house === house); if (!res) return;
+  const cuota   = c.cuotas?.[mesKey]?.[house] || {};
+  const monto   = cuota.monto   || c.cuotaConfig?.monto || 0;
+  const metodo  = cuota.metodo  || 'Efectivo';
+  const nota    = cuota.nota    || '';
+  const fechaObj = cuota.fecha  ? new Date(cuota.fecha) : new Date();
+  const [year, month] = mesKey.split('-');
+  const mesLabel = new Date(parseInt(year), parseInt(month)-1)
+    .toLocaleString('es', {month:'long', year:'numeric'});
+  const mesLabelCap = mesLabel.charAt(0).toUpperCase() + mesLabel.slice(1);
+  const fechaStr = fechaObj.toLocaleDateString('es', {day:'2-digit', month:'long', year:'numeric'});
+  const numRecibo = 'R-' + fechaObj.getFullYear()
+    + String(fechaObj.getMonth()+1).padStart(2,'0')
+    + String(fechaObj.getDate()).padStart(2,'0')
+    + '-' + String(Date.now()).slice(-4);
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ format:'a5', unit:'mm', orientation:'portrait' });
+  const W = 148, PX = 14;
+
+  // ── CABECERA AZUL
+  doc.setFillColor(37,99,168);
+  doc.rect(0, 0, W, 42, 'F');
+
+  // Franja decorativa inferior del header
+  doc.setFillColor(59,130,196);
+  doc.rect(0, 36, W, 6, 'F');
+
+  // Nombre de la cerrada
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(17);
+  doc.text(c.name || 'CerradaApp', W/2, 13, {align:'center'});
+
+  // Subtítulo
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9);
+  doc.text('RECIBO DE PAGO DE CUOTA MENSUAL', W/2, 21, {align:'center'});
+
+  // Número de recibo y fecha
+  doc.setFontSize(7.5);
+  doc.setTextColor(200,220,255);
+  doc.text('No. ' + numRecibo + '   |   ' + fechaStr, W/2, 28, {align:'center'});
+
+  // ── SECCIÓN RESIDENTE (fondo gris claro)
+  let y = 52;
+  doc.setFillColor(245,249,255);
+  doc.roundedRect(PX, y-7, W-PX*2, 26, 2, 2, 'F');
+  doc.setDrawColor(210,225,245);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(PX, y-7, W-PX*2, 26, 2, 2, 'S');
+
+  doc.setFontSize(7);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(37,99,168);
+  doc.text('DATOS DEL RESIDENTE', PX+4, y-1);
+
+  doc.setFontSize(9.5);
+  doc.setTextColor(30,30,30);
+  y += 4;
+  doc.setFont('helvetica','bold');   doc.text('Nombre:', PX+4, y);
+  doc.setFont('helvetica','normal'); doc.text(res.name || '—', PX+28, y);
+  y += 7;
+  doc.setFont('helvetica','bold');   doc.text('Domicilio:', PX+4, y);
+  doc.setFont('helvetica','normal'); doc.text(res.house, PX+28, y);
+
+  // ── SECCIÓN DETALLE DE PAGO
+  y += 14;
+  doc.setFillColor(245,255,250);
+  const pagoH = nota ? 44 : 38;
+  doc.roundedRect(PX, y-7, W-PX*2, pagoH, 2, 2, 'F');
+  doc.setDrawColor(190,230,205);
+  doc.roundedRect(PX, y-7, W-PX*2, pagoH, 2, 2, 'S');
+
+  doc.setFontSize(7);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(26,138,69);
+  doc.text('DETALLE DEL PAGO', PX+4, y-1);
+
+  doc.setFontSize(9.5);
+  doc.setTextColor(30,30,30);
+  y += 4;
+  doc.setFont('helvetica','bold');   doc.text('Período:', PX+4, y);
+  doc.setFont('helvetica','normal'); doc.text(mesLabelCap, PX+28, y);
+  y += 7;
+  doc.setFont('helvetica','bold');   doc.text('Concepto:', PX+4, y);
+  doc.setFont('helvetica','normal'); doc.text('Cuota mensual', PX+28, y);
+  y += 7;
+  doc.setFont('helvetica','bold');   doc.text('Método:', PX+4, y);
+  doc.setFont('helvetica','normal'); doc.text(metodo, PX+28, y);
+  if (nota) {
+    y += 7;
+    doc.setFont('helvetica','bold');   doc.text('Referencia:', PX+4, y);
+    doc.setFont('helvetica','normal');
+    const notaLines = doc.splitTextToSize(nota, W-PX*2-32);
+    doc.text(notaLines, PX+28, y);
+    y += (notaLines.length-1)*5;
+  }
+
+  // ── BLOQUE MONTO
+  y += 14;
+  doc.setFillColor(37,99,168);
+  doc.roundedRect(PX, y-5, W-PX*2, 24, 3, 3, 'F');
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8.5);
+  doc.text('MONTO TOTAL PAGADO', W/2, y+2, {align:'center'});
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(22);
+  doc.text('$' + monto.toFixed(2), W/2, y+14, {align:'center'});
+
+  // ── SELLO PAGADO
+  y += 30;
+  doc.setDrawColor(26,138,69);
+  doc.setLineWidth(1.8);
+  doc.roundedRect(W/2-20, y-7, 40, 16, 3, 3, 'S');
+  doc.setTextColor(26,138,69);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(15);
+  doc.text('PAGADO', W/2, y+4, {align:'center'});
+
+  // ── FIRMA
+  y += 22;
+  doc.setDrawColor(180,180,180);
+  doc.setLineWidth(0.3);
+  doc.line(W/2-28, y, W/2+28, y);
+  doc.setTextColor(100,100,100);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7.5);
+  doc.text('Firma del Administrador', W/2, y+5, {align:'center'});
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.text(c.adminName || 'Administrador', W/2, y+11, {align:'center'});
+
+  // ── PIE DE PÁGINA
+  y += 22;
+  doc.setDrawColor(210,220,235);
+  doc.setLineWidth(0.2);
+  doc.line(PX, y, W-PX, y);
+  doc.setTextColor(170,170,170);
+  doc.setFont('helvetica','italic');
+  doc.setFontSize(6.5);
+  doc.text('Comprobante oficial de pago de cuota mensual · Generado por CerradaApp', W/2, y+5, {align:'center'});
+
+  doc.save(`recibo-${house.replace(/\s+/g,'-')}-${mesKey}.pdf`);
+  toast('📄 Recibo descargado');
 }
 
 function renderAdeudoPorCasa() {
   const c = C(); if (!c) return;
-  const list = document.getElementById('cuotas-adeudo');
-  if (!list) return;
-  const res = c.residents || [];
+  const list = document.getElementById('cuotas-adeudo'); if (!list) return;
+  const res   = c.residents || [];
   const monto = c.cuotaConfig?.monto || 0;
   if (!monto) { list.innerHTML = emH('⚙️', 'Configura primero el monto de la cuota'); return; }
 
-  const casasConAdeudo = res.map(r => ({
-    r,
-    adeudo: calcAdeudo(c, r.house)
-  })).sort((a, b) => b.adeudo - a.adeudo);
+  const casas = res.map(r => ({ r, adeudo: calcAdeudo(c, r.house) })).sort((a,b) => b.adeudo - a.adeudo);
+  if (!casas.length) { list.innerHTML = emH('🏠', 'Sin casas registradas'); return; }
 
-  if (!casasConAdeudo.length) { list.innerHTML = emH('🏠', 'Sin casas registradas'); return; }
-
-  const adeudoTotal = casasConAdeudo.reduce((s, x) => s + x.adeudo, 0);
+  const adeudoTotal = casas.reduce((s,x) => s + x.adeudo, 0);
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0 .75rem;border-bottom:1.5px solid var(--brd);margin-bottom:.5rem">
     <span style="font-size:.8rem;font-weight:700;color:var(--t2)">Total adeudado</span>
     <span style="font-size:.9rem;font-weight:900;color:${adeudoTotal>0?'var(--rose)':'var(--green)'}">$${adeudoTotal.toFixed(2)}</span>
   </div>`;
 
-  html += casasConAdeudo.map(({r, adeudo}) => {
+  html += casas.map(({r, adeudo}) => {
+    const mesesDeuda = monto > 0 ? Math.round(adeudo/monto) : 0;
     return `<div class="li" style="padding:.5rem 0">
       <div class="lil">
         <div class="av ${adeudo>0?'ar':'ag'}" style="font-size:.7rem">${r.house.replace(/\D/g,'').slice(0,2)||'?'}</div>
         <div>
           <div class="in">${esc(r.name)}</div>
-          <div class="is">${r.house}${r.mora?' · ⚠️ Mora':''}</div>
+          <div class="is">${r.house}${r.mora?' · ⚠️ Mora':''}${adeudo>0?' · '+mesesDeuda+' mes'+(mesesDeuda!==1?'es':''):''}</div>
         </div>
       </div>
       <span class="bge ${adeudo>0?'r-b':'gr-b'}">${adeudo>0?'$'+adeudo.toFixed(2):'Al día'}</span>
@@ -2818,30 +3297,25 @@ function renderAdeudoPorCasa() {
 
 function renderCuotasHistorial() {
   const c = C(); if (!c) return;
-  const list = document.getElementById('cuotas-historial');
-  if (!list) return;
-  const meses = getMeses();
-  const res = c.residents || [];
+  const list = document.getElementById('cuotas-historial'); if (!list) return;
+  const meses = getMeses(6);
+  const res   = c.residents || [];
   const monto = c.cuotaConfig?.monto || 0;
-
   if (!monto) { list.innerHTML = emH('⚙️', 'Configura primero el monto de la cuota'); return; }
-
   list.innerHTML = meses.map(mes => {
-    const cuotas = c.cuotas?.[mes.key] || {};
+    const cuotas  = c.cuotas?.[mes.key] || {};
     const pagadas = res.filter(r => cuotas[r.house]?.pagado).length;
-    const total = pagadas * monto;
-    const pct = res.length ? Math.round(pagadas/res.length*100) : 0;
+    const total   = pagadas * monto;
+    const pct     = res.length ? Math.round(pagadas/res.length*100) : 0;
     return `<div style="padding:.65rem 0;border-bottom:1.5px solid var(--brd)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
         <span style="font-size:.82rem;font-weight:700;color:var(--t);text-transform:capitalize">${mes.label}</span>
-        <span style="font-size:.78rem;font-weight:700;color:${pct===100?'var(--green)':'var(--t2)'}">
+        <span style="font-size:.78rem;font-weight:700;color:${pct===100?'var(--green)':pct>50?'var(--ocre)':'var(--rose)'}">
           ${pagadas}/${res.length} · $${total.toFixed(2)}
         </span>
       </div>
-      <!-- Barra de progreso -->
       <div style="background:var(--brd);border-radius:4px;height:6px;overflow:hidden">
-        <div style="background:${pct===100?'var(--green)':pct>50?'var(--ocre)':'var(--rose)'};
-          height:100%;width:${pct}%;border-radius:4px;transition:width .3s"></div>
+        <div style="background:${pct===100?'var(--green)':pct>50?'var(--ocre)':'var(--rose)'};height:100%;width:${pct}%;border-radius:4px;transition:width .3s"></div>
       </div>
     </div>`;
   }).join('');
@@ -2896,8 +3370,11 @@ function calcAdeudo(c, house) {
   if (!monto || !c.cuotas) return 0;
   const now = new Date();
   const currentKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const mesInicio   = c.cuotaConfig?.mesInicio || '';
   return Object.entries(c.cuotas).reduce((total, [mesKey, cuotasMes]) => {
-    if (mesKey <= currentKey && !cuotasMes[house]?.pagado) return total + monto;
+    if (mesKey > currentKey) return total;                     // no contar meses futuros
+    if (mesInicio && mesKey < mesInicio) return total;         // no contar antes del inicio
+    if (!cuotasMes[house]?.pagado) return total + monto;
     return total;
   }, 0);
 }
