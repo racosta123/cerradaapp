@@ -2939,15 +2939,24 @@ async function submitRegister() {
 
   let c = S.cerradas[code];
 
-  // Si no existe localmente, sincronizar desde Firestore
-  if (!c) {
-    try {
-      const record = await fsGet(code);
-      if (record) { S.cerradas[code] = record; save(); c = S.cerradas[code]; }
-    } catch(e) {}
-  }
+  // Sincronizar siempre desde Firestore para que la validación use datos al día
+  try {
+    const record = await fsGet(code);
+    if (record) { S.cerradas[code] = record; save(); c = S.cerradas[code]; }
+  } catch(e) {}
 
   if (!c) { toast('⚠️ Sin conexión. Intenta de nuevo en unos segundos.'); return; }
+
+  // Validar que el correo no esté ya registrado como jefe en otra casa
+  for (const r of (c.residents || []).filter(r => r.house !== house)) {
+    const headEmail  = (r.email || '').toLowerCase();
+    const headMember = (r.members || []).find(m => m.role === 'head');
+    const headEmailM = (headMember?.email || '').toLowerCase();
+    if (email === headEmail || (headEmailM && email === headEmailM)) {
+      toast('⚠️ Este correo ya está registrado como residente de otra casa en esta cerrada.');
+      return;
+    }
+  }
 
   const resIdx = c.residents.findIndex(r => r.house === house);
   if (resIdx < 0) { toast('⚠️ Casa no encontrada'); return; }
