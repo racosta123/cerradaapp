@@ -1833,11 +1833,9 @@ async function _generarInviteFamiliar(c, res, emailFamiliar) {
   res.familiarToken = token;
   res.familiarTokenExpires = Date.now() + 24*60*60*1000;
   save();
+  fsPush(c).catch(()=>{}); // push en background, no bloquear
 
   toast('⏳ Generando invitación...');
-  const ok = await fsPush(c);
-  if (!ok) { toast('⚠️ Sin conexión — intenta de nuevo'); return; }
-
   const payload = btoa(JSON.stringify({
     code: c.code,
     house: res.house,
@@ -2787,14 +2785,9 @@ async function sendInvite(i) {
   c.residents[i].inviteToken = token;
   c.residents[i].inviteExpires = Date.now() + (7 * 24 * 60 * 60 * 1000);
   save();
+  fsPush(c).catch(()=>{}); // push en background, no bloquear
 
   toast('⏳ Generando invitación...');
-  const ok = await fsPush(c);
-  if (!ok) {
-    toast('⚠️ Sin conexión — intenta de nuevo');
-    return;
-  }
-
   const baseUrl = 'https://racosta123.github.io/cerradaapp/register.html';
   // Solo datos no sensibles — sin binId ni apiKey
   const payload = btoa(JSON.stringify({

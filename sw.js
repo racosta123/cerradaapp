@@ -1,4 +1,4 @@
-// CerradaApp Service Worker — v7
+// CerradaApp Service Worker — v9
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 firebase.initializeApp({
@@ -43,7 +43,7 @@ self.addEventListener('message', (e) => {
     });
   }
 });
-const CACHE = 'cerradaapp-v8';
+const CACHE = 'cerradaapp-v9';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/cerradaapp/','/cerradaapp/index.html'])));
   self.skipWaiting();
