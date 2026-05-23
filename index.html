@@ -3104,7 +3104,7 @@ function renderCuotas() {
       </div>
       <div style="display:flex;gap:.35rem;align-items:center">
         ${pagado?`<button class="btn bg2 xs" onclick="generarReciboPDF('${houseEsc}','${mesKey}')" title="Descargar recibo PDF" style="padding:.28rem .5rem;font-size:.8rem;min-height:unset">📄</button>`:''}
-        ${pagado&&phone?`<button class="btn bb2 xs" onclick="enviarReciboCuota('${houseEsc}')" title="Enviar recibo por WhatsApp" style="padding:.28rem .5rem;font-size:.8rem;min-height:unset">📲</button>`:''}
+        ${pagado?`<button class="btn bb2 xs" onclick="compartirReciboWhatsApp('${houseEsc}','${mesKey}')" title="Compartir recibo por WhatsApp" style="padding:.28rem .5rem;font-size:.8rem;min-height:unset">📲</button>`:''}
         <button class="btn ${pagado?'bd':'bp'} sm"
           onclick="toggleCuota('${mesKey}','${houseEsc}')" style="min-width:78px;font-size:.77rem">
           ${pagado?'↩ Revertir':'✓ Pago'}
@@ -3205,28 +3205,9 @@ async function marcarTodosMes() {
   renderCuotas(); updateDash();
 }
 
-function enviarReciboCuota(house) {
-  const c = C(); if (!c) return;
-  const sel = document.getElementById('cuota-mes'); if (!sel) return;
-  const mesKey = sel.value;
-  const res = c.residents?.find(r => r.house === house);
-  if (!res?.phone) { toast('⚠️ Sin teléfono registrado'); return; }
-  const cuota  = c.cuotas?.[mesKey]?.[house] || {};
-  const monto  = cuota.monto || c.cuotaConfig?.monto || 0;
-  const metodo = cuota.metodo || 'Efectivo';
-  const nota   = cuota.nota || '';
-  const fecha  = cuota.fecha ? new Date(cuota.fecha).toLocaleDateString('es',{day:'2-digit',month:'long',year:'numeric'}) : new Date().toLocaleDateString('es');
-  const [year, month] = mesKey.split('-');
-  const mesLabel = new Date(parseInt(year), parseInt(month)-1).toLocaleString('es',{month:'long',year:'numeric'});
-  const phone  = res.phone.replace(/\D/g,'');
-  const msg = `✅ *${c.name}*\n\nHola ${res.name}, confirmamos tu pago de cuota:\n\n📅 *Mes:* ${mesLabel.charAt(0).toUpperCase()+mesLabel.slice(1)}\n💵 *Monto:* $${monto}\n💳 *Método:* ${metodo}\n📆 *Fecha:* ${fecha}${nota?'\n📝 *Nota:* '+nota:''}\n\n_Gracias por tu pago._`;
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-  toast('📲 Abriendo WhatsApp...');
-}
-
-function generarReciboPDF(house, mesKey) {
-  const c = C(); if (!c) return;
-  const res = c.residents?.find(r => r.house === house); if (!res) return;
+function _buildReciboPDF(house, mesKey) {
+  const c = C(); if (!c) return null;
+  const res = c.residents?.find(r => r.house === house); if (!res) return null;
   const cuota   = c.cuotas?.[mesKey]?.[house] || {};
   const monto   = cuota.monto   || c.cuotaConfig?.monto || 0;
   const metodo  = cuota.metodo  || 'Efectivo';
@@ -3370,8 +3351,44 @@ function generarReciboPDF(house, mesKey) {
   doc.setFontSize(6.5);
   doc.text('Comprobante oficial de pago de cuota mensual · Generado por CerradaApp', W/2, y+5, {align:'center'});
 
-  doc.save(`recibo-${house.replace(/\s+/g,'-')}-${mesKey}.pdf`);
+  const fileName = `recibo-${house.replace(/\s+/g,'-')}-${mesKey}.pdf`;
+  const phone = (res.phone || '').replace(/\D/g,'');
+  const textMsg = `✅ *${c.name}*\n\nHola ${res.name}, adjunto tu recibo de pago de cuota:\n\n📅 *Mes:* ${mesLabelCap}\n💵 *Monto:* $${monto.toFixed(2)}\n💳 *Método:* ${metodo}\n📆 *Fecha:* ${fechaStr}${nota?'\n📝 *Nota:* '+nota:''}\n\n_Comprobante generado por CerradaApp_`;
+  return { doc, fileName, phone, textMsg };
+}
+
+function generarReciboPDF(house, mesKey) {
+  const result = _buildReciboPDF(house, mesKey);
+  if (!result) return;
+  result.doc.save(result.fileName);
   toast('📄 Recibo descargado');
+}
+
+async function compartirReciboWhatsApp(house, mesKey) {
+  const result = _buildReciboPDF(house, mesKey);
+  if (!result) return;
+  const { doc, fileName, phone, textMsg } = result;
+
+  // Intentar Web Share API con archivo (funciona en Android Chrome e iOS Safari 15+)
+  try {
+    const blob = doc.output('blob');
+    const file = new File([blob], fileName, { type: 'application/pdf' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], text: textMsg, title: fileName });
+      toast('📲 Recibo compartido');
+      return;
+    }
+  } catch(e) {
+    if (e.name === 'AbortError') return; // usuario canceló el panel de compartir
+  }
+
+  // Fallback: descargar PDF y abrir WhatsApp con el texto del recibo
+  doc.save(fileName);
+  const waUrl = phone
+    ? `https://wa.me/${phone}?text=${encodeURIComponent(textMsg)}`
+    : `https://wa.me/?text=${encodeURIComponent(textMsg)}`;
+  setTimeout(() => window.open(waUrl, '_blank'), 700);
+  toast('📄 PDF descargado — adjúntalo en WhatsApp');
 }
 
 function renderAdeudoPorCasa() {
