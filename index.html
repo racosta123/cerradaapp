@@ -409,7 +409,9 @@ select option{background:#1A1A2A;color:var(--t)}
   font-family:var(--fd);letter-spacing:.01em}
 #toast.show{transform:translateX(-50%) translateY(0)}
 .empty{text-align:center;padding:1.85rem;color:var(--t3);font-size:.82rem;font-weight:600}
-.empty-ico{font-size:2.1rem;margin-bottom:.5rem;opacity:.25}
+.empty-ico{margin-bottom:.75rem;display:flex;justify-content:center;opacity:.28}
+.empty-ico svg{width:52px;height:52px}
+.ic{display:inline-flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0}
 #scr-susp{background:linear-gradient(160deg,#1A0A0A 0%,#0D0D1A 100%)}
 /* override register screen inline light gradient */
 #scr-register>div{background:var(--bg)!important}
@@ -425,7 +427,7 @@ select option{background:#1A1A2A;color:var(--t)}
 <div id="scr-login" class="screen active">
   <div class="lcard">
     <div class="brand">
-      <div class="brand-ico">🏘️</div>
+      <div class="brand-ico"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"/></svg></div>
       <h1>CerradaApp</h1>
       <p>Control de Acceso Comunitario</p>
     </div>
@@ -449,13 +451,13 @@ select option{background:#1A1A2A;color:var(--t)}
       </div>
       <!-- Vista B: Sin registro — mensaje de invitación -->
       <div id="res-invite-msg" style="display:none;text-align:center;padding:.5rem 0">
-        <div style="font-size:2rem;margin-bottom:.65rem">📲</div>
+        <div style="margin-bottom:.65rem;display:flex;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 8.25h3"/></svg></div>
         <p style="font-size:.84rem;color:var(--t2);line-height:1.6;margin-bottom:1rem">
           Pide a tu administrador que te envíe la invitación por WhatsApp.
         </p>
         <div style="background:var(--ocre-lt);border:1.5px solid rgba(201,155,46,.25);
           border-radius:12px;padding:.85rem;font-size:.77rem;color:var(--t);text-align:left">
-          <b style="color:var(--ocre)">⚠️ Importante:</b><br>
+          <b style="color:var(--ocre)">Importante:</b><br>
           Cuando recibas el link, ábrelo desde WhatsApp <b>antes</b> de instalar la app.
         </div>
         <button class="btn bg2" style="margin-top:.85rem;width:auto;padding:.5rem 1.25rem"
@@ -469,7 +471,7 @@ select option{background:#1A1A2A;color:var(--t)}
     <div style="text-align:center">
       <span onclick="toggleStaff()" style="font-size:.68rem;color:var(--t3);cursor:pointer;
         padding:.3rem .6rem;border-radius:6px;user-select:none">
-        ⚙️ Acceso personal
+        Acceso personal
       </span>
     </div>
     <div id="staff-access" style="display:none;margin-top:.75rem">
@@ -493,9 +495,9 @@ select option{background:#1A1A2A;color:var(--t)}
       padding:2rem 1.75rem;box-shadow:0 8px 40px rgba(59,130,196,.14)">
 
       <div style="text-align:center;margin-bottom:1.25rem">
-        <div style="width:56px;height:56px;background:linear-gradient(135deg,var(--blue),var(--sky));
+        <div style="width:56px;height:56px;background:linear-gradient(135deg,#F5A623,#E8850A);
           border-radius:16px;display:flex;align-items:center;justify-content:center;
-          margin:0 auto .7rem;font-size:1.5rem;box-shadow:0 6px 20px rgba(59,130,196,.3)">🏘️</div>
+          margin:0 auto .7rem;box-shadow:0 6px 20px rgba(232,133,10,.4)"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0D0D1A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"/></svg></div>
         <h2 id="reg-title" style="font-family:var(--fd);font-size:1.25rem;font-weight:900;color:var(--blue)">
           Registro</h2>
         <p id="reg-subtitle" style="font-size:.78rem;color:var(--t2);margin-top:.2rem"></p>
@@ -529,7 +531,7 @@ select option{background:#1A1A2A;color:var(--t)}
 
       <div id="reg-family-info" style="display:none;margin-top:.85rem;background:var(--green-lt);
         border:1.5px solid rgba(59,191,110,.2);border-radius:12px;padding:.85rem;text-align:center">
-        <div style="font-size:.9rem;margin-bottom:.3rem">👨‍👩‍👧‍👦</div>
+        <div style="margin-bottom:.3rem;display:flex;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg></div>
         <p style="font-size:.75rem;color:var(--green);font-weight:700;margin-bottom:.2rem">
           Ya puedes invitar hasta 4 familiares</p>
         <p style="font-size:.72rem;color:var(--t2)">
@@ -542,7 +544,7 @@ select option{background:#1A1A2A;color:var(--t)}
 <!-- SUSPENDED -->
 <div id="scr-susp" class="screen">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center">
-    <div style="font-size:3rem;margin-bottom:1rem">🔒</div>
+    <div style="margin-bottom:1rem;display:flex;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg></div>
     <h2 style="font-family:var(--fd);font-size:1.35rem;margin-bottom:.65rem">Acceso Suspendido</h2>
     <p id="susp-msg" style="color:var(--t2);font-size:.8rem;max-width:260px;line-height:1.6"></p>
     <button class="btn bg2" style="margin-top:1.25rem;width:auto;padding:.6rem 1.5rem" onclick="logout()">← Volver</button>
@@ -554,25 +556,26 @@ select option{background:#1A1A2A;color:var(--t)}
   <div class="topbar">
     <div class="t-brand"><div><div class="t-brand-main" id="res-cname">Mi Cerrada</div><div class="t-brand-sub" id="res-sub">Residente</div></div></div>
     <div class="t-right">
-      <span id="sync-res" style="font-size:.9rem">☁️</span>
+      <span id="sync-res" style="display:inline-flex;align-items:center;width:18px;height:18px"></span>
       <span class="bge g-b" id="res-house">Casa</span>
-      <button id="btn-switch-adm" class="btn bg2 sm" onclick="switchToAdmin()" style="display:none;background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35);padding:.3rem .65rem;font-size:.74rem">🛡️ Admin</button>
+      <button id="btn-switch-adm" class="btn bg2 sm" onclick="switchToAdmin()" style="display:none;background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35);padding:.3rem .65rem;font-size:.74rem">Admin</button>
       <button class="btn bg2 sm" onclick="confirmLogoutRes()" style="background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35);padding:.3rem .65rem;font-size:.74rem">Salir</button>
     </div>
   </div>
   <div class="nav">
-    <button class="ntab on" onclick="resP('portones',this)">🚗 Portones</button>
-    <button class="ntab" onclick="resP('finanzas',this)">💰 Finanzas</button>
-    <button class="ntab" onclick="resP('historial',this)">📋 Historial</button>
+    <button class="ntab on" onclick="resP('portones',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg></span>Portones</button>
+    <button class="ntab" onclick="resP('finanzas',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>Finanzas</button>
+    <button class="ntab" onclick="resP('historial',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg></span>Historial</button>
   </div>
   <div class="content">
     <div id="rp-portones" class="panel on">
-      <p style="font-size:.76rem;color:var(--t2);margin-bottom:.8rem;font-weight:600">Mantén presionado hasta que se ponga verde 🔓</p>
+      <p style="font-size:.76rem;color:var(--t2);margin-bottom:.8rem;font-weight:600">Mantén presionado hasta que se ponga verde</p>
       <div id="gate-res" class="gate-grid g1"></div>
       <!-- Botón invitar familiares (solo para jefe de familia) -->
       <div id="res-invite-btn" style="display:none;margin-top:.6rem">
-        <button class="btn bb2" onclick="invitarFamiliar()" style="font-size:.82rem;width:100%">
-          👨‍👩‍👧 Invitar familiar a mi casa
+        <button class="btn bb2" onclick="invitarFamiliar()" style="font-size:.82rem;width:100%;display:flex;align-items:center;justify-content:center;gap:.45rem">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+          Invitar familiar a mi casa
         </button>
         <div id="res-members-list" style="margin-top:.6rem"></div>
       </div>
@@ -580,22 +583,22 @@ select option{background:#1A1A2A;color:var(--t)}
     <div id="rp-finanzas" class="panel">
       <!-- MI CUENTA -->
       <div class="card" style="background:linear-gradient(135deg,var(--blue-lt),var(--sky-lt));border:1.5px solid rgba(59,130,196,.2)">
-        <div class="ch"><div class="ct" style="color:var(--blue)">🏠 Mi Estado de Cuenta</div></div>
-        <div id="rf-micuenta"><div class="empty"><div class="empty-ico">🏦</div>Sin cuotas registradas</div></div>
+        <div class="ch"><div class="ct" style="color:var(--blue);display:flex;align-items:center;gap:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>Mi Estado de Cuenta</div></div>
+        <div id="rf-micuenta"><div class="empty"><div class="empty-ico"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"/></svg></div>Sin cuotas registradas</div></div>
       </div>
 
-      <div class="trans-hdr"><h3>💡 Transparencia Financiera</h3><p>Cómo se administra el dinero de tu cerrada</p></div>
+      <div class="trans-hdr"><h3>Transparencia Financiera</h3><p>Cómo se administra el dinero de tu cerrada</p></div>
       <div class="fbar">
         <div class="fc"><div class="fl">Cobrado</div><div class="fv fi" id="rf-i">$0</div></div>
         <div class="fc"><div class="fl">Gastos</div><div class="fv fe" id="rf-e">$0</div></div>
         <div class="fc"><div class="fl">Caja</div><div class="fv fb2" id="rf-b">$0</div></div>
       </div>
       <div class="card"><div class="ch"><div class="ct">Movimientos del Mes</div></div>
-        <div id="rf-list"><div class="empty"><div class="empty-ico">💰</div>Sin movimientos</div></div></div>
+        <div id="rf-list"><div class="empty"><div class="empty-ico"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>Sin movimientos</div></div></div>
     </div>
     <div id="rp-historial" class="panel">
       <div class="card"><div class="ch"><div class="ct">Mis Accesos</div></div>
-        <div id="rh-list"><div class="empty"><div class="empty-ico">📋</div>Sin registros</div></div></div>
+        <div id="rh-list"><div class="empty"><div class="empty-ico"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg></div>Sin registros</div></div></div>
     </div>
   </div>
 </div>
@@ -605,20 +608,20 @@ select option{background:#1A1A2A;color:var(--t)}
   <div class="topbar">
     <div class="t-brand"><div><div class="t-brand-main" id="adm-cname">Mi Cerrada</div><div class="t-brand-sub">Administrador</div></div></div>
     <div class="t-right">
-      <span id="sync-adm" style="font-size:.9rem">☁️</span>
+      <span id="sync-adm" style="display:inline-flex;align-items:center;width:18px;height:18px"></span>
       <span class="bge b-b">Sub-Admin</span>
-      <button id="btn-switch-res" class="btn bg2 sm" onclick="switchToResident()" style="display:none;background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35);padding:.3rem .65rem;font-size:.74rem">🏠 Res.</button>
+      <button id="btn-switch-res" class="btn bg2 sm" onclick="switchToResident()" style="display:none;background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35);padding:.3rem .65rem;font-size:.74rem">Res.</button>
       <button class="btn bg2 sm" onclick="logout()">Salir</button>
     </div>
   </div>
   <div class="nav">
-    <button class="ntab on" onclick="admP('dashboard',this)">📊 Panel</button>
-    <button class="ntab" onclick="admP('vecinos',this)">👥 Vecinos</button>
-    <button class="ntab" onclick="admP('historial',this)">📋 Historial</button>
-    <button class="ntab" onclick="admP('finanzas',this)">💰 Finanzas</button>
-    <button class="ntab" onclick="admP('cuotas',this)">🏦 Cuotas</button>
-    <button class="ntab" onclick="admP('portones',this)">🚪 Portones</button>
-    <button class="ntab" onclick="admP('config',this)">⚙️ Config</button>
+    <button class="ntab on" onclick="admP('dashboard',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg></span>Panel</button>
+    <button class="ntab" onclick="admP('vecinos',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg></span>Vecinos</button>
+    <button class="ntab" onclick="admP('historial',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg></span>Historial</button>
+    <button class="ntab" onclick="admP('finanzas',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>Finanzas</button>
+    <button class="ntab" onclick="admP('cuotas',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"/></svg></span>Cuotas</button>
+    <button class="ntab" onclick="admP('portones',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg></span>Portones</button>
+    <button class="ntab" onclick="admP('config',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></span>Config</button>
   </div>
   <div class="content">
     <div id="ap-dashboard" class="panel on">
@@ -629,9 +632,9 @@ select option{background:#1A1A2A;color:var(--t)}
         <div class="sc"><div class="sl">Aperturas Hoy</div><div class="sv" style="color:var(--sky)" id="ds-open">0</div></div>
       </div>
       <div class="card"><div class="ch"><div class="ct">Actividad Reciente</div></div>
-        <div id="ds-recent"><div class="empty"><div class="empty-ico">📋</div>Sin actividad</div></div></div>
+        <div id="ds-recent"><div class="empty"><div class="empty-ico"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg></div>Sin actividad</div></div></div>
       <div class="card"><div class="ch"><div class="ct">Finanzas del Mes</div>
-        <button class="btn bg2 sm" onclick="genPDF()">📄 PDF</button></div>
+        <button class="btn bg2 sm" onclick="genPDF()" style="display:flex;align-items:center;gap:.35rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>PDF</button></div>
         <div class="fbar">
           <div class="fc"><div class="fl">Cobrado</div><div class="fv fi" id="af-i">$0</div></div>
           <div class="fc"><div class="fl">Gastos</div><div class="fv fe" id="af-e">$0</div></div>
@@ -649,11 +652,11 @@ select option{background:#1A1A2A;color:var(--t)}
         <button class="btn bp" onclick="addVec()">+ Agregar Vecino</button>
       </div>
       <div class="sh"><h3>Vecinos Registrados</h3><span class="bge b-b" id="vec-cnt">0</span></div>
-      <div id="vec-list"><div class="empty"><div class="empty-ico">👥</div>Sin vecinos</div></div>
+      <div id="vec-list"><div class="empty"><div class="empty-ico"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg></div>Sin vecinos</div></div>
     </div>
     <div id="ap-historial" class="panel">
-      <div class="sh"><h3>Historial de Accesos</h3><button class="btn bd sm" onclick="clearHist()">🗑 Limpiar</button></div>
-      <div id="adm-hist"><div class="empty"><div class="empty-ico">📋</div>Sin registros</div></div>
+      <div class="sh"><h3>Historial de Accesos</h3><button class="btn bd sm" onclick="clearHist()" style="display:flex;align-items:center;gap:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>Limpiar</button></div>
+      <div id="adm-hist"><div class="empty"><div class="empty-ico"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg></div>Sin registros</div></div>
     </div>
     <div id="ap-finanzas" class="panel">
 
@@ -709,9 +712,9 @@ select option{background:#1A1A2A;color:var(--t)}
       <!-- MOVIMIENTOS MES ACTUAL -->
       <div class="sh">
         <h3 id="fn-mes-titulo">Movimientos del Mes</h3>
-        <button class="btn bg2 sm" onclick="genPDF()">📄 PDF</button>
+        <button class="btn bg2 sm" onclick="genPDF()" style="display:flex;align-items:center;gap:.35rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>PDF</button>
       </div>
-      <div id="adm-fin-list"><div class="empty"><div class="empty-ico">💰</div>Sin movimientos</div></div>
+      <div id="adm-fin-list"><div class="empty"><div class="empty-ico"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>Sin movimientos</div></div>
 
       <!-- HISTORIAL MESES ANTERIORES -->
       <div class="sh" style="margin-top:1rem"><h3>Historial de Meses</h3></div>
@@ -722,7 +725,7 @@ select option{background:#1A1A2A;color:var(--t)}
       <!-- RESUMEN DE CUOTAS -->
       <div class="card">
         <div class="ch">
-          <div class="ct">🏦 Registro de Cuotas</div>
+          <div class="ct" style="display:flex;align-items:center;gap:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"/></svg>Registro de Cuotas</div>
           <div style="display:flex;gap:.5rem;align-items:center">
             <select id="cuota-mes" onchange="renderCuotas()" style="margin:0;font-size:.75rem;padding:.3rem .6rem;width:auto">
             </select>
@@ -739,7 +742,7 @@ select option{background:#1A1A2A;color:var(--t)}
 
       <!-- CONFIGURAR MONTO DE CUOTA -->
       <div class="card">
-        <div class="ch"><div class="ct">⚙️ Configurar Cuota</div></div>
+        <div class="ch"><div class="ct" style="display:flex;align-items:center;gap:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Configurar Cuota</div></div>
         <div class="frow">
           <div>
             <label>Monto mensual ($)</label>
@@ -755,18 +758,18 @@ select option{background:#1A1A2A;color:var(--t)}
         <p style="font-size:.71rem;color:var(--t3);margin-bottom:.85rem;line-height:1.5">
           El adeudo solo se contará a partir de este mes. Sin fecha de inicio, solo se cuentan los meses que hayas abierto manualmente.
         </p>
-        <button class="btn bp" onclick="saveCuotaConfig()">💾 Guardar Configuración</button>
+        <button class="btn bp" onclick="saveCuotaConfig()" style="display:flex;align-items:center;justify-content:center;gap:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg>Guardar Configuración</button>
       </div>
 
       <!-- HISTORIAL 3 MESES -->
       <div class="card">
-        <div class="ch"><div class="ct">📊 Historial de Pagos</div></div>
+        <div class="ch"><div class="ct" style="display:flex;align-items:center;gap:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>Historial de Pagos</div></div>
         <div id="cuotas-historial"></div>
       </div>
 
       <!-- ADEUDO POR CASA -->
       <div class="card">
-        <div class="ch"><div class="ct">💰 Adeudo por Casa</div></div>
+        <div class="ch"><div class="ct" style="display:flex;align-items:center;gap:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Adeudo por Casa</div></div>
         <div id="cuotas-adeudo"></div>
       </div>
     </div>
@@ -775,7 +778,7 @@ select option{background:#1A1A2A;color:var(--t)}
       <div class="card"><div class="ch"><div class="ct">Configurar Portones</div></div>
         <p style="font-size:.75rem;color:var(--t2);margin-bottom:.85rem">Puedes personalizar el nombre e icono de cada portón.</p>
         <div id="adm-plist"></div>
-        <button class="btn bp" style="margin-top:.6rem" onclick="savePortones()">💾 Guardar</button>
+        <button class="btn bp" style="margin-top:.6rem;display:flex;align-items:center;justify-content:center;gap:.4rem" onclick="savePortones()"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg>Guardar</button>
       </div>
       <div class="card"><div class="ch"><div class="ct">Probar Portones</div></div>
         <p style="font-size:.75rem;color:var(--t2);margin-bottom:.75rem">Solo para pruebas técnicas</p>
@@ -784,7 +787,7 @@ select option{background:#1A1A2A;color:var(--t)}
     </div>
     <div id="ap-config" class="panel">
       <div class="card">
-        <div class="ch"><div class="ct">🔑 Mi PIN de Administrador</div></div>
+        <div class="ch"><div class="ct" style="display:flex;align-items:center;gap:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>Mi PIN de Administrador</div></div>
         <p style="font-size:.78rem;color:var(--t2);margin-bottom:.85rem">Cambia tu PIN de acceso al sistema.</p>
         <label>PIN actual</label>
         <input id="cfg-pin-old" type="password" maxlength="8" placeholder="Tu PIN actual">
@@ -805,14 +808,14 @@ select option{background:#1A1A2A;color:var(--t)}
     <div class="t-right"><span class="bge y-b">Master</span><button class="btn bg2 sm" onclick="logout()">Salir</button></div>
   </div>
   <div class="nav">
-    <button class="ntab on" onclick="mstP('cerradas',this)">🏘️ Cerradas</button>
-    <button class="ntab" onclick="mstP('negocio',this)">📊 Negocio</button>
-    <button class="ntab" onclick="mstP('config',this)">⚙️ Config</button>
+    <button class="ntab on" onclick="mstP('cerradas',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"/></svg></span>Cerradas</button>
+    <button class="ntab" onclick="mstP('negocio',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg></span>Negocio</button>
+    <button class="ntab" onclick="mstP('config',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></span>Config</button>
   </div>
   <div class="content">
     <div id="mp-cerradas" class="panel on">
       <div class="sh"><h3>Cerradas Registradas</h3><button class="btn bp sm" onclick="openModal('modal-nueva')">+ Nueva</button></div>
-      <div id="mst-list"><div class="empty"><div class="empty-ico">🏘️</div>Sin cerradas</div></div>
+      <div id="mst-list"><div class="empty"><div class="empty-ico"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"/></svg></div>Sin cerradas</div></div>
     </div>
     <div id="mp-negocio" class="panel">
       <div class="sgrid">
@@ -823,30 +826,30 @@ select option{background:#1A1A2A;color:var(--t)}
       </div>
       <div class="card"><div class="ch"><div class="ct">Proyección de Ingresos</div></div>
         <div class="li"><div class="lil"><div class="av ag">$</div><div><div class="in">Tarifa/cerrada</div><div class="is">Mensualidad actual</div></div></div><span class="bge gr-b" id="nb-price">$20/mes</span></div>
-        <div class="li"><div class="lil"><div class="av ab">📈</div><div><div class="in">10 cerradas</div><div class="is">Corto plazo</div></div></div><span class="bge b-b" id="nb-p10">$200/mes</span></div>
-        <div class="li"><div class="lil"><div class="av ag">🎯</div><div><div class="in">25 cerradas</div><div class="is">Meta 6 meses</div></div></div><span class="bge gr-b" id="nb-p25">$500/mes</span></div>
-        <div class="li"><div class="lil"><div class="av ay">🚀</div><div><div class="in">50 cerradas</div><div class="is">Meta 1 año</div></div></div><span class="bge y-b" id="nb-p50">$1,000/mes</span></div>
+        <div class="li"><div class="lil"><div class="av ab ic"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg></div><div><div class="in">10 cerradas</div><div class="is">Corto plazo</div></div></div><span class="bge b-b" id="nb-p10">$200/mes</span></div>
+        <div class="li"><div class="lil"><div class="av ag ic"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zm-7.518-.267A8.25 8.25 0 1120.25 10.5M8.288 14.212A5.25 5.25 0 1117.25 10.5"/></svg></div><div><div class="in">25 cerradas</div><div class="is">Meta 6 meses</div></div></div><span class="bge gr-b" id="nb-p25">$500/mes</span></div>
+        <div class="li"><div class="lil"><div class="av ay ic"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg></div><div><div class="in">50 cerradas</div><div class="is">Meta 1 año</div></div></div><span class="bge y-b" id="nb-p50">$1,000/mes</span></div>
       </div>
     </div>
     <div id="mp-config" class="panel">
       <div class="card">
-        <div class="ch"><div class="ct">☁️ Sincronización Firestore</div><span class="bge gr-b">Activo</span></div>
+        <div class="ch"><div class="ct"><span class="ic" style="margin-right:.35rem"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33 4.502 4.502 0 00-1.091 8.775z"/></svg></span>Sincronización Firestore</div><span class="bge gr-b">Activo</span></div>
         <p style="font-size:.78rem;color:var(--t2);margin-bottom:.85rem">Los datos de cada cerrada se sincronizan automáticamente con Firestore. Si iniciaste sesión en un dispositivo nuevo, ingresa el código de la cerrada para importarla.</p>
         <label>Código de cerrada</label>
         <div style="display:flex;gap:.5rem">
           <input id="mc-fs-code" placeholder="Ej: SMARK-001" style="margin:0;flex:1" oninput="this.value=this.value.toUpperCase()">
-          <button class="btn bp" style="white-space:nowrap" onclick="loadMstFirestore()">🔄 Importar</button>
+          <button class="btn bp" style="white-space:nowrap;display:inline-flex;align-items:center;gap:.35rem" onclick="loadMstFirestore()"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>Importar</button>
         </div>
         <div id="mc-fs-msg" style="margin-top:.6rem;font-size:.78rem;color:var(--t2);display:none"></div>
       </div>
-      <div class="card"><div class="ch"><div class="ct">🔑 Acceso Master</div></div>
+      <div class="card"><div class="ch"><div class="ct"><span class="ic" style="margin-right:.35rem"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg></span>Acceso Master</div></div>
         <label>Usuario master</label>
         <input id="mc-user" type="text" placeholder="MASTER" autocomplete="off">
         <label>Nueva clave maestra (mín. 8 caracteres)</label>
         <input id="mc-key" type="password" placeholder="Nueva clave" autocomplete="off">
         <button class="btn bp" onclick="changeMasterKey()">Guardar Acceso Master</button>
       </div>
-      <div class="card"><div class="ch"><div class="ct">💰 Tarifa por Defecto</div></div>
+      <div class="card"><div class="ch"><div class="ct"><span class="ic" style="margin-right:.35rem"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>Tarifa por Defecto</div></div>
         <label>Mensualidad base ($)</label>
         <input id="mc-price" type="number" placeholder="20" min="1">
         <button class="btn bg2 wf" onclick="saveMasterPrice()">Guardar Tarifa</button>
@@ -858,7 +861,7 @@ select option{background:#1A1A2A;color:var(--t)}
 <!-- MODAL NUEVA CERRADA -->
 <div class="mover" id="modal-nueva" onclick="mbg(event,'modal-nueva')">
   <div class="mdl">
-    <div class="mtitle">🏘️ Nueva Cerrada</div>
+    <div class="mtitle"><span class="ic" style="margin-right:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"/></svg></span>Nueva Cerrada</div>
     <div class="frow">
       <div><label>Nombre</label><input id="nc-name" placeholder="Residencial Las Palmas"></div>
       <div><label>Código único</label><input id="nc-code" placeholder="CERR-001" oninput="this.value=this.value.toUpperCase()"></div>
@@ -874,7 +877,7 @@ select option{background:#1A1A2A;color:var(--t)}
     </div>
     <div style="border-top:1px solid var(--brd);padding-top:.85rem;margin-top:.1rem">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
-        <span style="font-family:var(--fd);font-size:.9rem;font-weight:800">🚪 Portones</span>
+        <span style="font-family:var(--fd);font-size:.9rem;font-weight:800;display:inline-flex;align-items:center;gap:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>Portones</span>
         <button class="btn bb2 xs" onclick="addPortonRow()">+ Portón</button>
       </div>
       <p style="font-size:.72rem;color:var(--t2);margin-bottom:.75rem">El Sub-Admin configurará las IPs después.</p>
@@ -890,7 +893,7 @@ select option{background:#1A1A2A;color:var(--t)}
 <!-- MODAL ELIMINAR VECINO -->
 <div class="mover" id="modal-del-vec" onclick="mbg(event,'modal-del-vec')">
   <div class="mdl">
-    <div class="mtitle">🗑 Eliminar vecino</div>
+    <div class="mtitle"><span class="ic" style="margin-right:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg></span>Eliminar vecino</div>
     <p style="text-align:center;margin:12px 0 4px;font-size:.95rem;color:#1e3a5f">¿Estás seguro que deseas eliminar a</p>
     <p style="text-align:center;font-weight:800;font-size:1.05rem;color:#dc2626" id="del-vec-nombre"></p>
     <p style="text-align:center;font-size:.85rem;color:#64748b;margin-bottom:16px" id="del-vec-casa"></p>
@@ -905,13 +908,13 @@ select option{background:#1A1A2A;color:var(--t)}
 <!-- MODAL MORA -->
 <div class="mover" id="modal-mora" onclick="mbg(event,'modal-mora')">
   <div class="mdl">
-    <div class="mtitle">⚠️ Suspender por Mora</div>
+    <div class="mtitle"><span class="ic" style="margin-right:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></span>Suspender por Mora</div>
     <input type="hidden" id="mora-idx">
     <label>Nota de mora (motivo / monto)</label>
     <textarea id="mora-note" placeholder="Ej: Debe cuotas de enero y febrero — $40.00"></textarea>
     <div class="frow">
       <button class="btn bg2" onclick="closeModal('modal-mora')">Cancelar</button>
-      <button class="btn bd" onclick="applyMora()">🔒 Suspender</button>
+      <button class="btn bd" onclick="applyMora()" style="display:inline-flex;align-items:center;gap:.35rem"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>Suspender</button>
     </div>
   </div>
 </div>
@@ -930,7 +933,7 @@ select option{background:#1A1A2A;color:var(--t)}
   <div class="mdl">
     <!-- Paso 1: Confirmar -->
     <div id="logout-step1">
-      <div style="text-align:center;font-size:2.8rem;margin-bottom:.6rem">🚪</div>
+      <div style="text-align:center;margin-bottom:.6rem;display:flex;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg></div>
       <div class="mtitle" style="text-align:center;margin-bottom:.4rem">¿Deseas salir?</div>
       <p style="text-align:center;color:var(--t2);font-size:.83rem;margin-bottom:1.3rem;line-height:1.55">
         Para volver a entrar necesitarás tu correo y contraseña.
@@ -942,7 +945,7 @@ select option{background:#1A1A2A;color:var(--t)}
     </div>
     <!-- Paso 2: Verificar contraseña -->
     <div id="logout-step2" style="display:none">
-      <div class="mtitle">🔐 Confirma tu contraseña</div>
+      <div class="mtitle"><span class="ic" style="margin-right:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg></span>Confirma tu contraseña</div>
       <p style="color:var(--t2);font-size:.82rem;margin-bottom:.9rem;line-height:1.5">
         Ingresa tu contraseña o PIN para confirmar que eres tú.
       </p>
@@ -963,7 +966,7 @@ select option{background:#1A1A2A;color:var(--t)}
 <!-- MODAL GESTIONAR CONTRASEÑA VECINO (Admin) -->
 <div class="mover" id="modal-pin-vec" onclick="mbg(event,'modal-pin-vec')">
   <div class="mdl">
-    <div class="mtitle">🔑 Contraseña de acceso</div>
+    <div class="mtitle"><span class="ic" style="margin-right:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg></span>Contraseña de acceso</div>
     <div id="pin-modal-body"></div>
     <button class="btn bg2 wf" style="margin-top:.75rem" onclick="closeModal('modal-pin-vec')">Cerrar</button>
   </div>
@@ -972,7 +975,7 @@ select option{background:#1A1A2A;color:var(--t)}
 <!-- MODAL EDITAR VECINO -->
 <div class="mover" id="modal-edit-vec" onclick="mbg(event,'modal-edit-vec')">
   <div class="mdl">
-    <div class="mtitle">✏️ Editar Vecino</div>
+    <div class="mtitle"><span class="ic" style="margin-right:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg></span>Editar Vecino</div>
     <input type="hidden" id="ev-idx">
     <label>Casa / Lote</label>
     <input id="ev-house" placeholder="Casa 12">
@@ -988,7 +991,7 @@ select option{background:#1A1A2A;color:var(--t)}
     <div class="err" id="ev-err"></div>
     <div class="frow">
       <button class="btn bg2" onclick="closeModal('modal-edit-vec')">Cancelar</button>
-      <button class="btn bp" onclick="saveEditVec()">💾 Guardar</button>
+      <button class="btn bp" onclick="saveEditVec()" style="display:inline-flex;align-items:center;gap:.35rem"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg>Guardar</button>
     </div>
   </div>
 </div>
@@ -996,21 +999,21 @@ select option{background:#1A1A2A;color:var(--t)}
 <!-- MODAL REGISTRAR PAGO DE CUOTA -->
 <div class="mover" id="modal-pago" onclick="mbg(event,'modal-pago')">
   <div class="mdl">
-    <div class="mtitle">✅ Registrar Pago de Cuota</div>
+    <div class="mtitle"><span class="ic" style="margin-right:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg></span>Registrar Pago de Cuota</div>
     <div id="pago-desc" style="background:var(--blue-lt);border:1.5px solid rgba(59,130,196,.18);border-radius:12px;padding:.85rem 1rem;margin-bottom:.9rem;font-size:.85rem;color:var(--t);line-height:1.6"></div>
     <label>Método de pago</label>
     <select id="pago-metodo" style="margin-bottom:.8rem">
-      <option value="Efectivo">💵 Efectivo</option>
-      <option value="Transferencia">📱 Transferencia</option>
-      <option value="Depósito">🏦 Depósito bancario</option>
-      <option value="Cheque">📝 Cheque</option>
+      <option value="Efectivo">Efectivo</option>
+      <option value="Transferencia">Transferencia</option>
+      <option value="Depósito">Depósito bancario</option>
+      <option value="Cheque">Cheque</option>
       <option value="Otro">Otro</option>
     </select>
     <label>Nota / Referencia (opcional)</label>
     <input id="pago-nota" placeholder="Ej: Recibo #001, referencia 4567..." style="margin-bottom:.6rem">
     <div class="frow" style="margin-top:.3rem">
       <button class="btn bg2" onclick="closeModal('modal-pago')">Cancelar</button>
-      <button class="btn bp" onclick="confirmarPago()">✅ Confirmar Pago</button>
+      <button class="btn bp" onclick="confirmarPago()" style="display:inline-flex;align-items:center;gap:.35rem"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Confirmar Pago</button>
     </div>
   </div>
 </div>
@@ -1018,7 +1021,7 @@ select option{background:#1A1A2A;color:var(--t)}
 <!-- MODAL CAMBIAR A ADMIN -->
 <div class="mover" id="modal-switch-adm" onclick="mbg(event,'modal-switch-adm')">
   <div class="mdl">
-    <div class="mtitle">🛡️ Acceso Administrador</div>
+    <div class="mtitle"><span class="ic" style="margin-right:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg></span>Acceso Administrador</div>
     <p style="font-size:.8rem;color:var(--t2);margin-bottom:.9rem;line-height:1.5">Ingresa tu código de cerrada y PIN de administrador.</p>
     <label>Código de cerrada</label>
     <input id="sw-adm-code" placeholder="Ej: SMARK-001" autocomplete="off" oninput="this.value=this.value.toUpperCase()" style="margin-bottom:.8rem">
@@ -1035,7 +1038,7 @@ select option{background:#1A1A2A;color:var(--t)}
 <!-- MODAL CAMBIAR A RESIDENTE -->
 <div class="mover" id="modal-switch-res" onclick="mbg(event,'modal-switch-res')">
   <div class="mdl">
-    <div class="mtitle">🏠 Acceso Residente</div>
+    <div class="mtitle"><span class="ic" style="margin-right:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg></span>Acceso Residente</div>
     <p style="font-size:.8rem;color:var(--t2);margin-bottom:.9rem;line-height:1.5">Ingresa tu correo y contraseña de residente.</p>
     <label>Correo electrónico</label>
     <input id="sw-res-email" type="email" placeholder="tu@correo.com" autocomplete="email" style="margin-bottom:.8rem">
@@ -1052,7 +1055,7 @@ select option{background:#1A1A2A;color:var(--t)}
 <!-- MODAL INVITAR FAMILIAR -->
 <div class="mover" id="modal-invite-fam" onclick="mbg(event,'modal-invite-fam')">
   <div class="mdl">
-    <div class="mtitle">👨‍👩‍👧 Invitar familiar</div>
+    <div class="mtitle"><span class="ic" style="margin-right:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg></span>Invitar familiar</div>
     <p style="font-size:.8rem;color:var(--t2);margin-bottom:.9rem;line-height:1.55">
       Ingresa los datos de tu familiar. Verificaremos que no esté registrado en otra casa antes de enviar la invitación.
     </p>
@@ -1071,7 +1074,7 @@ select option{background:#1A1A2A;color:var(--t)}
 <div id="toast"></div>
 
 <div id="sw-update-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1d4ed8;color:#fff;padding:.75rem 1rem;z-index:9999;align-items:center;gap:.75rem;font-size:.85rem;box-shadow:0 -2px 12px rgba(0,0,0,.25)">
-  <span style="flex:1">📦 Nueva versión disponible</span>
+  <span style="flex:1">Nueva versión disponible</span>
   <button id="sw-update-btn" style="background:#fff;color:#1d4ed8;border:none;border-radius:6px;padding:.4rem .9rem;font-weight:700;cursor:pointer;flex-shrink:0">Actualizar app</button>
 </div>
 
@@ -1093,7 +1096,7 @@ select option{background:#1A1A2A;color:var(--t)}
       font-weight:700;font-size:.75rem;cursor:pointer">✕</button>
     <button id="btn-instalar" onclick="installApp()" style="background:#fff;border:none;
       color:var(--blue);padding:.4rem .9rem;border-radius:8px;font-family:var(--fd);
-      font-weight:800;font-size:.75rem;cursor:pointer">📲 Instalar</button>
+      font-weight:800;font-size:.75rem;cursor:pointer">Instalar</button>
   </div>
 </div>
 
@@ -1103,7 +1106,7 @@ select option{background:#1A1A2A;color:var(--t)}
   z-index:10000;box-shadow:0 -4px 20px rgba(59,130,196,.15)">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
     <div style="font-family:var(--fd);font-weight:800;font-size:.9rem;color:var(--t)">
-      🏘️ Instalar CerradaApp
+      <span style="display:inline-flex;align-items:center;gap:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"/></svg>Instalar CerradaApp</span>
     </div>
     <button onclick="dismissIOS()" style="background:none;border:none;color:var(--t2);
       font-size:1.2rem;cursor:pointer;padding:.2rem .4rem">✕</button>
@@ -1125,13 +1128,55 @@ select option{background:#1A1A2A;color:var(--t)}
     <div style="display:flex;align-items:center;gap:.75rem;font-size:.8rem;color:var(--t)">
       <div style="width:28px;height:28px;background:var(--blue-lt);border-radius:8px;
         display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.9rem">3</div>
-      Toca <b style="margin:0 .3rem">"Agregar"</b> y listo 🎉
+      Toca <b style="margin:0 .3rem">"Agregar"</b> y listo
     </div>
   </div>
 </div>
 
 <script>
 const SK='cerradaapp_v4';
+// ── Heroicons 2.x outline SVG paths (24×24)
+const IC={
+  home:`<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>`,
+  buildings:`<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"/>`,
+  truck:`<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>`,
+  user:`<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>`,
+  users:`<path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>`,
+  door:`<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>`,
+  currency:`<path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>`,
+  clipboard:`<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/>`,
+  chart:`<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>`,
+  lock:`<path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>`,
+  unlock:`<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>`,
+  shield:`<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>`,
+  key:`<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>`,
+  pencil:`<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>`,
+  trash:`<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>`,
+  document:`<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>`,
+  'cloud-up':`<path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/>`,
+  cloud:`<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33 4.502 4.502 0 00-1.091 8.775z"/>`,
+  refresh:`<path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/>`,
+  warning:`<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>`,
+  phone:`<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 8.25h3"/>`,
+  cube:`<path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/>`,
+  bank:`<path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"/>`,
+  'user-group':`<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/>`,
+  cog:`<path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>`,
+  eye:`<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>`,
+  trending:`<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/>`,
+  rocket:`<path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>`,
+  target:`<path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zm-7.518-.267A8.25 8.25 0 1120.25 10.5M8.288 14.212A5.25 5.25 0 1117.25 10.5"/>`,
+  pause:`<path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9v6m-4.5 0V9M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>`,
+  plug:`<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>`,
+  wrench:`<path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"/>`,
+  calendar:`<path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5m-9-6h.008v.008H12v-.008zm0 2.25h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H18v-.008zm0 2.25h.008v.008H18V15z"/>`,
+  star:`<path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>`,
+  share:`<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"/>`
+};
+// Helper: returns an SVG string with specified icon name, size, and stroke color
+function ic(n,sz=20,cl='currentColor'){return`<svg xmlns="http://www.w3.org/2000/svg" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="${cl}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${IC[n]||IC.door}</svg>`;}
+// Mapping from stored emoji to SVG icon name (for gate buttons)
+const ICON_MAP={'🚗':'truck','🚶':'user','🚪':'door','🏠':'home','🔑':'key','🚧':'wrench','🛻':'truck','🏍':'truck'};
 const ICONS=['🚗','🚶','🚪','🏠','🔑','🚧','🛻','🏍'];
 let S={masterKey:'MASTER2025',masterUser:'MASTER',defaultPrice:20,cerradas:{}};
 let U=null,ncP=[];
@@ -1228,7 +1273,7 @@ async function loginResidente(){
   }
 
   // Siempre descargar datos frescos de Firestore antes de buscar
-  toast('🔄 Verificando...');
+  toast('Verificando...');
   for(const code of KNOWN_CODES){
     try{
       const r=await fetch(`${WORKER}/fs?code=${code}`);
@@ -1418,7 +1463,7 @@ async function doSwitchToResident(){
     if(found)break;
   }
   if(!found){
-    toast('🔄 Verificando en la nube...');
+    toast('Verificando en la nube...');
     const codes=[...new Set(['SMARK-001',...Object.keys(S.cerradas)])];
     for(const code of codes){try{const rec=await fsGet(code);if(rec){S.cerradas[code]=rec;}}catch(e){}}
     save();
@@ -1512,11 +1557,11 @@ function openPinModal(resIdx, memberIdx){
     <label>Nueva contraseña (mín. 4 caracteres)</label>
     <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.7rem">
       <input id="pin-new-inp" type="text" placeholder="Nueva contraseña o PIN" style="margin:0;flex:1" maxlength="20">
-      <button class="btn bg2" onclick="genPinAleatorio()" style="white-space:nowrap;margin:0;flex-shrink:0">🎲 Aleatoria</button>
+      <button class="btn bg2" onclick="genPinAleatorio()" style="white-space:nowrap;margin:0;flex-shrink:0;display:inline-flex;align-items:center;gap:.35rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg>Aleatoria</button>
     </div>
-    <button class="btn bp wf" onclick="saveNewPin()" style="margin-bottom:.5rem">💾 Guardar contraseña</button>
+    <button class="btn bp wf" onclick="saveNewPin()" style="margin-bottom:.5rem;display:inline-flex;align-items:center;justify-content:center;gap:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/></svg>Guardar contraseña</button>
     ${phone
-      ? `<button class="btn bb2 wf" onclick="sendPinWhatsApp()">📲 Enviar contraseña por WhatsApp</button>`
+      ? `<button class="btn bb2 wf" onclick="sendPinWhatsApp()" style="display:inline-flex;align-items:center;justify-content:center;gap:.4rem"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 8.25h3"/></svg>Enviar por WhatsApp</button>`
       : `<p style="text-align:center;font-size:.72rem;color:var(--t3);margin-top:.3rem">Sin teléfono registrado — no se puede enviar por WhatsApp</p>`
     }`;
   openModal('modal-pin-vec');
@@ -1532,7 +1577,7 @@ async function saveNewPin(){
   const res=c.residents[resIdx];if(!res)return;
   const inp=document.getElementById('pin-new-inp');
   const newPin=(inp?.value||'').trim();
-  if(newPin.length<4){toast('⚠️ Mínimo 4 caracteres');return;}
+  if(newPin.length<4){toast('Mínimo 4 caracteres');return;}
   const isMember=memberIdx>=0&&res.members?.[memberIdx];
   if(isMember){
     res.members[memberIdx].pin=newPin;
@@ -1547,7 +1592,7 @@ async function saveNewPin(){
   const display=document.getElementById('pin-display');
   if(display)display.textContent=newPin;
   if(inp)inp.value='';
-  toast(ok?'✅ Contraseña actualizada':'✅ Actualizada (sincronizará después)');
+  toast(ok?'Contraseña actualizada':'Actualizada (sincronizará después)');
 }
 function sendPinWhatsApp(){
   const{resIdx,memberIdx}=window._pinModalIdx||{};
@@ -1577,11 +1622,11 @@ _Si tienes algún problema contáctame._`;
     ?`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`
     :`https://wa.me/?text=${encodeURIComponent(msg)}`;
   window.open(waUrl,'_blank');
-  toast('📲 Abriendo WhatsApp...');
+  toast('Abriendo WhatsApp...');
 }
 
 // ── JSONBIN
-function setSI(r,st){const m={syncing:'🔄',ok:'☁️',err:'⚠️',off:'💾'};const el=document.getElementById('sync-'+r);if(el)el.textContent=m[st]||'☁️';}
+function setSI(r,st){const m={syncing:ic('refresh',16,'var(--gold)'),ok:ic('cloud',16,'var(--gold)'),err:ic('warning',16,'var(--rose)'),off:ic('cloud-up',16,'var(--t3)')};const el=document.getElementById('sync-'+r);if(el)el.innerHTML=m[st]||ic('cloud',16,'var(--gold)');}
 // ── NOTIFICACIONES FCM
 async function initFCM(c, res, memberIdx) {
   try {
@@ -1641,7 +1686,7 @@ async function initFCM(c, res, memberIdx) {
     if (!_fcmMsgHandler) {
       _fcmMsgHandler = window.firebase.messaging().onMessage((payload) => {
         const { title, body } = payload.notification || {};
-        toast(`🔔 ${title || 'Notificación'}${body ? ' — ' + body : ''}`);
+        toast(`${title || 'Notificación'}${body ? ' — ' + body : ''}`);
       });
     }
   } catch(e) { console.log('FCM error:', e.message); }
@@ -1673,7 +1718,7 @@ async function notifyFamily(c, res, openerName, portonLabel) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        title: '🏠 ' + openerName + ' abrió el portón',
+        title: openerName + ' abrió el portón',
         body: portonLabel + ' · ' + hora,
         tokens: uniqueTokens
       })
@@ -1762,11 +1807,11 @@ function enterRes(c, res, member) {
     const mList = document.getElementById('res-members-list');
     if (mList && members.length > 0) {
       mList.innerHTML = `<div class="card" style="margin-top:.3rem">
-        <div class="ct" style="margin-bottom:.6rem;font-size:.82rem">👥 Miembros de tu casa</div>
+        <div class="ct" style="margin-bottom:.6rem;font-size:.82rem;display:flex;align-items:center;gap:.35rem"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>Miembros de tu casa</div>
         ${members.map(m=>`<div class="hi">
           <div class="hd" style="background:var(--sky)"></div>
           <div class="hinfo">
-            <div class="hdesc">${esc(m.name)} ${m.role==='head'?'👑':''}</div>
+            <div class="hdesc">${esc(m.name)} ${m.role==='head'?'<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg>':''}</div>
             <div class="htime">${m.email}</div>
           </div>
         </div>`).join('')}
@@ -1789,7 +1834,7 @@ function invitarFamiliar() {
   const res = c.residents.find(r => r.house === U.house);
   if (!res) return;
   const members = res.members || [];
-  if (members.length >= 5) { toast('⚠️ Ya tienes el máximo de 5 miembros'); return; }
+  if (members.length >= 5) { toast('Ya tienes el máximo de 5 miembros'); return; }
   // Limpiar campos del modal y abrir
   document.getElementById('fam-email').value = '';
   document.getElementById('fam-phone').value = '';
@@ -1810,7 +1855,7 @@ async function confirmarInviteFamiliar() {
   errEl.style.display = 'none';
 
   // Refrescar datos desde Firestore para tener el estado más reciente
-  toast('🔄 Verificando...');
+  toast('Verificando...');
   try {
     const record = await fsGet(c.code);
     if (record) { Object.assign(c, record); save(); }
@@ -1850,7 +1895,7 @@ async function _generarInviteFamiliar(c, res, emailFamiliar) {
   save();
   fsPush(c).catch(()=>{}); // push en background, no bloquear
 
-  toast('⏳ Generando invitación...');
+  toast('Generando invitación...');
   const payload = btoa(JSON.stringify({
     code: c.code,
     house: res.house,
@@ -1870,7 +1915,7 @@ ${inviteUrl}
 
 _Solo tarda 1 minuto._`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-  toast('📲 Abriendo WhatsApp...');
+  toast('Abriendo WhatsApp...');
 }
 function renderGates(c,role,cid){
   const pts=c.portones||[];const n=pts.length;
@@ -1907,17 +1952,17 @@ function _gbtns(pts,role,isSusp){
       onmousedown="gS('${p.id}','${role}')" onmouseup="gE('${p.id}')" onmouseleave="gE('${p.id}')"
       ontouchstart="gS('${p.id}','${role}')" ontouchend="gE('${p.id}')">
       ${isSusp
-        ?`<div style="font-size:1.4rem">🔒</div><div class="gbtn-info"><div class="glbl">Suspendido</div></div>`
-        :`<div class="gico-wrap">${p.icon||'🚪'}</div>
+        ?`<div style="display:flex;justify-content:center">${ic('lock',32,'#fff')}</div><div class="gbtn-info"><div class="glbl">Suspendido</div></div>`
+        :`<div class="gico-wrap">${ic(ICON_MAP[p.icon]||'door',32,'var(--gold)')}</div>
            <div class="gbtn-info"><div class="glbl">${esc(p.label)}</div><div class="ghint">Mantén hasta que se ponga verde</div></div>
            <div class="gbtn-arrow">›</div>`
       }
       <div class="gprog" id="gprog-${p.id}"></div>
     </div>`).join('');
 }
-function renderDevInfo(c){const el=document.getElementById('res-devinfo');if(!el)return;const pts=c.portones||[];if(!pts.length){el.innerHTML=emH('🔌','Sin dispositivos');return;}el.innerHTML=pts.map(p=>`<div class="li"><div class="lil"><div class="av ag">${p.icon||'🚪'}</div><div><div class="in">${esc(p.label)}</div><div class="is">${p.ip||'Sin IP configurada'} · ${p.time||10}s</div></div></div></div>`).join('');}
-function renderResFin(c){const{income,expense,mvs}=calcFin(c);document.getElementById('rf-i').textContent='$'+income.toFixed(2);document.getElementById('rf-e').textContent='$'+expense.toFixed(2);document.getElementById('rf-b').textContent='$'+(income-expense).toFixed(2);const list=document.getElementById('rf-list');if(!mvs.length){list.innerHTML=emH('💰','Sin movimientos este mes');return;}list.innerHTML=mvs.slice(-20).reverse().map(m=>`<div class="hi"><div class="hd" style="background:${m.type==='income'?'var(--green)':'var(--rose)'}"></div><div class="hinfo"><div class="hdesc">${esc(m.category)}${m.desc?' — '+esc(m.desc):''}</div><div class="htime">${fd(m.ts)}</div></div><span style="font-size:.76rem;font-weight:700;color:${m.type==='income'?'var(--green)':'var(--rose)'}">${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}</span></div>`).join('');}
-function renderResHist(c){const hist=(c.history||[]).filter(h=>h.house===U?.house).slice(-30).reverse();const list=document.getElementById('rh-list');if(!hist.length){list.innerHTML=emH('📋','Sin registros aún');return;}list.innerHTML=hist.map(h=>`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label||h.portonId)}${h.who?' · 👤 '+esc(h.who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`).join('');}
+function renderDevInfo(c){const el=document.getElementById('res-devinfo');if(!el)return;const pts=c.portones||[];if(!pts.length){el.innerHTML=emH(ic('plug',52,'var(--gold)'),'Sin dispositivos');return;}el.innerHTML=pts.map(p=>`<div class="li"><div class="lil"><div class="av ag ic">${ic(ICON_MAP[p.icon]||'door',18,'currentColor')}</div><div><div class="in">${esc(p.label)}</div><div class="is">${p.ip||'Sin IP configurada'} · ${p.time||10}s</div></div></div></div>`).join('');}
+function renderResFin(c){const{income,expense,mvs}=calcFin(c);document.getElementById('rf-i').textContent='$'+income.toFixed(2);document.getElementById('rf-e').textContent='$'+expense.toFixed(2);document.getElementById('rf-b').textContent='$'+(income-expense).toFixed(2);const list=document.getElementById('rf-list');if(!mvs.length){list.innerHTML=emH(ic('currency',52,'var(--gold)'),'Sin movimientos este mes');return;}list.innerHTML=mvs.slice(-20).reverse().map(m=>`<div class="hi"><div class="hd" style="background:${m.type==='income'?'var(--green)':'var(--rose)'}"></div><div class="hinfo"><div class="hdesc">${esc(m.category)}${m.desc?' — '+esc(m.desc):''}</div><div class="htime">${fd(m.ts)}</div></div><span style="font-size:.76rem;font-weight:700;color:${m.type==='income'?'var(--green)':'var(--rose)'}">${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}</span></div>`).join('');}
+function renderResHist(c){const hist=(c.history||[]).filter(h=>h.house===U?.house).slice(-30).reverse();const list=document.getElementById('rh-list');if(!hist.length){list.innerHTML=emH(ic('clipboard',52,'var(--gold)'),'Sin registros aún');return;}list.innerHTML=hist.map(h=>`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label||h.portonId)}${h.who?' · '+esc(h.who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`).join('');}
 
 // ── GATE HOLD — Sistema estable
 const HOLD=500;
@@ -1986,7 +2031,7 @@ async function openPorton(pid,role){
 
     // Si no se pudo verificar, no abrir por seguridad
     if(!verificado){
-      toast('⚠️ Sin conexión — intenta de nuevo');
+      toast('Sin conexión — intenta de nuevo');
       return;
     }
 
@@ -1997,7 +2042,7 @@ async function openPorton(pid,role){
       const btn=document.getElementById(`gbtn-${role}-${pid}`);
       if(btn){
         btn.style.background='#dc2626';
-        btn.innerHTML='🔒<br><span style="font-size:.65rem;font-weight:700">Suspendido</span>';
+        btn.innerHTML=`<div style="display:flex;justify-content:center">${ic('lock',28,'#fff')}</div><span style="font-size:.65rem;font-weight:700">Suspendido</span>`;
       }
       return;
     }
@@ -2013,7 +2058,7 @@ async function openPorton(pid,role){
   // Actualizar historial inmediatamente
   if(role==='res') renderResHist(c);
   shellyOpen(pt);
-  toast(`✅ ${pt.label} abierto`);
+  toast(`${pt.label} abierto`);
   // Notificar a familiares
   notifyFamily(c, {house: house}, U.memberName || house, pt.label).catch(() => {});
   if(navigator.vibrate) navigator.vibrate([80,40,80]);
@@ -2126,7 +2171,7 @@ async function enterAdm(c,silent=false){
     const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}`);
     if(r.ok){
       const data=await r.json();
-      if(data.ok&&data.record){Object.assign(c,data.record);save();if(!silent)toast('☁️ Datos sincronizados');}
+      if(data.ok&&data.record){Object.assign(c,data.record);save();if(!silent)toast('Datos sincronizados');}
     }
     setSI('adm','ok');
   }catch(e){setSI('adm','err');}
@@ -2148,8 +2193,8 @@ function updateDash(){
   document.getElementById('ds-open').textContent=(c.history||[]).filter(h=>new Date(h.ts).toDateString()===today).length;
   const rec=(c.history||[]).slice(-5).reverse();
   const rl=document.getElementById('ds-recent');
-  if(!rec.length){rl.innerHTML=emH('📋','Sin actividad');}
-  else{rl.innerHTML=rec.map(h=>{const r=res.find(x=>x.house===h.house);const who = h.who || (r?r.name:''); return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${who?' — 👤 '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
+  if(!rec.length){rl.innerHTML=emH(ic('clipboard',52,'var(--gold)'),'Sin actividad');}
+  else{rl.innerHTML=rec.map(h=>{const r=res.find(x=>x.house===h.house);const who = h.who || (r?r.name:''); return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${who?' — '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
   const{income,expense}=calcFin(c);
   document.getElementById('af-i').textContent='$'+income.toFixed(2);
   document.getElementById('af-e').textContent='$'+expense.toFixed(2);
@@ -2159,7 +2204,7 @@ function renderVec(){
   const c=C();if(!c)return;const res=c.residents||[];
   document.getElementById('vec-cnt').textContent=res.length;
   const list=document.getElementById('vec-list');
-  if(!res.length){list.innerHTML=emH('👥','Sin vecinos');return;}
+  if(!res.length){list.innerHTML=emH(ic('users',52,'var(--gold)'),'Sin vecinos');return;}
   list.innerHTML=res.map((r,i)=>{
   const hn=r.house.replace(/\D/g,'').slice(0,2)||'?';
   const members=r.members||[];
@@ -2168,10 +2213,10 @@ function renderVec(){
     <div style="margin-top:.35rem;padding-left:.5rem;border-left:2px solid var(--brd)">
       ${members.map((m,mi)=>`
         <div style="display:flex;align-items:center;justify-content:space-between;padding:.25rem 0;font-size:.72rem">
-          <span style="color:var(--t2)">👤 ${esc(m.name)} <span style="color:var(--t3)">${m.role==='head'?'Jefe':'Familiar'}</span></span>
+          <span style="color:var(--t2);display:inline-flex;align-items:center;gap:.25rem"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>${esc(m.name)} <span style="color:var(--t3)">${m.role==='head'?'Jefe':'Familiar'}</span></span>
           <div style="display:flex;align-items:center;gap:.32rem">
             <span style="color:var(--t3);font-size:.68rem">${m.email||''}</span>
-            <button class="btn bw xs" style="padding:.18rem .38rem;font-size:.68rem;min-height:unset;min-width:unset" onclick="if(navigator.vibrate)navigator.vibrate(20);openPinModal(${i},${mi})" title="Ver/resetear contraseña">🔑</button>
+            <button class="btn bw xs" style="padding:.18rem .38rem;font-size:.68rem;min-height:unset;min-width:unset;display:inline-flex;align-items:center" onclick="if(navigator.vibrate)navigator.vibrate(20);openPinModal(${i},${mi})" title="Ver/resetear contraseña"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg></button>
             <button class="btn bd xs" style="padding:.18rem .38rem;font-size:.68rem;min-height:unset;min-width:unset" onclick="if(navigator.vibrate)navigator.vibrate(30);delMember(${i},${mi})">✕</button>
           </div>
         </div>`).join('')}
@@ -2181,16 +2226,16 @@ function renderVec(){
       <div class="lil">
         <div class="av ${r.mora?'ar':r.active?'ag':'ar'}">${esc(hn)}</div>
         <div>
-          <div class="in">${esc(r.name)}${r.mora?` <span class="mora">⚠️ Mora</span>`:''}</div>
+          <div class="in">${esc(r.name)}${r.mora?` <span class="mora"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg> Mora</span>`:''}</div>
           <div class="is">${esc(r.house)} · ${members.length} miembro${members.length!==1?'s':''} registrado${members.length!==1?'s':''}</div>
-          ${adeudo>0?`<div class="is" style="color:var(--rose);font-weight:700">💰 Adeudo: $${adeudo.toFixed(2)}</div>`:''}
+          ${adeudo>0?`<div class="is" style="color:var(--rose);font-weight:700">Adeudo: $${adeudo.toFixed(2)}</div>`:''}
         </div>
       </div>
       <div class="ia">
-        ${r.pendingReg!==false?`<button class="btn bb2 xs" onclick="if(navigator.vibrate)navigator.vibrate(30);sendInvite(${i})" title="Invitar por WhatsApp">📲</button>`:''}
-        <button class="btn bg2 xs" onclick="if(navigator.vibrate)navigator.vibrate(20);editVec(${i})" title="Editar datos">✏️</button>
-        <button class="btn bw xs" onclick="if(navigator.vibrate)navigator.vibrate(20);openPinModal(${i},-1)" title="Ver/resetear contraseña">🔑</button>
-        <button class="btn xs" style="background:${r.active&&!r.mora?'#16a34a':'#dc2626'};color:#fff;font-size:1rem" onclick="if(navigator.vibrate)navigator.vibrate(30);toggleVec(${i})">${r.active&&!r.mora?'🔓':'🔒'}</button>
+        ${r.pendingReg!==false?`<button class="btn bb2 xs" onclick="if(navigator.vibrate)navigator.vibrate(30);sendInvite(${i})" title="Invitar" style="display:inline-flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 8.25h3"/></svg></button>`:''}
+        <button class="btn bg2 xs" onclick="if(navigator.vibrate)navigator.vibrate(20);editVec(${i})" title="Editar" style="display:inline-flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg></button>
+        <button class="btn bw xs" onclick="if(navigator.vibrate)navigator.vibrate(20);openPinModal(${i},-1)" title="Contraseña" style="display:inline-flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg></button>
+        <button class="btn xs" style="background:${r.active&&!r.mora?'#16a34a':'#dc2626'};color:#fff;display:inline-flex;align-items:center;justify-content:center" onclick="if(navigator.vibrate)navigator.vibrate(30);toggleVec(${i})">${r.active&&!r.mora?'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>':'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>'}</button>
         <button class="btn bd xs" onclick="if(navigator.vibrate)navigator.vibrate(30);delVec(${i})">✕</button>
       </div>
     </div>
@@ -2241,7 +2286,7 @@ async function saveEditVec(){
   setSI('adm',ok?'ok':'err');
   closeModal('modal-edit-vec');
   renderVec();updateDash();
-  toast(ok?'✅ Datos actualizados':'✅ Actualizado (sin conexión — sincronizará después)');
+  toast(ok?'Datos actualizados':'Actualizado (sin conexión — sincronizará después)');
 }
 
 async function addVec(){
@@ -2249,17 +2294,17 @@ async function addVec(){
   const house=document.getElementById('nv-h').value.trim();
   const name=document.getElementById('nv-n').value.trim();
   const phone=document.getElementById('nv-t').value.trim();
-  if(!house||!name){toast('⚠️ Completa casa y nombre');return;}
+  if(!house||!name){toast('Completa casa y nombre');return;}
   if(!c.residents)c.residents=[];
-  if(c.residents.find(r=>r.house===house)){toast('⚠️ Esa casa ya existe');return;}
-  if(c.residents.length>=c.houses){toast(`⚠️ Máximo ${c.houses} casas`);return;}
+  if(c.residents.find(r=>r.house===house)){toast('Esa casa ya existe');return;}
+  if(c.residents.length>=c.houses){toast(`Máximo ${c.houses} casas`);return;}
   c.residents.push({house,name,phone,active:true,mora:false,moraNote:'',members:[],pendingReg:true});
   save();
   setSI('adm','syncing');
   const ok=await fsPush(c);
   setSI('adm',ok?'ok':'err');
-  if(ok) toast('✅ Vecino agregado — envía la invitación 📲');
-  else toast('✅ Vecino agregado (sin conexión — sincronizará después)');
+  if(ok) toast('Vecino agregado — envía la invitación');
+  else toast('Vecino agregado (sin conexión — sincronizará después)');
   ['nv-h','nv-n','nv-t'].forEach(id=>document.getElementById(id).value='');
   renderVec();updateDash();
 }
@@ -2282,7 +2327,7 @@ function delVecConfirm(){
   save();
   fsPush(c).catch(()=>{});
   renderVec();updateDash();
-  toast('🗑 Vecino eliminado');
+  toast('Vecino eliminado');
   closeModal('modal-del-vec');
   window._delVecIdx = undefined;
 }
@@ -2297,7 +2342,7 @@ async function delMember(resIdx, memberIdx){
   const ok=await fsPush(c);
   setSI('adm',ok?'ok':'err');
   renderVec();
-  toast('🗑 Familiar eliminado');
+  toast('Familiar eliminado');
 }
 
 function openMora(i){document.getElementById('mora-idx').value=i;const c=C();if(c)document.getElementById('mora-note').value=c.residents[i].moraNote||'';openModal('modal-mora');}
@@ -2308,7 +2353,7 @@ async function toggleVec(i){
 
   // Mostrar que está procesando
   setSI('adm','syncing');
-  toast('⏳ Procesando...');
+  toast('Procesando...');
 
   // Preparar cambio pero NO aplicar todavía
   const cCopy = JSON.parse(JSON.stringify(c));
@@ -2329,9 +2374,9 @@ async function toggleVec(i){
       save();
       setSI('adm','ok');
       renderVec();updateDash();
-      toast(nuevoEstado?'🔓 Acceso reactivado':'🔒 Suspendido');
+      toast(nuevoEstado?'Acceso reactivado':'Suspendido');
       notifyResident(c, r.house,
-        nuevoEstado ? '✅ Acceso reactivado' : '🔒 Acceso suspendido',
+        nuevoEstado ? 'Acceso reactivado' : 'Acceso suspendido',
         nuevoEstado ? 'Tu acceso al portón ha sido reactivado.' : 'Tu acceso al portón ha sido suspendido. Contacta a tu administrador.'
       );
       if(navigator.serviceWorker?.controller){
@@ -2344,7 +2389,7 @@ async function toggleVec(i){
     } else {
       // Falló — no cambiar nada
       setSI('adm','err');
-      toast('⚠️ Sin conexión — no se aplicó el cambio');
+      toast('Sin conexión — no se aplicó el cambio');
     }
   });
 }
@@ -2356,7 +2401,7 @@ function applyMoraDirecto(i){
   if(r.members&&r.members.length>0) r.members.forEach(m=>m.suspended=true);
   save();
   renderVec();updateDash();
-  toast('🔒 Suspendido');
+  toast('Suspendido');
   setSI('adm','syncing');
   fsPush(c).then(ok=>setSI('adm',ok?'ok':'err')).catch(()=>setSI('adm','err'));
   if(navigator.serviceWorker?.controller){
@@ -2381,8 +2426,8 @@ async function applyMora(){
     setSI('adm',ok?'ok':'err');
   }
   closeModal('modal-mora');renderVec();updateDash();
-  toast('🔒 Suspendido — familiares también suspendidos');
-  notifyResident(c, r.house, '🔒 Acceso suspendido', `Tu acceso al portón ha sido suspendido por mora.${note?' Motivo: '+note:''} Contacta a tu administrador.`);
+  toast('Suspendido — familiares también suspendidos');
+  notifyResident(c, r.house, 'Acceso suspendido', `Tu acceso al portón ha sido suspendido por mora.${note?' Motivo: '+note:''} Contacta a tu administrador.`);
   if (navigator.serviceWorker?.controller) {
     navigator.serviceWorker.controller.postMessage({ type: 'SUSPEND_USER', house: r.house, cerradaCode: c.code });
   }
@@ -2400,15 +2445,15 @@ async function quitarMora(i){
   const ok=await fsPush(c);
   setSI('adm',ok?'ok':'err');
   renderVec();updateDash();
-  toast('✅ Mora levantada — acceso restaurado para toda la familia');
-  notifyResident(c, r.house, '✅ Acceso reactivado', 'Tu acceso al portón ha sido reactivado. Ya puedes abrir el portón.');
+  toast('Mora levantada — acceso restaurado para toda la familia');
+  notifyResident(c, r.house, 'Acceso reactivado', 'Tu acceso al portón ha sido reactivado. Ya puedes abrir el portón.');
   // Notificar al SW para que actualice la UI del residente en tiempo real
   if (navigator.serviceWorker?.controller) {
     navigator.serviceWorker.controller.postMessage({ type: 'REACTIVATE_USER', house: r.house, cerradaCode: c.code });
   }
 }
-function renderAdmHist(){const c=C();if(!c)return;const hist=(c.history||[]).slice(-80).reverse();const list=document.getElementById('adm-hist');if(!hist.length){list.innerHTML=emH('📋','Sin registros');return;}const res=c.residents||[];list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who = h.who || (r?r.name:''); return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${who?' — 👤 '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
-async function clearHist(){const c=C();if(!c)return;if(!confirm('¿Limpiar historial?'))return;c.history=[];save();setSI('adm','syncing');fsPush(c).then(ok=>setSI('adm',ok?'ok':'err')).catch(()=>setSI('adm','err'));renderAdmHist();updateDash();toast('🗑 Limpiado');}
+function renderAdmHist(){const c=C();if(!c)return;const hist=(c.history||[]).slice(-80).reverse();const list=document.getElementById('adm-hist');if(!hist.length){list.innerHTML=emH(ic('clipboard',52,'var(--gold)'),'Sin registros');return;}const res=c.residents||[];list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who = h.who || (r?r.name:''); return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${who?' — '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
+async function clearHist(){const c=C();if(!c)return;if(!confirm('¿Limpiar historial?'))return;c.history=[];save();setSI('adm','syncing');fsPush(c).then(ok=>setSI('adm',ok?'ok':'err')).catch(()=>setSI('adm','err'));renderAdmHist();updateDash();toast('Limpiado');}
 function renderAdmFin(){
   const c=C();if(!c)return;
   const now=new Date();
@@ -2445,7 +2490,7 @@ function renderAdmFin(){
   // Lista mes actual
   const list=document.getElementById('adm-fin-list');
   if(!mvs.length){
-    list.innerHTML=emH('💰','Sin movimientos este mes');
+    list.innerHTML=emH(ic('currency',52,'var(--gold)'),'Sin movimientos este mes');
   } else {
     list.innerHTML=`<div class="card" style="padding:.75rem">
       ${mvs.slice().reverse().map((m,idx)=>`
@@ -2531,7 +2576,7 @@ function renderFinHistorial(c){
     </div>`;
   });
 
-  if(!html) html=emH('📅','Sin historial de meses anteriores');
+  if(!html) html=emH(ic('calendar',52,'var(--gold)'),'Sin historial de meses anteriores');
   list.innerHTML=html;
 }
 
@@ -2544,7 +2589,7 @@ async function delMov(id){
   const ok=await fsPush(c);
   setSI('adm',ok?'ok':'err');
   renderAdmFin();updateDash();
-  toast('🗑 Movimiento eliminado');
+  toast('Movimiento eliminado');
 }
 
 function updateFnColor(sel){
@@ -2556,7 +2601,7 @@ async function addMov(){
   const amount=parseFloat(document.getElementById('fn-a').value);
   const cat=document.getElementById('fn-c').value;
   const desc=document.getElementById('fn-d').value.trim();
-  if(!amount||isNaN(amount)||amount<=0){toast('⚠️ Ingresa un monto válido');return;}
+  if(!amount||isNaN(amount)||amount<=0){toast('Ingresa un monto válido');return;}
   if(!c.movements)c.movements=[];
   c.movements.push({
     id:'mov-'+Date.now(),
@@ -2570,14 +2615,14 @@ async function addMov(){
   renderAdmFin();updateDash();
   document.getElementById('fn-a').value='';
   document.getElementById('fn-d').value='';
-  toast(type==='income'?'✅ Ingreso registrado':'✅ Gasto registrado');
+  toast(type==='income'?'Ingreso registrado':'Gasto registrado');
 }
 function renderAdmPortones(){
   const c=C();if(!c)return;
   renderGates(c,'test','gate-test');
   const list=document.getElementById('adm-plist');
   const pts=c.portones||[];
-  if(!pts.length){list.innerHTML=emH('🚪','Sin portones');return;}
+  if(!pts.length){list.innerHTML=emH(ic('door',52,'var(--gold)'),'Sin portones');return;}
   list.innerHTML=pts.map((p,i)=>`
     <div class="prw">
       <select id="pi-${i}" style="margin:0;width:50px;padding:.3rem;font-size:1.1rem;border-radius:8px;border:1px solid var(--brd);background:var(--sur2);color:var(--t)">
@@ -2596,7 +2641,7 @@ async function savePortones(){
   });
   save();setSI('adm','syncing');fsPush(c).then(ok=>setSI('adm',ok?'ok':'err')).catch(()=>setSI('adm','err'));
   renderGates(c,'test','gate-test');
-  toast('✅ Nombre del portón actualizado');
+  toast('Nombre del portón actualizado');
 }
 function loadCfg(){}
 async function changePin(){
@@ -2604,12 +2649,12 @@ async function changePin(){
   const old=document.getElementById('cfg-pin-old').value.trim();
   const np=document.getElementById('cfg-pin').value.trim();
   const np2=document.getElementById('cfg-pin2').value.trim();
-  if(old!==c.adminPin){toast('⚠️ PIN actual incorrecto');return;}
-  if(np.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}
-  if(np!==np2){toast('⚠️ Los PINs no coinciden');return;}
+  if(old!==c.adminPin){toast('PIN actual incorrecto');return;}
+  if(np.length<4){toast('PIN mínimo 4 dígitos');return;}
+  if(np!==np2){toast('Los PINs no coinciden');return;}
   c.adminPin=np;save();setSI('adm','syncing');fsPush(c).then(ok=>setSI('adm',ok?'ok':'err')).catch(()=>setSI('adm','err'));
   ['cfg-pin-old','cfg-pin','cfg-pin2'].forEach(id=>document.getElementById(id).value='');
-  toast('✅ PIN actualizado correctamente');
+  toast('PIN actualizado correctamente');
 }
 
 // ── MASTER
@@ -2618,29 +2663,29 @@ function renderNcP(){const el=document.getElementById('nc-portones');if(!ncP.len
 function removeNcP(i){ncP.splice(i,1);renderNcP();}
 function createCerrada(){
   const name=document.getElementById('nc-name').value.trim(),code=document.getElementById('nc-code').value.trim().toUpperCase(),houses=parseInt(document.getElementById('nc-houses').value)||0,price=parseFloat(document.getElementById('nc-price').value)||S.defaultPrice,aname=document.getElementById('nc-aname').value.trim(),apin=document.getElementById('nc-apin').value.trim(),aphone=document.getElementById('nc-aphone').value.trim();
-  if(!name||!code||!apin){toast('⚠️ Nombre, código y PIN obligatorios');return;}
-  if(apin.length<4){toast('⚠️ PIN mínimo 4 dígitos');return;}
-  if(houses<1||houses>50){toast('⚠️ Entre 1 y 50 casas');return;}
-  if(S.cerradas[code]){toast('⚠️ Código ya existe');return;}
-  if(!ncP.length){toast('⚠️ Agrega al menos 1 portón');return;}
+  if(!name||!code||!apin){toast('Nombre, código y PIN obligatorios');return;}
+  if(apin.length<4){toast('PIN mínimo 4 dígitos');return;}
+  if(houses<1||houses>50){toast('Entre 1 y 50 casas');return;}
+  if(S.cerradas[code]){toast('Código ya existe');return;}
+  if(!ncP.length){toast('Agrega al menos 1 portón');return;}
   ncP.forEach((p,i)=>{p.label=document.getElementById('npl-'+i)?.value.trim()||'Portón '+(i+1);p.icon=document.getElementById('npi-'+i)?.value||p.icon;});
   S.cerradas[code]={name,code,houses,adminPin:apin,adminName:aname,adminPhone:aphone,price,active:true,suspended:false,portones:JSON.parse(JSON.stringify(ncP)),residents:[],history:[],movements:[],createdAt:new Date().toISOString()};
   save();ncP=[];renderNcP();closeModal('modal-nueva');
   ['nc-name','nc-code','nc-houses','nc-price','nc-aname','nc-apin','nc-aphone'].forEach(id=>document.getElementById(id).value='');
-  renderMstList();renderNegocio();toast(`✅ "${name}" creada`);
+  renderMstList();renderNegocio();toast(`"${name}" creada`);
 }
-function renderMstList(){const list=document.getElementById('mst-list');const cerradas=Object.values(S.cerradas);if(!cerradas.length){list.innerHTML=emH('🏘️','Sin cerradas');return;}list.innerHTML=cerradas.map(c=>`<div class="mcard"><div style="flex:1;min-width:0"><div class="mn">${esc(c.name)}</div><div class="mm">${esc(c.code)} · ${c.houses} casas · ${(c.portones||[]).length} portones · ${(c.residents||[]).length} vecinos · $${c.price}/mes</div><div class="mm">Admin: ${esc(c.adminName||'—')}${c.adminPhone?' · '+esc(c.adminPhone):''}</div><div class="mm" style="display:flex;align-items:center;gap:.35rem;margin-top:.18rem"><span style="color:var(--t3);font-size:.66rem">PIN admin:</span><span style="font-family:monospace;font-size:.8rem;font-weight:800;color:var(--blue);background:var(--blue-lt);border:1px solid rgba(59,130,196,.2);border-radius:6px;padding:.05rem .4rem;letter-spacing:.08em">${esc(c.adminPin||'—')}</span></div></div><div style="display:flex;flex-direction:column;gap:.3rem;align-items:flex-end;flex-shrink:0"><span class="bge ${c.suspended?'r-b':c.active?'gr-b':'r-b'}">${c.suspended?'Suspendida':c.active?'Activa':'Inactiva'}</span><div style="display:flex;gap:.3rem"><button class="btn ${c.suspended?'bg2':'bw'} xs" onclick="toggleSusp('${c.code}')">${c.suspended?'🔓':'⏸'}</button><button class="btn bg2 xs" onclick="viewCerrada('${c.code}')">👁</button><button class="btn bd xs" onclick="delCerrada('${c.code}')">🗑</button></div></div></div>`).join('');}
-function toggleSusp(code){const c=S.cerradas[code];if(!c)return;c.suspended=!c.suspended;save();renderMstList();renderNegocio();toast(c.suspended?'⏸ Suspendida':'✅ Reactivada');}
-function delCerrada(code){const c=S.cerradas[code];if(!c)return;if(!confirm(`¿Eliminar "${c.name}"?`))return;delete S.cerradas[code];save();renderMstList();renderNegocio();toast('🗑 Eliminada');}
-function viewCerrada(code){const c=S.cerradas[code];if(!c)return;document.getElementById('mcer-title').textContent=c.name;const{income,expense}=calcFin(c);const pts=c.portones||[];document.getElementById('mcer-body').innerHTML=`<div class="li"><div class="lil"><div class="av ab">📋</div><div><div class="in">Código</div><div class="is">${esc(c.code)}</div></div></div></div><div class="li"><div class="lil"><div class="av ag">🏠</div><div><div class="in">Casas / Vecinos</div><div class="is">${c.houses} · ${(c.residents||[]).length} registrados</div></div></div></div><div class="li"><div class="lil"><div class="av ay">💰</div><div><div class="in">Mensualidad</div><div class="is">$${c.price}/mes</div></div></div></div><div class="li"><div class="lil"><div class="av ag">📈</div><div><div class="in">Finanzas del Mes</div><div class="is">+$${income.toFixed(2)} · -$${expense.toFixed(2)}</div></div></div></div><div class="li"><div class="lil"><div class="av ab">🚪</div><div><div class="in">Portones (${pts.length})</div><div class="is">${pts.map(p=>p.icon+' '+esc(p.label)).join(' · ')||'—'}</div></div></div></div><div class="li"><div class="lil"><div class="av ay">🔑</div><div><div class="in">PIN de Admin</div><div class="is" style="font-family:monospace;font-size:.85rem;font-weight:800;color:var(--blue);letter-spacing:.08em">${esc(c.adminPin||'—')}</div></div></div><button class="btn bb2 xs" onclick="navigator.clipboard?.writeText('${esc(c.adminPin||'')}').then(()=>toast('📋 PIN copiado'))">📋</button></div><div class="li"><div class="lil"><div class="av ${c.suspended?'ar':'ag'}">${c.suspended?'⏸':'✓'}</div><div><div class="in">Estado</div><div class="is">${c.suspended?'Suspendida':'Activa'}</div></div></div><button class="btn ${c.suspended?'bg2':'bw'} xs" onclick="toggleSusp('${c.code}');viewCerrada('${c.code}')">${c.suspended?'🔓 Reactivar':'⏸ Suspender'}</button></div>
+function renderMstList(){const list=document.getElementById('mst-list');const cerradas=Object.values(S.cerradas);if(!cerradas.length){list.innerHTML=emH(ic('buildings',52,'var(--gold)'),'Sin cerradas');return;}list.innerHTML=cerradas.map(c=>`<div class="mcard"><div style="flex:1;min-width:0"><div class="mn">${esc(c.name)}</div><div class="mm">${esc(c.code)} · ${c.houses} casas · ${(c.portones||[]).length} portones · ${(c.residents||[]).length} vecinos · $${c.price}/mes</div><div class="mm">Admin: ${esc(c.adminName||'—')}${c.adminPhone?' · '+esc(c.adminPhone):''}</div><div class="mm" style="display:flex;align-items:center;gap:.35rem;margin-top:.18rem"><span style="color:var(--t3);font-size:.66rem">PIN admin:</span><span style="font-family:monospace;font-size:.8rem;font-weight:800;color:var(--blue);background:var(--blue-lt);border:1px solid rgba(59,130,196,.2);border-radius:6px;padding:.05rem .4rem;letter-spacing:.08em">${esc(c.adminPin||'—')}</span></div></div><div style="display:flex;flex-direction:column;gap:.3rem;align-items:flex-end;flex-shrink:0"><span class="bge ${c.suspended?'r-b':c.active?'gr-b':'r-b'}">${c.suspended?'Suspendida':c.active?'Activa':'Inactiva'}</span><div style="display:flex;gap:.3rem"><button class="btn ${c.suspended?'bg2':'bw'} xs" style="display:inline-flex;align-items:center;justify-content:center" onclick="toggleSusp('${c.code}')">${c.suspended?ic('unlock',14,'currentColor'):ic('pause',14,'currentColor')}</button><button class="btn bg2 xs" style="display:inline-flex;align-items:center;justify-content:center" onclick="viewCerrada('${c.code}')">${ic('eye',14,'currentColor')}</button><button class="btn bd xs" style="display:inline-flex;align-items:center;justify-content:center" onclick="delCerrada('${c.code}')">${ic('trash',14,'currentColor')}</button></div></div></div>`).join('');}
+function toggleSusp(code){const c=S.cerradas[code];if(!c)return;c.suspended=!c.suspended;save();renderMstList();renderNegocio();toast(c.suspended?'Suspendida':'Reactivada');}
+function delCerrada(code){const c=S.cerradas[code];if(!c)return;if(!confirm(`¿Eliminar "${c.name}"?`))return;delete S.cerradas[code];save();renderMstList();renderNegocio();toast('Eliminada');}
+function viewCerrada(code){const c=S.cerradas[code];if(!c)return;document.getElementById('mcer-title').textContent=c.name;const{income,expense}=calcFin(c);const pts=c.portones||[];document.getElementById('mcer-body').innerHTML=`<div class="li"><div class="lil"><div class="av ab ic">${ic('clipboard',17,'currentColor')}</div><div><div class="in">Código</div><div class="is">${esc(c.code)}</div></div></div></div><div class="li"><div class="lil"><div class="av ag ic">${ic('home',17,'currentColor')}</div><div><div class="in">Casas / Vecinos</div><div class="is">${c.houses} · ${(c.residents||[]).length} registrados</div></div></div></div><div class="li"><div class="lil"><div class="av ay ic">${ic('currency',17,'currentColor')}</div><div><div class="in">Mensualidad</div><div class="is">$${c.price}/mes</div></div></div></div><div class="li"><div class="lil"><div class="av ag ic">${ic('trending',17,'currentColor')}</div><div><div class="in">Finanzas del Mes</div><div class="is">+$${income.toFixed(2)} · -$${expense.toFixed(2)}</div></div></div></div><div class="li"><div class="lil"><div class="av ab ic">${ic('door',17,'currentColor')}</div><div><div class="in">Portones (${pts.length})</div><div class="is">${pts.map(p=>esc(p.label)).join(' · ')||'—'}</div></div></div></div><div class="li"><div class="lil"><div class="av ay ic">${ic('key',17,'currentColor')}</div><div><div class="in">PIN de Admin</div><div class="is" style="font-family:monospace;font-size:.85rem;font-weight:800;color:var(--blue);letter-spacing:.08em">${esc(c.adminPin||'—')}</div></div></div><button class="btn bb2 xs" style="display:inline-flex;align-items:center;justify-content:center" onclick="navigator.clipboard?.writeText('${esc(c.adminPin||'')}').then(()=>toast('PIN copiado'))">${ic('clipboard',14,'currentColor')}</button></div><div class="li"><div class="lil"><div class="av ${c.suspended?'ar':'ag'} ic">${c.suspended?ic('pause',17,'currentColor'):ic('shield',17,'currentColor')}</div><div><div class="in">Estado</div><div class="is">${c.suspended?'Suspendida':'Activa'}</div></div></div><button class="btn ${c.suspended?'bg2':'bw'} xs" style="display:inline-flex;align-items:center;gap:.3rem" onclick="toggleSusp('${c.code}');viewCerrada('${c.code}')">${c.suspended?ic('unlock',13,'currentColor')+' Reactivar':ic('pause',13,'currentColor')+' Suspender'}</button></div>
     <div style="border-top:1px solid var(--brd);padding-top:.85rem;margin-top:.5rem">
-      <p style="font-family:var(--fd);font-size:.88rem;font-weight:800;color:var(--t);margin-bottom:.6rem">🔌 Configuración de Portones</p>
+      <p style="font-family:var(--fd);font-size:.88rem;font-weight:800;color:var(--t);margin-bottom:.6rem;display:flex;align-items:center;gap:.35rem"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>Configuración de Portones</p>
       <p style="font-size:.73rem;color:var(--t2);margin-bottom:.75rem">IP y tiempo de apertura de cada portón. No visible para el Sub-Admin.</p>
       <div id="mcer-portones-cfg"></div>
-      <button class="btn bp wf" style="margin-top:.6rem" onclick="saveMstPortones('${c.code}')">💾 Guardar IPs</button>
+      <button class="btn bp wf" style="margin-top:.6rem;display:inline-flex;align-items:center;justify-content:center;gap:.4rem" onclick="saveMstPortones('${c.code}')">${ic('cloud-up',15,'currentColor')}Guardar IPs</button>
     </div>
     <div style="border-top:1px solid var(--brd);padding-top:.85rem;margin-top:.5rem">
-      <p style="font-family:var(--fd);font-size:.88rem;font-weight:800;color:var(--t);margin-bottom:.6rem">👥 Residentes y PINs</p>
+      <p style="font-family:var(--fd);font-size:.88rem;font-weight:800;color:var(--t);margin-bottom:.6rem;display:flex;align-items:center;gap:.35rem"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>Residentes y PINs</p>
       <div id="mcer-res-pins"></div>
     </div>
     `;
@@ -2649,7 +2694,7 @@ function viewCerrada(code){const c=S.cerradas[code];if(!c)return;document.getEle
   if(plist){
     plist.innerHTML = pts.map((p,i) => `
       <div class="prw">
-        <span style="font-size:1.1rem;width:28px;text-align:center">${p.icon||'🚪'}</span>
+        <span style="width:28px;display:inline-flex;align-items:center;justify-content:center">${ic(ICON_MAP[p.icon]||'door',18,'var(--gold)')}</span>
         <span style="font-size:.82rem;font-weight:700;color:var(--t);flex:1">${esc(p.label)}</span>
         <input value="${esc(p.ip||'')}" id="mip-${i}" placeholder="http://192.168.x.x"
           style="margin:0;width:155px;font-size:.75rem;padding:.36rem .6rem">
@@ -2681,7 +2726,7 @@ function viewCerrada(code){const c=S.cerradas[code];if(!c)return;document.getEle
           : '';
         return '<div style="background:var(--sur2);border:1px solid var(--brd);border-radius:12px;padding:.65rem .85rem;margin-bottom:.5rem">'
           + '<div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.1rem">'
-          + '<span style="font-size:.8rem;font-weight:800;color:var(--t);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🏠 ' + esc(r.house) + ' — ' + esc(r.name) + '</span>'
+          + '<span style="font-size:.8rem;font-weight:800;color:var(--t);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(r.house) + ' — ' + esc(r.name) + '</span>'
           + '<span style="font-family:monospace;font-size:.78rem;font-weight:800;flex-shrink:0;color:var(--blue);background:var(--blue-lt);border:1px solid rgba(59,130,196,.2);border-radius:6px;padding:.05rem .4rem">' + rPin + '</span>'
           + '</div>'
           + membersHtml
@@ -2695,18 +2740,18 @@ function changeMasterKey(){
   const u=document.getElementById('mc-user').value.trim();
   const k=document.getElementById('mc-key').value.trim();
   if(u) S.masterUser=u;
-  if(k){if(k.length<8){toast('⚠️ Clave mínimo 8 caracteres');return;}S.masterKey=k;}
-  if(!u&&!k){toast('⚠️ Ingresa al menos un campo');return;}
+  if(k){if(k.length<8){toast('Clave mínimo 8 caracteres');return;}S.masterKey=k;}
+  if(!u&&!k){toast('Ingresa al menos un campo');return;}
   save();
   document.getElementById('mc-key').value='';
-  toast('✅ Acceso master actualizado');
+  toast('Acceso master actualizado');
 }
-function saveMasterPrice(){const p=parseFloat(document.getElementById('mc-price').value);if(!p||p<1){toast('⚠️ Precio inválido');return;}S.defaultPrice=p;save();renderNegocio();toast('✅ Tarifa actualizada');}
+function saveMasterPrice(){const p=parseFloat(document.getElementById('mc-price').value);if(!p||p<1){toast('Precio inválido');return;}S.defaultPrice=p;save();renderNegocio();toast('Tarifa actualizada');}
 
 // ── PDF
 function genPDF(){
   const c=C();if(!c)return;
-  if(!window.jspdf){toast('⚠️ PDF cargando, intenta de nuevo');return;}
+  if(!window.jspdf){toast('PDF cargando, intenta de nuevo');return;}
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
   const now=new Date();
@@ -2756,7 +2801,7 @@ function genPDF(){
   for(let i=1;i<=tp;i++){doc.setPage(i);doc.setFillColor(...LIGHT);doc.rect(0,285,210,12,'F');doc.setTextColor(...GRAY);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(`CerradaApp · ${c.name} · ${mes}`,14,291);doc.text(`Página ${i} de ${tp}`,185,291,{align:'right'});}
 
   doc.save(`CerradaApp_${c.code}_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}.pdf`);
-  toast('📄 PDF generado correctamente');
+  toast('PDF generado correctamente');
 }
 
 // ── MASTER PORTONES IPs
@@ -2771,7 +2816,7 @@ function saveMstPortones(code){
   save();
   // Si tiene JSONBin, sincronizar
   if(c.code) fsPush(c);
-  toast('✅ IPs guardadas para '+c.name);
+  toast('IPs guardadas para '+c.name);
 }
 
 // ── MASTER JSONBIN
@@ -2779,15 +2824,15 @@ async function loadMstFirestore(){
   const codeInput=document.getElementById('mc-fs-code');
   const msg=document.getElementById('mc-fs-msg');
   const code=(codeInput?.value||'').trim().toUpperCase();
-  if(!code){toast('⚠️ Ingresa el código de la cerrada');return;}
-  msg.style.display='block';msg.style.color='var(--t2)';msg.textContent='🔄 Buscando en Firestore...';
+  if(!code){toast('Ingresa el código de la cerrada');return;}
+  msg.style.display='block';msg.style.color='var(--t2)';msg.textContent='Buscando en Firestore...';
   const record=await fsGet(code);
-  if(!record){msg.style.color='var(--rose)';msg.textContent='❌ Cerrada no encontrada en Firestore.';return;}
+  if(!record){msg.style.color='var(--rose)';msg.textContent='Cerrada no encontrada en Firestore.';return;}
   S.cerradas[code]=record;save();
-  msg.style.color='var(--green)';msg.textContent=`✅ "${record.name}" importada correctamente.`;
+  msg.style.color='var(--green)';msg.textContent=`"${record.name}" importada correctamente.`;
   if(codeInput) codeInput.value='';
   renderMstList();renderNegocio();
-  toast(`✅ "${record.name}" importada`);
+  toast(`"${record.name}" importada`);
 }
 
 // ── SISTEMA DE INVITACIÓN
@@ -2802,7 +2847,7 @@ async function sendInvite(i) {
   save();
   fsPush(c).catch(()=>{}); // push en background, no bloquear
 
-  toast('⏳ Generando invitación...');
+  toast('Generando invitación...');
   const baseUrl = 'https://racosta123.github.io/cerradaapp/register.html';
   // Solo datos no sensibles — sin binId ni apiKey
   const payload = btoa(JSON.stringify({
@@ -2879,16 +2924,16 @@ function checkInvite() {
 function processInvite(invite, code, house) {
   const c = S.cerradas[code];
   if (!c) { 
-    setTimeout(() => toast('⚠️ Invitación no válida — asegúrate de tener conexión'), 800);
+    setTimeout(() => toast('Invitación no válida — asegúrate de tener conexión'), 800);
     return false; 
   }
   const res = c.residents.find(r => r.house === house);
-  if (!res) { toast('⚠️ Casa no encontrada'); return false; }
+  if (!res) { toast('Casa no encontrada'); return false; }
   // Token flexible — permitir acceso si la casa existe y tiene espacio
 
   const members = res.members || [];
   if (members.length >= 5) {
-    toast('⚠️ Esta casa ya tiene el máximo de 5 miembros');
+    toast('Esta casa ya tiene el máximo de 5 miembros');
     return false;
   }
 
@@ -2909,7 +2954,7 @@ function showRegisterScreen(code, house, token, role) {
 
   // Ocultar login y mostrar registro
   showScreen('register');
-  document.getElementById('reg-title').textContent = role === 'head' ? '👤 Registro de Jefe de Familia' : '👤 Registro de Familiar';
+  document.getElementById('reg-title').textContent = role === 'head' ? 'Registro de Jefe de Familia' : 'Registro de Familiar';
   document.getElementById('reg-subtitle').textContent = house + ' · ' + (S.cerradas[code]?.name || code);
   // Mostrar info de familiares solo si es el jefe
   const famInfo = document.getElementById('reg-family-info');
@@ -2931,10 +2976,10 @@ async function submitRegister() {
   const pass    = document.getElementById('reg-pin').value;
   const pass2   = document.getElementById('reg-pin2').value;
 
-  if (!name||!address||!email){ toast('⚠️ Completa todos los campos'); return; }
-  if (!email.includes('@')){ toast('⚠️ Correo electrónico inválido'); return; }
-  if (!pass||pass.length<6){ toast('⚠️ Contraseña mínimo 6 caracteres'); return; }
-  if (pass!==pass2){ toast('⚠️ Las contraseñas no coinciden'); return; }
+  if (!name||!address||!email){ toast('Completa todos los campos'); return; }
+  if (!email.includes('@')){ toast('Correo electrónico inválido'); return; }
+  if (!pass||pass.length<6){ toast('Contraseña mínimo 6 caracteres'); return; }
+  if (pass!==pass2){ toast('Las contraseñas no coinciden'); return; }
   
   // Para compatibilidad usar pass como pin también
   const pin = pass;
@@ -2953,7 +2998,7 @@ async function submitRegister() {
     if (record) { S.cerradas[code] = record; save(); c = S.cerradas[code]; }
   } catch(e) {}
 
-  if (!c) { toast('⚠️ Sin conexión. Intenta de nuevo en unos segundos.'); return; }
+  if (!c) { toast('Sin conexión. Intenta de nuevo en unos segundos.'); return; }
 
   // Validar que el correo no esté ya registrado como jefe en otra casa
   for (const r of (c.residents || []).filter(r => r.house !== house)) {
@@ -2961,13 +3006,13 @@ async function submitRegister() {
     const headMember = (r.members || []).find(m => m.role === 'head');
     const headEmailM = (headMember?.email || '').toLowerCase();
     if (email === headEmail || (headEmailM && email === headEmailM)) {
-      toast('⚠️ Este correo ya está registrado como residente de otra casa en esta cerrada.');
+      toast('Este correo ya está registrado como residente de otra casa en esta cerrada.');
       return;
     }
   }
 
   const resIdx = c.residents.findIndex(r => r.house === house);
-  if (resIdx < 0) { toast('⚠️ Casa no encontrada'); return; }
+  if (resIdx < 0) { toast('Casa no encontrada'); return; }
   
   // No validar token estrictamente — el link es suficientemente seguro
   // Solo verificar que la casa existe y tiene espacio
@@ -2998,7 +3043,7 @@ async function submitRegister() {
   U = { role:'resident', cerradaCode:code, house, memberIdx, memberName:name };
   localStorage.setItem('cerrada_session', JSON.stringify(U));
 
-  toast('✅ ¡Registro exitoso! Bienvenido a ' + c.name);
+  toast('¡Registro exitoso! Bienvenido a ' + c.name);
 
   setTimeout(() => {
     enterRes(c, c.residents[resIdx], c.residents[resIdx].members[memberIdx]);
@@ -3013,7 +3058,7 @@ function getMeses(count=3, includeFuture=false) {
     const f = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     meses.push({
       key: `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,'0')}`,
-      label: '🔜 ' + f.toLocaleString('es', {month:'long', year:'numeric'})
+      label: f.toLocaleString('es', {month:'long', year:'numeric'}) + ' (próximo)'
     });
   }
   for (let i = 0; i < count; i++) {
@@ -3041,12 +3086,12 @@ function saveCuotaConfig() {
   const monto = parseFloat(document.getElementById('cuota-monto').value);
   const dia = parseInt(document.getElementById('cuota-dia').value) || 5;
   const inicio = document.getElementById('cuota-inicio')?.value || '';
-  if (!monto || monto < 1) { toast('⚠️ Ingresa un monto válido'); return; }
+  if (!monto || monto < 1) { toast('Ingresa un monto válido'); return; }
   c.cuotaConfig = { monto, dia, mesInicio: inicio };
   save();
   setSI('adm','syncing');
   fsPush(c).then(ok => setSI('adm', ok ? 'ok' : 'err')).catch(() => setSI('adm','err'));
-  toast('✅ Configuración guardada — $' + monto + ' vence el día ' + dia);
+  toast('Configuración guardada — $' + monto + ' vence el día ' + dia);
   renderCuotas();
 }
 
@@ -3081,14 +3126,14 @@ function renderCuotas() {
   const list = document.getElementById('cuotas-list');
   if (!list) return;
 
-  if (!res.length) { list.innerHTML = emH('👥', 'Sin vecinos registrados'); return; }
-  if (!monto)      { list.innerHTML = emH('⚙️', 'Configura el monto de la cuota abajo'); return; }
+  if (!res.length) { list.innerHTML = emH(ic('users',52,'var(--gold)'), 'Sin vecinos registrados'); return; }
+  if (!monto)      { list.innerHTML = emH(ic('cog',52,'var(--gold)'), 'Configura el monto de la cuota abajo'); return; }
 
   const unpaidCount = res.filter(r => !c.cuotas[mesKey][r.house]?.pagado).length;
   let html = '';
   if (unpaidCount > 0) {
     html += `<button class="btn bp wf" onclick="marcarTodosMes()" style="margin-bottom:.75rem;font-size:.82rem">
-      ✅ Marcar todos como pagados (${unpaidCount} pendiente${unpaidCount!==1?'s':''})
+      Marcar todos como pagados (${unpaidCount} pendiente${unpaidCount!==1?'s':''})
     </button>`;
   }
 
@@ -3106,13 +3151,13 @@ function renderCuotas() {
         <div class="av ${pagado?'ag':'ar'}">${esc(hn)}</div>
         <div>
           <div class="in">${esc(r.name)}</div>
-          <div class="is">${esc(r.house)} · ${pagado?'✅ '+fechaPago+(metodo?' · '+metodo:''):'⏳ Pendiente — $'+monto}</div>
+          <div class="is">${esc(r.house)} · ${pagado?'Pagado '+fechaPago+(metodo?' · '+metodo:''):'Pendiente — $'+monto}</div>
           ${nota?`<div class="is" style="color:var(--t3);font-style:italic">${esc(nota)}</div>`:''}
         </div>
       </div>
       <div style="display:flex;gap:.35rem;align-items:center">
-        ${pagado?`<button class="btn bg2 xs" onclick="generarReciboPDF('${houseEsc}','${mesKey}')" title="Descargar recibo PDF" style="padding:.28rem .5rem;font-size:.8rem;min-height:unset">📄</button>`:''}
-        ${pagado?`<button class="btn bb2 xs" onclick="compartirReciboWhatsApp('${houseEsc}','${mesKey}')" title="Compartir recibo por WhatsApp" style="padding:.28rem .5rem;font-size:.8rem;min-height:unset">📲</button>`:''}
+        ${pagado?`<button class="btn bg2 xs" onclick="generarReciboPDF('${houseEsc}','${mesKey}')" title="Descargar recibo PDF" style="padding:.28rem .5rem;min-height:unset;display:inline-flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg></button>`:''}
+        ${pagado?`<button class="btn bb2 xs" onclick="compartirReciboWhatsApp('${houseEsc}','${mesKey}')" title="Compartir recibo" style="padding:.28rem .5rem;min-height:unset;display:inline-flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 8.25h3"/></svg></button>`:''}
         <button class="btn ${pagado?'bd':'bp'} sm"
           onclick="toggleCuota('${mesKey}','${houseEsc}')" style="min-width:78px;font-size:.77rem">
           ${pagado?'↩ Revertir':'✓ Pago'}
@@ -3185,8 +3230,8 @@ async function doMarkPaid(mesKey, house, metodo, nota) {
   compartirReciboWhatsApp(house, mesKey).catch(() => {});
   setSI('adm','syncing');
   fsPush(c).then(ok => setSI('adm', ok?'ok':'err')).catch(()=>setSI('adm','err'));
-  toast('✅ Cuota registrada — ' + house);
-  notifyResident(c, house, '✅ Cuota registrada', `Recibimos tu pago de $${monto} · ${metodo}${nota?' · '+nota:''}`).catch(()=>{});
+  toast('Cuota registrada — ' + house);
+  notifyResident(c, house, 'Cuota registrada', `Recibimos tu pago de $${monto} · ${metodo}${nota?' · '+nota:''}`).catch(()=>{});
   renderCuotas(); updateDash();
 }
 
@@ -3198,7 +3243,7 @@ async function marcarTodosMes() {
   if (!c.cuotas[mesKey]) c.cuotas[mesKey] = {};
   const res = c.residents || [];
   const unpaid = res.filter(r => !c.cuotas[mesKey][r.house]?.pagado);
-  if (!unpaid.length) { toast('✅ Todos ya pagaron este mes'); return; }
+  if (!unpaid.length) { toast('Todos ya pagaron este mes'); return; }
   if (!confirm(`¿Marcar ${unpaid.length} casa${unpaid.length!==1?'s':''} como pagadas en efectivo?`)) return;
   const monto = c.cuotaConfig?.monto || 0;
   const [year, month] = mesKey.split('-');
@@ -3212,7 +3257,7 @@ async function marcarTodosMes() {
   save();
   setSI('adm','syncing');
   fsPush(c).then(ok => setSI('adm', ok?'ok':'err')).catch(()=>setSI('adm','err'));
-  toast(`✅ ${unpaid.length} cuota${unpaid.length!==1?'s':''} registradas`);
+  toast(`${unpaid.length} cuota${unpaid.length!==1?'s':''} registradas`);
   renderCuotas(); updateDash();
 }
 
@@ -3372,7 +3417,7 @@ function generarReciboPDF(house, mesKey) {
   const result = _buildReciboPDF(house, mesKey);
   if (!result) return;
   result.doc.save(result.fileName);
-  toast('📄 Recibo descargado');
+  toast('Recibo descargado');
 }
 
 async function compartirReciboWhatsApp(house, mesKey) {
@@ -3386,7 +3431,7 @@ async function compartirReciboWhatsApp(house, mesKey) {
     const file = new File([blob], fileName, { type: 'application/pdf' });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({ files: [file], text: textMsg, title: fileName });
-      toast('📲 Recibo compartido');
+      toast('Recibo compartido');
       return;
     }
   } catch(e) {
@@ -3399,7 +3444,7 @@ async function compartirReciboWhatsApp(house, mesKey) {
     ? `https://wa.me/${phone}?text=${encodeURIComponent(textMsg)}`
     : `https://wa.me/?text=${encodeURIComponent(textMsg)}`;
   setTimeout(() => window.open(waUrl, '_blank'), 700);
-  toast('📄 PDF descargado — adjúntalo en WhatsApp');
+  toast('PDF descargado — adjúntalo en WhatsApp');
 }
 
 function renderAdeudoPorCasa() {
@@ -3407,10 +3452,10 @@ function renderAdeudoPorCasa() {
   const list = document.getElementById('cuotas-adeudo'); if (!list) return;
   const res   = c.residents || [];
   const monto = c.cuotaConfig?.monto || 0;
-  if (!monto) { list.innerHTML = emH('⚙️', 'Configura primero el monto de la cuota'); return; }
+  if (!monto) { list.innerHTML = emH(ic('cog',52,'var(--gold)'), 'Configura primero el monto de la cuota'); return; }
 
   const casas = res.map(r => ({ r, adeudo: calcAdeudo(c, r.house) })).sort((a,b) => b.adeudo - a.adeudo);
-  if (!casas.length) { list.innerHTML = emH('🏠', 'Sin casas registradas'); return; }
+  if (!casas.length) { list.innerHTML = emH(ic('home',52,'var(--gold)'), 'Sin casas registradas'); return; }
 
   const adeudoTotal = casas.reduce((s,x) => s + x.adeudo, 0);
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0 .75rem;border-bottom:1.5px solid var(--brd);margin-bottom:.5rem">
@@ -3425,7 +3470,7 @@ function renderAdeudoPorCasa() {
         <div class="av ${adeudo>0?'ar':'ag'}" style="font-size:.7rem">${r.house.replace(/\D/g,'').slice(0,2)||'?'}</div>
         <div>
           <div class="in">${esc(r.name)}</div>
-          <div class="is">${r.house}${r.mora?' · ⚠️ Mora':''}${adeudo>0?' · '+mesesDeuda+' mes'+(mesesDeuda!==1?'es':''):''}</div>
+          <div class="is">${r.house}${r.mora?' · Mora':''}${adeudo>0?' · '+mesesDeuda+' mes'+(mesesDeuda!==1?'es':''):''}</div>
         </div>
       </div>
       <span class="bge ${adeudo>0?'r-b':'gr-b'}">${adeudo>0?'$'+adeudo.toFixed(2):'Al día'}</span>
@@ -3441,7 +3486,7 @@ function renderCuotasHistorial() {
   const meses = getMeses(6);
   const res   = c.residents || [];
   const monto = c.cuotaConfig?.monto || 0;
-  if (!monto) { list.innerHTML = emH('⚙️', 'Configura primero el monto de la cuota'); return; }
+  if (!monto) { list.innerHTML = emH(ic('cog',52,'var(--gold)'), 'Configura primero el monto de la cuota'); return; }
   list.innerHTML = meses.map(mes => {
     const cuotas  = c.cuotas?.[mes.key] || {};
     const pagadas = res.filter(r => cuotas[r.house]?.pagado).length;
@@ -3466,7 +3511,7 @@ function renderMiCuenta(c, house) {
   const el = document.getElementById('rf-micuenta');
   if (!el) return;
   const monto = c.cuotaConfig?.monto || 0;
-  if (!monto) { el.innerHTML = emH('🏦', 'Sin cuotas configuradas aún'); return; }
+  if (!monto) { el.innerHTML = emH(ic('bank',52,'var(--gold)'), 'Sin cuotas configuradas aún'); return; }
 
   const adeudoTotal = calcAdeudo(c, house);
   const now = new Date();
@@ -3479,7 +3524,7 @@ function renderMiCuenta(c, house) {
   let html = `<div style="background:${headerBg};color:#fff;border-radius:12px;padding:1rem 1.2rem;margin-bottom:.8rem;text-align:center">
     <div style="font-size:.78rem;opacity:.85;margin-bottom:.2rem">Adeudo total</div>
     <div style="font-size:1.6rem;font-weight:900;font-family:var(--fd)">$${adeudoTotal.toFixed(2)}</div>
-    <div style="font-size:.73rem;opacity:.85;margin-top:.2rem">${adeudoTotal > 0 ? 'Cuota mensual: $' + monto : '✅ Al corriente'}</div>
+    <div style="font-size:.73rem;opacity:.85;margin-top:.2rem">${adeudoTotal > 0 ? 'Cuota mensual: $' + monto : 'Al corriente'}</div>
   </div>`;
 
   html += allKeys.map(mesKey => {
@@ -3494,7 +3539,7 @@ function renderMiCuenta(c, house) {
         <div class="av ${pagado ? 'ag' : esFuturo ? '' : 'ar'}">${pagado ? '✓' : esFuturo ? '·' : '!'}</div>
         <div>
           <div class="in" style="text-transform:capitalize">${label}</div>
-          <div class="is">${pagado ? '✅ Pagado' + (fecha ? ' el ' + fecha : '') : esFuturo ? '📅 Próximo mes' : '⏳ Pendiente — $' + monto}</div>
+          <div class="is">${pagado ? 'Pagado' + (fecha ? ' el ' + fecha : '') : esFuturo ? 'Próximo mes' : 'Pendiente — $' + monto}</div>
         </div>
       </div>
       <span class="bge ${pagado ? 'gr-b' : esFuturo ? '' : 'r-b'}">${pagado ? 'Al corriente' : esFuturo ? '' : 'Debe $' + monto}</span>
@@ -3564,7 +3609,7 @@ load();seedDemo();renderNcP();
       
       // Si la cerrada no está localmente, intentar descargar desde JSONBin
       if (!cerrada) {
-        toast('🔄 Cargando datos...');
+        toast('Cargando datos...');
         // El Bin ID y API Key están hardcodeados para SMARK-001
         // Para otras cerradas el admin debe configurarlos
         try {
@@ -3589,7 +3634,7 @@ load();seedDemo();renderNcP();
             return;
           } else {
             showScreen('login');
-            setTimeout(() => toast('⚠️ Esta casa ya tiene el máximo de 5 miembros'), 500);
+            setTimeout(() => toast('Esta casa ya tiene el máximo de 5 miembros'), 500);
             return;
           }
         } else {
@@ -3694,7 +3739,7 @@ async function showRegisterFromPayload(payload) {
 
   let c = S.cerradas[code];
   if (!c) {
-    toast('🔄 Cargando datos...');
+    toast('Cargando datos...');
     try {
       const record = await fsGet(code);
       if (record) { S.cerradas[code] = record; save(); c = S.cerradas[code]; }
@@ -3704,7 +3749,7 @@ async function showRegisterFromPayload(payload) {
   if (c) {
     const res = c.residents.find(r => r.house === house);
     const members = res?.members || [];
-    if (members.length >= 5) { toast('⚠️ Esta casa ya tiene el máximo de 5 miembros'); return; }
+    if (members.length >= 5) { toast('Esta casa ya tiene el máximo de 5 miembros'); return; }
     const role = members.length === 0 ? 'head' : 'family';
     showRegisterScreen(code, house, resolvedToken, role);
   } else {
@@ -3715,7 +3760,7 @@ async function showRegisterFromPayload(payload) {
 // Pantalla de registro cuando la cerrada no está en localStorage del nuevo usuario
 function showRegisterScreenNew(code, house, token) {
   showScreen('register');
-  document.getElementById('reg-title').textContent = '👤 Registro de Jefe de Familia';
+  document.getElementById('reg-title').textContent = 'Registro de Jefe de Familia';
   document.getElementById('reg-subtitle').textContent = house;
   document.getElementById('reg-code').value = code;
   document.getElementById('reg-house').value = house;
@@ -3792,7 +3837,7 @@ if (!isStandalone) {
     deferredPrompt = e;
     if (!localStorage.getItem('pwa-dismissed')) {
       const btn = document.getElementById('btn-instalar');
-      btn.textContent = '📲 Instalar';
+      btn.textContent = 'Instalar';
       btn.onclick = installApp;
       document.getElementById('install-banner').style.display = 'flex';
     }
@@ -3803,7 +3848,7 @@ if (!isStandalone) {
     setTimeout(() => {
       if (!deferredPrompt && !localStorage.getItem('pwa-dismissed')) {
         const btn = document.getElementById('btn-instalar');
-        btn.textContent = '📲 Instalar';
+        btn.textContent = 'Instalar';
         btn.onclick = () => {
           document.getElementById('install-banner').style.display = 'none';
           toast('Toca ⋮ arriba → "Agregar a pantalla de inicio"');
@@ -3827,7 +3872,7 @@ async function installApp() {
     const { outcome } = await deferredPrompt.userChoice;
     deferredPrompt = null;
     document.getElementById('install-banner').style.display = 'none';
-    if (outcome === 'accepted') toast('🎉 ¡CerradaApp instalada!');
+    if (outcome === 'accepted') toast('¡CerradaApp instalada!');
   } else {
     document.getElementById('install-banner').style.display = 'none';
     toast('Toca ⋮ arriba → "Agregar a pantalla de inicio"');
@@ -3846,7 +3891,7 @@ function dismissIOS() {
 }
 
 window.addEventListener('appinstalled', () => {
-  toast('🎉 CerradaApp instalada');
+  toast('CerradaApp instalada');
   document.getElementById('install-banner').style.display = 'none';
 });
 </script>
