@@ -5,8 +5,8 @@
   "start_url": "https://racosta123.github.io/cerradaapp/",
   "scope": "https://racosta123.github.io/cerradaapp/",
   "display": "standalone",
-  "background_color": "#3B82C4",
-  "theme_color": "#3B82C4",
+  "background_color": "#0D0D1A",
+  "theme_color": "#F5A623",
   "orientation": "portrait-primary",
   "prefer_related_applications": false,
   "icons": [
