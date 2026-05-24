@@ -1889,10 +1889,18 @@ async function confirmarInviteFamiliar() {
 
 async function _generarInviteFamiliar(c, res, emailFamiliar) {
   const token = btoa(`${c.code}|${res.house}|fam|${Date.now()}`).replace(/=/g,'');
-  res.familiarToken = token;
-  res.familiarTokenExpires = Date.now() + 24*60*60*1000;
+  // Usar inviteToken (mismo campo que valida el worker) — no familiarToken
+  res.inviteToken = token;
+  res.inviteExpires = Date.now() + 24*60*60*1000;
   save();
-  fsPush(c).catch(()=>{}); // push en background, no bloquear
+
+  // Esperar confirmación de Firestore antes de generar el link
+  toast('Sincronizando con la nube...');
+  const pushed = await fsPush(c);
+  if (!pushed) {
+    toast('Error al sincronizar. Verifica tu conexión e intenta de nuevo.');
+    return;
+  }
 
   toast('Generando invitación...');
   const payload = btoa(JSON.stringify({
@@ -2122,7 +2130,15 @@ function startRealtimeListener(cerradaCode){
       if(!record) return;
       const c = S.cerradas[cerradaCode];
       if(!c) return;
+      // Preservar inviteToken/inviteExpires locales pendientes de sync
+      const prevResidents = c.residents || [];
       Object.assign(c, record);
+      if(c.residents && prevResidents.length){
+        c.residents.forEach(r=>{
+          const prev = prevResidents.find(p=>p.house===r.house);
+          if(prev?.inviteToken && !r.inviteToken){ r.inviteToken=prev.inviteToken; r.inviteExpires=prev.inviteExpires; }
+        });
+      }
       save();
       if(U?.role === 'resident'){
         renderGates(c,'res','gate-res');
@@ -2844,7 +2860,14 @@ async function sendInvite(i) {
   c.residents[i].inviteToken = token;
   c.residents[i].inviteExpires = Date.now() + (7 * 24 * 60 * 60 * 1000);
   save();
-  fsPush(c).catch(()=>{}); // push en background, no bloquear
+
+  // Esperar confirmación de Firestore antes de generar el link
+  toast('Sincronizando con la nube...');
+  const pushed = await fsPush(c);
+  if (!pushed) {
+    toast('Error al sincronizar. Verifica tu conexión e intenta de nuevo.');
+    return;
+  }
 
   toast('Generando invitación...');
   const baseUrl = 'https://racosta123.github.io/cerradaapp/register.html';
