@@ -10,9 +10,8 @@
 // Cron: cada minuto → ping Shelly
 
 // ── Secrets de Cloudflare requeridos:
-// FCM_CLIENT_EMAIL  → correo de la cuenta de servicio de Firebase
-// FCM_PRIVATE_KEY   → clave privada PEM de la cuenta de servicio
-// SHELLY_AUTH       → clave de autenticación de Shelly Cloud
+// GOOGLE_CREDENTIALS → JSON completo de la cuenta de servicio de Google (service account key)
+// SHELLY_AUTH        → clave de autenticación de Shelly Cloud
 
 const SHELLY_DEVICE    = 'e4b063eb85a4';
 const FIREBASE_PROJECT = 'cerradaapp-7179e';
@@ -33,11 +32,12 @@ function json(data, status) {
 
 // ── Genera un OAuth2 Access Token para cualquier scope de Google
 async function getGoogleToken(scope, env) {
+  const creds = JSON.parse(env.GOOGLE_CREDENTIALS);
   const now = Math.floor(Date.now() / 1000);
 
   const header  = { alg: 'RS256', typ: 'JWT' };
   const payload = {
-    iss: env.FCM_CLIENT_EMAIL,
+    iss: creds.client_email,
     scope,
     aud: 'https://oauth2.googleapis.com/token',
     iat: now,
@@ -49,7 +49,7 @@ async function getGoogleToken(scope, env) {
   const payloadB64 = b64url(JSON.stringify(payload));
   const toSign     = `${headerB64}.${payloadB64}`;
 
-  const pem     = env.FCM_PRIVATE_KEY.replace(/\\n/g, '\n');
+  const pem     = creds.private_key.replace(/\\n/g, '\n');
   const pemBody = pem.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n/g, '');
   const keyBuf  = Uint8Array.from(atob(pemBody), c => c.charCodeAt(0));
 
