@@ -554,7 +554,27 @@ textarea { resize: vertical; min-height: 70px; }
 }
 /* ═══════════════ TOAST ═══════════════ */
 #toast {
+  position: fixed;
   bottom: calc(5.2rem + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  z-index: 9999;
+  background: rgba(20,30,50,.95);
+  color: var(--text);
+  padding: .7rem 1.4rem;
+  border-radius: 50px;
+  font-size: .82rem;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+  white-space: nowrap;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 /* ═══════════════ SYNC INDICATOR ═══════════════ */
 #sync-res, #sync-adm {
