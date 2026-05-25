@@ -1193,7 +1193,7 @@ textarea { resize: vertical; min-height: 70px; }
           <div><label>Casa / Lote</label><input id="nv-h" placeholder="Casa 12"></div>
         </div>
         <label>Nombre completo</label><input id="nv-n" placeholder="Juan Pérez">
-        <label>Teléfono (opcional)</label><input id="nv-t" placeholder="+502 1234 5678">
+        <label>Teléfono</label><input id="nv-t" placeholder="+502 1234 5678" required>
         <button class="btn bp" onclick="addVec()">+ Agregar Vecino</button>
       </div>
       <div class="sh"><h3>Vecinos Registrados</h3><span class="bge b-b" id="vec-cnt">0</span></div>
@@ -1646,8 +1646,8 @@ textarea { resize: vertical; min-height: 70px; }
     </p>
     <label>Correo del familiar <span style="color:var(--rose)">*</span></label>
     <input id="fam-email" type="email" placeholder="familiar@correo.com" autocomplete="off">
-    <label>Teléfono (opcional)</label>
-    <input id="fam-phone" type="tel" placeholder="+502 1234 5678" autocomplete="off">
+    <label>Teléfono</label>
+    <input id="fam-phone" type="tel" placeholder="+502 1234 5678" autocomplete="off" required>
     <div class="err" id="fam-err"></div>
     <div class="frow" style="margin-top:.3rem">
       <button class="btn bg2" onclick="closeModal('modal-invite-fam')">Cancelar</button>
