@@ -688,6 +688,50 @@ textarea { resize: vertical; min-height: 70px; }
 .premium-danger-btn { border-color: rgba(255,107,107,.2); color: var(--red); background: rgba(255,107,107,.06); }
 .premium-admin-nav { overflow-x: auto; }
 .premium-admin-nav::-webkit-scrollbar { display: none; }
+/* ═══════════════ ADMIN NAV ═══════════════ */
+#scr-adm .nav {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 0 .25rem;
+  gap: .1rem;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  background: rgba(10,15,26,.6);
+}
+#scr-adm .nav::-webkit-scrollbar { display: none; }
+#scr-adm .ntab {
+  flex-direction: row;
+  gap: .35rem;
+  padding: .7rem .9rem;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  font-size: .72rem;
+  flex-shrink: 0;
+}
+#scr-adm .ntab.on {
+  color: var(--gold);
+  background: transparent;
+  border-bottom-color: var(--gold);
+}
+#scr-adm .ntab.on svg { transform: none; }
+/* ═══════════════ FINANCE BAR ═══════════════ */
+.fbar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .5rem;
+  margin-bottom: .8rem;
+}
+.fc { padding: .75rem .5rem; text-align: center; }
+.fl { font-size: .65rem; color: var(--text2); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .25rem; }
+.fv { font-size: 1.05rem; font-weight: 800; color: var(--text); }
+.fi { color: var(--green); }
+.fe { color: var(--red); }
+.fb2 { color: var(--gold); }
+/* ═══════════════ HISTORY ITEMS ═══════════════ */
+.hinfo { flex: 1; min-width: 0; }
+.htime { font-size: .7rem; color: var(--text3); margin-top: .15rem; }
 .premium-nav-ic { display: inline-flex; }
 .premium-sync-indicator { display: inline-flex; align-items: center; }
 .premium-house-badge { background: rgba(212,175,55,.1); color: var(--gold); border: 1px solid rgba(212,175,55,.2); border-radius: 50px; padding: .25rem .65rem; font-size: .68rem; font-weight: 800; }
