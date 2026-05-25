@@ -1692,11 +1692,11 @@ async function initFCM(c, res, memberIdx) {
 
     // Cargar firebase-messaging si aún no está (firebase-app ya se cargó en el <head>)
     await new Promise((resolve, reject) => {
-      if (window.firebase?.messaging) { resolve(); return; }
+      if (typeof window.firebase?.messaging === 'function') { resolve(); return; }
       const s = document.createElement('script');
       s.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js';
       s.onload = resolve;
-      s.onerror = reject;
+      s.onerror = () => reject(new Error('No se pudo cargar Firebase Messaging'));
       document.head.appendChild(s);
     });
 
@@ -1717,26 +1717,20 @@ async function initFCM(c, res, memberIdx) {
       vapidKey: 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDkBWpmsu1XJFb8xP5FnkmYlnNkFm5RJBvEVm4KkBfqA',
       serviceWorkerRegistration: sw
     });
-    if (!token) return;
+    if (!token) { console.log('FCM: getToken devolvió null'); return; }
 
-    // Guardar token en el miembro correcto
+    // Guardar token — siempre persistir a Firestore (evita desync si otro cliente
+    // sobreescribió el documento sin incluir este token)
     const resIdx = c.residents.findIndex(r => r.house === res.house);
-    if (resIdx < 0) return;
+    if (resIdx < 0) { console.log('FCM: residente no encontrado en c.residents'); return; }
 
-    let changed = false;
     if (memberIdx >= 0 && c.residents[resIdx].members?.[memberIdx]) {
-      if (c.residents[resIdx].members[memberIdx].fcmToken !== token) {
-        c.residents[resIdx].members[memberIdx].fcmToken = token;
-        changed = true;
-      }
+      c.residents[resIdx].members[memberIdx].fcmToken = token;
     } else {
-      if (c.residents[resIdx].fcmToken !== token) {
-        c.residents[resIdx].fcmToken = token;
-        changed = true;
-      }
+      c.residents[resIdx].fcmToken = token;
     }
-
-    if (changed) { save(); fsPush(c).catch(() => {}); }
+    save();
+    fsPush(c).catch(e => console.log('FCM fsPush error:', e?.message));
 
     // Handler de mensajes en primer plano (app abierta) — solo registrar una vez
     if (!_fcmMsgHandler) {
@@ -2169,6 +2163,7 @@ const FB_CONFIG = {
 let _db = null;
 let _fsListener = null;
 let _fcmMsgHandler = null;
+let _fcmDesync = false;
 
 function getDb(){
   if(_db) return _db;
@@ -2194,11 +2189,12 @@ function startRealtimeListener(cerradaCode){
         c.residents.forEach(r=>{
           const prev = prevResidents.find(p=>p.house===r.house);
           if(prev?.inviteToken && !r.inviteToken){ r.inviteToken=prev.inviteToken; r.inviteExpires=prev.inviteExpires; }
-          if(prev?.fcmToken && !r.fcmToken){ r.fcmToken=prev.fcmToken; }
-          (r.members||[]).forEach((m,mi)=>{ const pm=prev?.members?.[mi]; if(pm?.fcmToken&&!m.fcmToken) m.fcmToken=pm.fcmToken; });
+          if(prev?.fcmToken && !r.fcmToken){ r.fcmToken=prev.fcmToken; _fcmDesync=true; }
+          (r.members||[]).forEach((m,mi)=>{ const pm=prev?.members?.[mi]; if(pm?.fcmToken&&!m.fcmToken){ m.fcmToken=pm.fcmToken; _fcmDesync=true; } });
         });
       }
       save();
+      if(_fcmDesync){ _fcmDesync=false; fsPush(c).catch(()=>{}); }
       if(U?.role === 'resident'){
         renderGates(c,'res','gate-res');
         renderResHist(c);
