@@ -75,6 +75,9 @@ body {
 /* SCREENS */
 .screen { display: none; min-height: 100vh; flex-direction: column; }
 .screen.active { display: flex; }
+/* PANELS */
+.panel { display: none; }
+.panel.on { display: block; }
 /* ═══════════════ TOPBAR ═══════════════ */
 .topbar {
   position: sticky;
@@ -408,6 +411,9 @@ textarea { resize: vertical; min-height: 70px; }
   transition: .2s ease;
   cursor: pointer;
   font-family: var(--font);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .ntab.on {
   color: var(--gold);
