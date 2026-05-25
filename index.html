@@ -299,6 +299,10 @@ textarea { resize: vertical; min-height: 70px; }
   cursor: pointer;
   width: 100%;
   text-align: left;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
 }
 .gbtn::before {
   content: '';
@@ -478,10 +482,22 @@ textarea { resize: vertical; min-height: 70px; }
 }
 /* ═══════════════ MODAL ═══════════════ */
 .mover {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  align-items: flex-end;
+  justify-content: center;
   background: rgba(0,0,0,.65);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
+.mover.open { display: flex; }
 .mdl {
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
   background: rgba(13,24,40,.96);
   border-radius: 28px 28px 20px 20px;
   border: 1px solid rgba(255,255,255,.04);
