@@ -2903,6 +2903,7 @@ function renderVec(){
           <div style="display:flex;align-items:center;gap:.32rem">
             <span style="color:var(--t3);font-size:.68rem">${m.email||''}</span>
             <button class="btn bw xs" style="padding:.18rem .38rem;font-size:.68rem;min-height:unset;min-width:unset;display:inline-flex;align-items:center" onclick="if(navigator.vibrate)navigator.vibrate(20);openPinModal(${i},${mi})" title="Ver/resetear contraseña"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg></button>
+            <button class="btn bg2 xs" style="padding:.18rem .38rem;font-size:.68rem;min-height:unset;min-width:unset;display:inline-flex;align-items:center" onclick="if(navigator.vibrate)navigator.vibrate(20);editMember(${i},${mi})" title="Editar familiar"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg></button>
             <button class="btn bd xs" style="padding:.18rem .38rem;font-size:.68rem;min-height:unset;min-width:unset" onclick="if(navigator.vibrate)navigator.vibrate(30);delMember(${i},${mi})">✕</button>
           </div>
         </div>`).join('')}
@@ -2937,6 +2938,18 @@ function editVec(i){
   document.getElementById('ev-name').value=r.name;
   document.getElementById('ev-phone').value=r.phone||'';
   document.getElementById('ev-email').value=r.email||'';
+  const err=document.getElementById('ev-err');if(err)err.style.display='none';
+  openModal('modal-edit-vec');
+}
+function editMember(i,mi){
+  const c=C();if(!c)return;
+  const r=c.residents[i];if(!r)return;
+  const m=(r.members||[])[mi];if(!m)return;
+  document.getElementById('ev-idx').value=i;
+  document.getElementById('ev-house').value=r.house;
+  document.getElementById('ev-name').value=m.name||'';
+  document.getElementById('ev-phone').value=m.phone||'';
+  document.getElementById('ev-email').value=m.email||'';
   const err=document.getElementById('ev-err');if(err)err.style.display='none';
   openModal('modal-edit-vec');
 }
