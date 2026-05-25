@@ -1,4 +1,4 @@
-// CerradaApp Service Worker — v9
+// CerradaApp Service Worker — v10
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 firebase.initializeApp({
@@ -14,8 +14,8 @@ messaging.onBackgroundMessage((payload) => {
   const { title, body } = payload.notification || {};
   self.registration.showNotification(title || 'CerradaApp', {
     body: body || '',
-    icon: '/cerradaapp/icon-192.png',
-    badge: '/cerradaapp/icon-192.png',
+    icon: '/cerradaapp/icons/icon-192x192.png',
+    badge: '/cerradaapp/icons/icon-192x192.png',
     vibrate: [200, 100, 200]
   });
 });
@@ -44,7 +44,7 @@ self.addEventListener('message', (e) => {
     });
   }
 });
-const CACHE = 'cerradaapp-v9';
+const CACHE = 'cerradaapp-v10';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/cerradaapp/','/cerradaapp/index.html'])));
   self.skipWaiting();
