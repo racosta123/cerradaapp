@@ -338,9 +338,15 @@ textarea { resize: vertical; min-height: 70px; }
   border-color: rgba(212,175,55,.5);
 }
 .gbtn.ok {
-  border-color: rgba(67,209,123,.4);
-  box-shadow: 0 0 30px rgba(67,209,123,.15);
+  border-color: rgba(67,209,123,.8);
+  box-shadow: 0 0 30px rgba(67,209,123,.5), inset 0 0 20px rgba(67,209,123,.15);
 }
+.gbtn .gico-wrap {
+  color: var(--gold);
+  transition: color .3s ease;
+}
+.gbtn.ok .gico-wrap { color: var(--green); }
+.gbtn .gico-wrap svg { stroke: currentColor; }
 .gico-wrap {
   width: 60px;
   height: 60px;
