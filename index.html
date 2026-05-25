@@ -419,6 +419,22 @@ textarea{resize:vertical;min-height:70px;}
       Seguridad residencial • Control de acceso inteligente
     </div>
   </div>
+  <div id="tab-res-only">
+    <div id="res-invite-msg" style="display:none;text-align:center;padding:.5rem 0">  </div>
+  </div>
+  <div id="staff-access" style="display:none;margin-top:.75rem">
+    <label>Código de cerrada o usuario</label>
+    <input id="staff-user" placeholder="Ej: SMARK-001 o MASTER" autocomplete="off" style="margin-bottom:.6rem">
+    <label>PIN de admin o clave maestra</label>
+    <input id="staff-pass" type="password" placeholder="••••" autocomplete="off" style="margin-bottom:.75rem">
+    <div class="err" id="staff-err"></div>
+    <button class="btn bp" onclick="loginStaff()">Entrar →</button>
+  </div>
+  <div style="text-align:center">
+    <span onclick="toggleStaff()" style="font-size:.68rem;color:var(--t3);cursor:pointer;padding:.3rem .6rem;border-radius:6px;user-select:none">
+      Acceso personal
+    </span>
+  </div>
 </section>
 
 <!-- PANTALLA DE REGISTRO -->
