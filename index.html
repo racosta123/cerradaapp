@@ -746,7 +746,7 @@ textarea { resize: vertical; min-height: 70px; }
   background: rgba(13,24,40,.85);
   border: 1px solid rgba(30,42,56,.95);
   border-radius: 14px;
-  padding: 1.1rem 1.1rem .85rem;
+  padding: 1.35rem 1.25rem 1.1rem;
   margin-bottom: .75rem;
 }
 /* fila superior: info + avatar */
@@ -786,44 +786,49 @@ textarea { resize: vertical; min-height: 70px; }
   display: inline-flex;
   align-self: flex-start;
   align-items: center;
-  background: rgba(212,175,55,.1);
-  border: 1px solid rgba(212,175,55,.22);
+  background: rgba(212,175,55,.13);
+  border: 1px solid rgba(212,175,55,.28);
   border-radius: 6px;
-  padding: 2px 8px;
-  font-size: .62rem;
+  padding: 3px 10px;
+  font-size: .63rem;
   color: var(--gold);
   font-weight: 800;
-  letter-spacing: .06em;
+  letter-spacing: .07em;
   text-transform: uppercase;
-  margin-bottom: .3rem;
-  order: 1;
+  margin-bottom: .4rem;
 }
 /* nombre */
 .in {
-  font-size: .96rem;
+  font-size: 1.08rem;
   font-weight: 800;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  order: 2;
+  line-height: 1.25;
+  margin-bottom: .22rem;
 }
-/* badge de adeudo (segundo .is) */
-.is + .is {
+/* conteo de miembros */
+.im {
+  font-size: .72rem;
+  color: var(--t3);
+  font-weight: 500;
+  margin-top: .1rem;
+}
+/* badge de adeudo */
+.is-debt {
   display: inline-flex;
   align-self: flex-start;
+  align-items: center;
   background: rgba(255,107,107,.1);
   border: 1px solid rgba(255,107,107,.25);
   border-radius: 8px;
-  padding: 3px 10px;
+  padding: 4px 12px;
   font-size: .72rem;
   font-weight: 800;
   color: var(--red);
   letter-spacing: .02em;
-  text-transform: none;
-  margin-top: .35rem;
-  margin-bottom: 0;
-  order: 3;
+  margin-top: .45rem;
 }
 /* badge mora inline */
 .mora {
@@ -845,11 +850,11 @@ textarea { resize: vertical; min-height: 70px; }
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: .5rem;
+  gap: .8rem;
   flex-basis: 100%;
-  padding-top: .75rem;
-  margin-top: .55rem;
-  border-top: 1px solid rgba(255,255,255,.05);
+  padding-top: 1rem;
+  margin-top: .7rem;
+  border-top: 1px solid rgba(255,255,255,.08);
 }
 #vec-cnt {
   background: rgba(212,175,55,.12);
@@ -2899,9 +2904,10 @@ function renderVec(){
       <div class="lil">
         <div class="av ${r.mora?'ar':r.active?'ag':'ar'}">${esc(hn)}</div>
         <div>
+          <span class="is">${esc(r.house)}</span>
           <div class="in">${esc(r.name)}${r.mora?` <span class="mora"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg> Mora</span>`:''}</div>
-          <div class="is">${esc(r.house)} · ${members.length} miembro${members.length!==1?'s':''} registrado${members.length!==1?'s':''}</div>
-          ${adeudo>0?`<div class="is" style="color:var(--rose);font-weight:700">Adeudo: $${adeudo.toFixed(2)}</div>`:''}
+          <div class="im">${members.length} miembro${members.length!==1?'s':''}</div>
+          ${adeudo>0?`<div class="is-debt">$${adeudo.toFixed(2)} de adeudo</div>`:''}
         </div>
       </div>
       <div class="ia">
