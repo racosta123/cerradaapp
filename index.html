@@ -1722,10 +1722,27 @@ async function initFCM(c, res) {
     const sw = await navigator.serviceWorker.ready;
     console.log('[FCM] SW activo:', sw?.active?.scriptURL);
     console.log('[FCM] usando vapidKey:', FCM_VAPID.substring(0, 10) + '...');
-    const token = await window.firebase.messaging().getToken({
-      vapidKey: FCM_VAPID,
-      serviceWorkerRegistration: sw
-    });
+
+    const msg = window.firebase.messaging();
+    let token;
+    try {
+      token = await msg.getToken({ vapidKey: FCM_VAPID, serviceWorkerRegistration: sw });
+    } catch (e1) {
+      console.log('[FCM] getToken falló (1er intento):', e1?.message, '— borrando suscripción y reintentando...');
+      try {
+        // La suscripción push del navegador puede estar cacheada con otra clave VAPID.
+        // Borramos el token existente y volvemos a solicitar uno limpio.
+        await msg.deleteToken();
+        const swReg = await navigator.serviceWorker.getRegistration('/cerradaapp/');
+        if (swReg) {
+          const sub = await swReg.pushManager.getSubscription();
+          if (sub) { await sub.unsubscribe(); console.log('[FCM] suscripción push anterior eliminada'); }
+        }
+        token = await msg.getToken({ vapidKey: FCM_VAPID, serviceWorkerRegistration: sw });
+      } catch (e2) {
+        console.log('[FCM] getToken falló (2do intento):', e2?.message); return;
+      }
+    }
     if (!token) { console.log('[FCM] getToken devolvió null — VAPID key incorrecta o permiso denegado'); return; }
     console.log('[FCM] token obtenido:', token.substring(0, 20) + '...');
 
