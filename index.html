@@ -1686,8 +1686,12 @@ function setSI(r,st){const m={syncing:ic('refresh',16,'var(--gold)'),ok:ic('clou
 // ── NOTIFICACIONES FCM
 async function initFCM(c, res, memberIdx) {
   try {
-    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+    console.log('[FCM] iniciando — house:', res?.house, '| memberIdx:', memberIdx, '| email:', U?.email);
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+      console.log('[FCM] Notification o serviceWorker no soportados'); return;
+    }
     const perm = await Notification.requestPermission();
+    console.log('[FCM] permiso:', perm);
     if (perm !== 'granted') return;
 
     // Cargar firebase-messaging si aún no está (firebase-app ya se cargó en el <head>)
@@ -1695,7 +1699,7 @@ async function initFCM(c, res, memberIdx) {
       if (typeof window.firebase?.messaging === 'function') { resolve(); return; }
       const s = document.createElement('script');
       s.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js';
-      s.onload = resolve;
+      s.onload = () => { console.log('[FCM] messaging SDK cargado'); resolve(); };
       s.onerror = () => reject(new Error('No se pudo cargar Firebase Messaging'));
       document.head.appendChild(s);
     });
@@ -1713,24 +1717,45 @@ async function initFCM(c, res, memberIdx) {
     }
 
     const sw = await navigator.serviceWorker.ready;
+    console.log('[FCM] SW activo:', sw?.active?.scriptURL);
     const token = await window.firebase.messaging().getToken({
       vapidKey: 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDkBWpmsu1XJFb8xP5FnkmYlnNkFm5RJBvEVm4KkBfqA',
       serviceWorkerRegistration: sw
     });
-    if (!token) { console.log('FCM: getToken devolvió null'); return; }
+    if (!token) { console.log('[FCM] getToken devolvió null — verificar VAPID key y permisos del navegador'); return; }
+    console.log('[FCM] token obtenido:', token.substring(0, 20) + '...');
 
-    // Guardar token — siempre persistir a Firestore (evita desync si otro cliente
-    // sobreescribió el documento sin incluir este token)
+    // Siempre persistir a Firestore — evita desync cuando otro cliente sobrescribe sin incluir el token
     const resIdx = c.residents.findIndex(r => r.house === res.house);
-    if (resIdx < 0) { console.log('FCM: residente no encontrado en c.residents'); return; }
+    if (resIdx < 0) { console.log('[FCM] ERROR: casa', res?.house, 'no encontrada en c.residents:', c.residents?.map(r=>r.house)); return; }
 
-    if (memberIdx >= 0 && c.residents[resIdx].members?.[memberIdx]) {
-      c.residents[resIdx].members[memberIdx].fcmToken = token;
+    // Buscar miembro por email (más robusto que por índice, evita desync si el array cambió)
+    const userEmail = U?.email;
+    let savedTo = 'resObj';
+    if (userEmail && memberIdx >= 0) {
+      const mIdx = (c.residents[resIdx].members || []).findIndex(m => m.email === userEmail);
+      if (mIdx >= 0) {
+        c.residents[resIdx].members[mIdx].fcmToken = token;
+        savedTo = 'members[' + mIdx + '] email=' + userEmail;
+      } else {
+        // Fallback: índice directo si no se encuentra por email
+        console.log('[FCM] WARN: no se encontró miembro con email', userEmail, '— usando índice', memberIdx);
+        if (c.residents[resIdx].members?.[memberIdx]) {
+          c.residents[resIdx].members[memberIdx].fcmToken = token;
+          savedTo = 'members[' + memberIdx + '] (fallback por índice)';
+        } else {
+          c.residents[resIdx].fcmToken = token;
+          savedTo = 'resObj (fallback, members vacío)';
+        }
+      }
     } else {
       c.residents[resIdx].fcmToken = token;
     }
+    console.log('[FCM] token guardado en:', savedTo);
     save();
-    fsPush(c).catch(e => console.log('FCM fsPush error:', e?.message));
+    fsPush(c).then(ok => {
+      console.log('[FCM] fsPush resultado:', ok ? 'OK ✓' : 'FALLÓ ✗ — token NO persistido en Firestore');
+    }).catch(e => console.log('[FCM] fsPush error:', e?.message));
 
     // Handler de mensajes en primer plano (app abierta) — solo registrar una vez
     if (!_fcmMsgHandler) {
