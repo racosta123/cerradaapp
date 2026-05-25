@@ -15,7 +15,7 @@
 
 const SHELLY_DEVICE    = 'e4b063eb85a4';
 const FIREBASE_PROJECT = 'cerradaapp-7179e';
-const ICON_URL         = 'https://racosta123.github.io/cerradaapp/icon-192.png';
+const ICON_URL         = 'https://racosta123.github.io/cerradaapp/icons/icon-192x192.png';
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',

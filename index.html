@@ -2194,6 +2194,8 @@ function startRealtimeListener(cerradaCode){
         c.residents.forEach(r=>{
           const prev = prevResidents.find(p=>p.house===r.house);
           if(prev?.inviteToken && !r.inviteToken){ r.inviteToken=prev.inviteToken; r.inviteExpires=prev.inviteExpires; }
+          if(prev?.fcmToken && !r.fcmToken){ r.fcmToken=prev.fcmToken; }
+          (r.members||[]).forEach((m,mi)=>{ const pm=prev?.members?.[mi]; if(pm?.fcmToken&&!m.fcmToken) m.fcmToken=pm.fcmToken; });
         });
       }
       save();
@@ -3135,7 +3137,7 @@ async function submitRegister() {
 
   // Limpiar sesión anterior y guardar nueva como residente
   localStorage.removeItem('cerrada_session');
-  U = { role:'resident', cerradaCode:code, house, memberIdx, memberName:name };
+  U = { role:'resident', cerradaCode:code, house, memberIdx: role==='head' ? -1 : memberIdx, memberName:name, email };
   localStorage.setItem('cerrada_session', JSON.stringify(U));
 
   toast('¡Registro exitoso! Bienvenido a ' + c.name);
