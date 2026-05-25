@@ -2496,24 +2496,30 @@ let lastSuspCheck = 0; // Timestamp del último check de suspensión
 
 async function openPorton(pid,role){
   const c=C();if(!c)return;
+  console.log('[openPorton] pid='+pid+' role='+role+' code='+(c.code||'none'));
 
   // Verificar suspensión en la nube ANTES de abrir
   if(role==='res' && c.code){
     let verificado = false;
     try{
-      const r=await fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&ts=${Date.now()}`);
+      const fsUrl=`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}&ts=${Date.now()}`;
+      console.log('[openPorton] GET '+fsUrl);
+      const r=await fetch(fsUrl);
       const data=await r.json();
+      console.log('[openPorton] /fs status='+r.status+' ok='+data.ok+' hasRecord='+(!!data.record));
       if(data.ok && data.record){
         Object.assign(c,data.record);save();
         verificado = true;
       }
-    }catch(e){}
+    }catch(e){ console.error('[openPorton] /fs error',e); }
 
     // Si no se pudo verificar, no abrir por seguridad
     if(!verificado){
+      console.warn('[openPorton] verificado=false — abortando');
       toast('Sin conexión — intenta de nuevo');
       return;
     }
+    console.log('[openPorton] verificado=true — continuando');
 
     // Verificar con datos actualizados
     const res=c.residents.find(r=>r.house===U.house);
@@ -2642,15 +2648,20 @@ function shellyOpen(pt) {
   const c = C();
   if (!c) return;
 
+  const payload = {
+    shellyId:     pt.shellyId || 'e4b063eb85a4',
+    shellyServer: 'shelly-258-eu.shelly.cloud',
+    seconds:      pt.time || 5
+  };
+  console.log('[shellyOpen] POST '+WORKER+'/shelly payload='+JSON.stringify(payload));
+
   fetch(`${WORKER}/shelly`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      shellyId:     pt.shellyId || 'e4b063eb85a4',
-      shellyServer: 'shelly-258-eu.shelly.cloud',
-      seconds:      pt.time || 5
-    })
-  }).catch(() => {});
+    body: JSON.stringify(payload)
+  })
+  .then(r => r.text().then(t => console.log('[shellyOpen] response status='+r.status+' body='+t)))
+  .catch(e => console.error('[shellyOpen] fetch error',e));
 }
 
 // ── ADMIN
