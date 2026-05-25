@@ -1684,9 +1684,13 @@ _Si tienes algún problema contáctame._`;
 // ── JSONBIN
 function setSI(r,st){const m={syncing:ic('refresh',16,'var(--gold)'),ok:ic('cloud',16,'var(--gold)'),err:ic('warning',16,'var(--rose)'),off:ic('cloud-up',16,'var(--t3)')};const el=document.getElementById('sync-'+r);if(el)el.innerHTML=m[st]||ic('cloud',16,'var(--gold)');}
 // ── NOTIFICACIONES FCM
-async function initFCM(c, res, memberIdx) {
+// vapidKey: clave pública Web Push de Firebase Console → Project Settings → Cloud Messaging → Web push certificates
+const FCM_VAPID = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDkBWpmsu1XJFb8xP5FnkmYlnNkFm5RJBvEVm4KkBfqA';
+
+async function initFCM(c, res) {
   try {
-    console.log('[FCM] iniciando — house:', res?.house, '| memberIdx:', memberIdx, '| email:', U?.email);
+    const email = (U?.email || '').toLowerCase();
+    console.log('[FCM] iniciando — house:', res?.house, '| email:', email || '(sin email — login por PIN)');
     if (!('Notification' in window) || !('serviceWorker' in navigator)) {
       console.log('[FCM] Notification o serviceWorker no soportados'); return;
     }
@@ -1694,7 +1698,7 @@ async function initFCM(c, res, memberIdx) {
     console.log('[FCM] permiso:', perm);
     if (perm !== 'granted') return;
 
-    // Cargar firebase-messaging si aún no está (firebase-app ya se cargó en el <head>)
+    // Cargar firebase-messaging si aún no está
     await new Promise((resolve, reject) => {
       if (typeof window.firebase?.messaging === 'function') { resolve(); return; }
       const s = document.createElement('script');
@@ -1704,7 +1708,6 @@ async function initFCM(c, res, memberIdx) {
       document.head.appendChild(s);
     });
 
-    // Inicializar Firebase si no está inicializado
     if (!window.firebase.apps?.length) {
       window.firebase.initializeApp({
         apiKey: "AIzaSyChuftPnUTXr7KmrVufvMxtmeH14Or0HUU",
@@ -1718,53 +1721,58 @@ async function initFCM(c, res, memberIdx) {
 
     const sw = await navigator.serviceWorker.ready;
     console.log('[FCM] SW activo:', sw?.active?.scriptURL);
+    console.log('[FCM] usando vapidKey:', FCM_VAPID.substring(0, 10) + '...');
     const token = await window.firebase.messaging().getToken({
-      vapidKey: 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDkBWpmsu1XJFb8xP5FnkmYlnNkFm5RJBvEVm4KkBfqA',
+      vapidKey: FCM_VAPID,
       serviceWorkerRegistration: sw
     });
-    if (!token) { console.log('[FCM] getToken devolvió null — verificar VAPID key y permisos del navegador'); return; }
+    if (!token) { console.log('[FCM] getToken devolvió null — VAPID key incorrecta o permiso denegado'); return; }
     console.log('[FCM] token obtenido:', token.substring(0, 20) + '...');
 
-    // Siempre persistir a Firestore — evita desync cuando otro cliente sobrescribe sin incluir el token
     const resIdx = c.residents.findIndex(r => r.house === res.house);
-    if (resIdx < 0) { console.log('[FCM] ERROR: casa', res?.house, 'no encontrada en c.residents:', c.residents?.map(r=>r.house)); return; }
+    if (resIdx < 0) { console.log('[FCM] ERROR: casa', res?.house, 'no encontrada. Casas disponibles:', c.residents?.map(r=>r.house)); return; }
 
-    // Buscar miembro por email (más robusto que por índice, evita desync si el array cambió)
-    const userEmail = U?.email;
-    let savedTo = 'resObj';
-    if (userEmail && memberIdx >= 0) {
-      const mIdx = (c.residents[resIdx].members || []).findIndex(m => m.email === userEmail);
+    const resObj = c.residents[resIdx];
+
+    // Determinar destino del token únicamente por email — sin depender de memberIdx
+    let savedTo = '';
+    if (email) {
+      // ¿Es el jefe de familia? (su email está en resObj.email)
+      if ((resObj.email || '').toLowerCase() === email) {
+        resObj.fcmToken = token;
+        savedTo = 'resObj.fcmToken (jefe)';
+      }
+      // ¿Es un miembro del array members? (familiar o jefe registrado vía app)
+      const mIdx = (resObj.members || []).findIndex(m => (m.email || '').toLowerCase() === email);
       if (mIdx >= 0) {
-        c.residents[resIdx].members[mIdx].fcmToken = token;
-        savedTo = 'members[' + mIdx + '] email=' + userEmail;
-      } else {
-        // Fallback: índice directo si no se encuentra por email
-        console.log('[FCM] WARN: no se encontró miembro con email', userEmail, '— usando índice', memberIdx);
-        if (c.residents[resIdx].members?.[memberIdx]) {
-          c.residents[resIdx].members[memberIdx].fcmToken = token;
-          savedTo = 'members[' + memberIdx + '] (fallback por índice)';
-        } else {
-          c.residents[resIdx].fcmToken = token;
-          savedTo = 'resObj (fallback, members vacío)';
-        }
+        resObj.members[mIdx].fcmToken = token;
+        savedTo += (savedTo ? ' + ' : '') + 'members[' + mIdx + '].fcmToken';
+      }
+      // Si no coincidió con ninguno — fallback al jefe
+      if (!savedTo) {
+        console.log('[FCM] WARN: email', email, 'no coincide con resObj.email ni members — guardando en resObj.fcmToken (fallback)');
+        resObj.fcmToken = token;
+        savedTo = 'resObj.fcmToken (fallback)';
       }
     } else {
-      c.residents[resIdx].fcmToken = token;
+      // Login por PIN — siempre es el jefe
+      resObj.fcmToken = token;
+      savedTo = 'resObj.fcmToken (login PIN)';
     }
+
     console.log('[FCM] token guardado en:', savedTo);
     save();
     fsPush(c).then(ok => {
-      console.log('[FCM] fsPush resultado:', ok ? 'OK ✓' : 'FALLÓ ✗ — token NO persistido en Firestore');
+      console.log('[FCM] fsPush resultado:', ok ? 'OK ✓' : 'FALLÓ ✗ — revisar Worker y Firestore');
     }).catch(e => console.log('[FCM] fsPush error:', e?.message));
 
-    // Handler de mensajes en primer plano (app abierta) — solo registrar una vez
     if (!_fcmMsgHandler) {
       _fcmMsgHandler = window.firebase.messaging().onMessage((payload) => {
         const { title, body } = payload.notification || {};
         toast(`${title || 'Notificación'}${body ? ' — ' + body : ''}`);
       });
     }
-  } catch(e) { console.log('FCM error:', e.message); }
+  } catch(e) { console.log('[FCM] excepción:', e.message); }
 }
 
 async function notifyFamily(c, res, openerName, portonLabel) {
@@ -1898,7 +1906,7 @@ function enterRes(c, res, member) {
   updateModeButtons();
 
   // Inicializar notificaciones FCM en segundo plano
-  initFCM(c, res, U?.memberIdx ?? -1).catch(() => {});
+  initFCM(c, res).catch(() => {});
 
   // Verificar estado cada 30 segundos automáticamente
   startRealtimeListener(c.code);
