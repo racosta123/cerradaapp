@@ -743,57 +743,89 @@ textarea { resize: vertical; min-height: 70px; }
 .premium-admin-screen { display: flex; flex-direction: column; }
 /* ═══════════════ VECINO LIST ═══════════════ */
 .li {
-  background: rgba(13,24,40,.8);
-  border: 1px solid rgba(30,42,56,.9);
-  border-radius: 12px;
-  padding: 1rem;
-  margin-bottom: .6rem;
+  background: rgba(13,24,40,.85);
+  border: 1px solid rgba(30,42,56,.95);
+  border-radius: 14px;
+  padding: 1.1rem 1.1rem .85rem;
+  margin-bottom: .75rem;
+}
+/* fila superior: info + avatar */
+.li > div:first-child {
+  flex-wrap: wrap;
+  gap: .6rem;
 }
 .lil {
   display: flex;
   align-items: center;
-  gap: .6rem;
+  gap: .75rem;
   flex: 1;
   min-width: 0;
 }
+/* bloque de texto dentro de lil */
+.lil > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
 .av {
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: .8rem;
+  font-size: .85rem;
   font-weight: 800;
   flex-shrink: 0;
   letter-spacing: .02em;
 }
-.ag { background: rgba(67,209,123,.12); color: var(--green); border: 1px solid rgba(67,209,123,.25); }
-.ar { background: rgba(255,107,107,.12); color: var(--red);   border: 1px solid rgba(255,107,107,.25); }
+.ag { background: rgba(67,209,123,.12); color: var(--green); border: 1px solid rgba(67,209,123,.3); }
+.ar { background: rgba(255,107,107,.12); color: var(--red);   border: 1px solid rgba(255,107,107,.3); }
+/* casa/lote → badge dorado encima del nombre */
+.is {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  background: rgba(212,175,55,.1);
+  border: 1px solid rgba(212,175,55,.22);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: .62rem;
+  color: var(--gold);
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: .3rem;
+  order: 1;
+}
+/* nombre */
 .in {
-  font-size: .88rem;
-  font-weight: 700;
+  font-size: .96rem;
+  font-weight: 800;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  order: 2;
 }
-.is {
-  font-size: .68rem;
-  color: var(--gold);
-  font-weight: 700;
-  letter-spacing: .04em;
-  margin-top: .1rem;
-}
+/* badge de adeudo (segundo .is) */
 .is + .is {
-  display: inline-block;
+  display: inline-flex;
+  align-self: flex-start;
   background: rgba(255,107,107,.1);
-  border: 1px solid rgba(255,107,107,.2);
+  border: 1px solid rgba(255,107,107,.25);
   border-radius: 8px;
-  padding: 2px 8px;
-  margin-top: .25rem;
+  padding: 3px 10px;
+  font-size: .72rem;
+  font-weight: 800;
   color: var(--red);
+  letter-spacing: .02em;
+  text-transform: none;
+  margin-top: .35rem;
+  margin-bottom: 0;
+  order: 3;
 }
+/* badge mora inline */
 .mora {
   display: inline-flex;
   align-items: center;
@@ -803,23 +835,28 @@ textarea { resize: vertical; min-height: 70px; }
   background: rgba(255,107,107,.1);
   border: 1px solid rgba(255,107,107,.2);
   border-radius: 6px;
-  padding: 1px 5px;
-  margin-left: .3rem;
+  padding: 1px 6px;
+  margin-left: .4rem;
   font-weight: 700;
   vertical-align: middle;
 }
+/* botones de acción → fila separada abajo con línea divisoria */
 .ia {
   display: flex;
   align-items: center;
-  gap: .4rem;
-  flex-shrink: 0;
+  justify-content: flex-end;
+  gap: .5rem;
+  flex-basis: 100%;
+  padding-top: .75rem;
+  margin-top: .55rem;
+  border-top: 1px solid rgba(255,255,255,.05);
 }
 #vec-cnt {
   background: rgba(212,175,55,.12);
   color: var(--gold);
   border: 1px solid rgba(212,175,55,.25);
   border-radius: 50px;
-  padding: .2rem .65rem;
+  padding: .25rem .75rem;
   font-size: .7rem;
   font-weight: 800;
   letter-spacing: .04em;
