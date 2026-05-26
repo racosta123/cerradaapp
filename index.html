@@ -2968,8 +2968,8 @@ let lastSuspCheck = 0; // Timestamp del último check de suspensión
 
 async function openPorton(pid,role){
   const c=C();if(!c)return;
-  // Bloquear si Shelly está offline
-  if(_shellyOnline!==true){
+  // Bloquear solo si offline confirmado (null = beneficio de la duda = permitir)
+  if(_shellyOnline===false){
     toastErr('⚠️ Portón sin conexión — no se puede abrir');
     const pt=c.portones.find(p=>p.id===pid);
     const house=role==='res'?U?.house:'[TEST]';
@@ -3029,7 +3029,7 @@ async function openPorton(pid,role){
   // Actualizar historial inmediatamente
   if(role==='res') renderResHist(c);
   shellyOpen(pt);
-  _scheduleStatusCheck(15000);
+  _scheduleStatusCheck(10000);
   toast(`${pt.label} abierto`);
   // Notificar a familiares
   notifyFamily(c, {house: house}, U.memberName || house, pt.label).catch(() => {});
@@ -3141,38 +3141,11 @@ function shellyOpen(pt) {
     seconds:      pt.time || 5
   };
 
-  const _handleFail = () => {
-    _shellyFailCount++;
-    if(_shellyFailCount>=3){
-      _shellyOnline=false;
-      const dot=document.getElementById('shelly-status-dot');
-      const txt=document.getElementById('shelly-status-text');
-      if(dot){dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';}
-      if(txt){txt.style.color='#ef4444';txt.textContent='Portón sin conexión';}
-    }
-    // dejar correr el check de 15s programado por openPorton()
-  };
-
   fetch(`${WORKER}/shelly`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
-  })
-  .then(r => r.json())
-  .then(data => {
-    if(data.isok){
-      _shellyFailCount=0;
-      _shellyOnline=true;
-      const dot=document.getElementById('shelly-status-dot');
-      const txt=document.getElementById('shelly-status-text');
-      if(dot){dot.style.background='#22c55e';dot.style.boxShadow='0 0 8px 2px rgba(34,197,94,.5)';}
-      if(txt){txt.style.color='#22c55e';txt.textContent='Portón en línea';}
-      _scheduleStatusCheck(60000);
-    } else {
-      _handleFail();
-    }
-  })
-  .catch(_handleFail);
+  }).catch(()=>{});
 }
 
 // ── ADMIN
@@ -3551,7 +3524,7 @@ function renderAdmHist(){
   if(!hist.length){list.innerHTML=emH(ic('clipboard',52,'var(--gold)'),'Sin registros');return;}
   list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who=h.who||(r?r.name:'');const fail=h.label==='Intento fallido';return`<div class="hi"><div class="hd" style="background:${fail?'#ef4444':'var(--sky)'}"></div><div class="hinfo"><div class="hdesc">${fail?`<span style="color:#ef4444">⚠️ ${esc(h.label)} · ${esc(h.house)}${who?' — '+esc(who):''}</span>`:esc(h.label)+' · '+esc(h.house)+(who?' — '+esc(who):'')}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');
 }
-let _shellyOnline=true;
+let _shellyOnline=null;
 let _shellyStatusTimer=null;
 let _shellyFailCount=0;
 function _scheduleStatusCheck(delay=400){
