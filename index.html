@@ -1205,8 +1205,8 @@ textarea { resize: vertical; min-height: 70px; }
           class="gate-grid g1 premium-gate-grid"
         ></div>
         <div id="shelly-status-wrap" style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:.65rem">
-          <div id="shelly-status-dot" style="width:12px;height:12px;border-radius:50%;background:#6b7280;flex-shrink:0;transition:background .3s,box-shadow .3s"></div>
-          <span id="shelly-status-text" style="font-size:.72rem;color:#6b7280;font-weight:600;transition:color .3s">Verificando...</span>
+          <div id="shelly-status-dot" style="width:12px;height:12px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px 2px rgba(34,197,94,.5);flex-shrink:0;transition:background .3s,box-shadow .3s"></div>
+          <span id="shelly-status-text" style="font-size:.72rem;color:#22c55e;font-weight:600;transition:color .3s">Portón en línea</span>
         </div>
       </div>
       <!-- Botón invitar familiares -->
@@ -2834,8 +2834,6 @@ async function checkShellyStatus(){
   const dot=document.getElementById('shelly-status-dot');
   const txt=document.getElementById('shelly-status-text');
   if(!dot||!txt)return;
-  dot.style.background='#6b7280';dot.style.boxShadow='none';
-  txt.style.color='#6b7280';txt.textContent='Verificando...';
   try{
     const c=C();
     const p=(c?.portones||[])[0];
@@ -3529,7 +3527,7 @@ function renderAdmHist(){
   if(!hist.length){list.innerHTML=emH(ic('clipboard',52,'var(--gold)'),'Sin registros');return;}
   list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who=h.who||(r?r.name:'');const fail=h.label==='Intento fallido';return`<div class="hi"><div class="hd" style="background:${fail?'#ef4444':'var(--sky)'}"></div><div class="hinfo"><div class="hdesc">${fail?`<span style="color:#ef4444">⚠️ ${esc(h.label)} · ${esc(h.house)}${who?' — '+esc(who):''}</span>`:esc(h.label)+' · '+esc(h.house)+(who?' — '+esc(who):'')}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');
 }
-let _shellyOnline=null;
+let _shellyOnline=true;
 let _shellyStatusTimer=null;
 let _shellyFailCount=0;
 function _scheduleStatusCheck(delay=400){
