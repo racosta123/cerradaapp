@@ -1335,7 +1335,11 @@ textarea { resize: vertical; min-height: 70px; }
           </div>
         </div>
         <label>Mes de inicio de cobro <span style="font-size:.72rem;color:var(--t3);font-weight:400">(formato: AAAA-MM)</span></label>
-        <input id="cuota-inicio" type="text" placeholder="Ej: 2025-01" inputmode="numeric" style="margin-bottom:.5rem">
+        <div style="position:relative;display:flex;align-items:center;margin-bottom:.5rem">
+          <input id="cuota-inicio" type="text" placeholder="Ej: 2025-01" inputmode="numeric" style="flex:1;padding-right:2.4rem">
+          <button type="button" onclick="document.getElementById('cuota-inicio-picker').showPicker?document.getElementById('cuota-inicio-picker').showPicker():document.getElementById('cuota-inicio-picker').click()" style="position:absolute;right:8px;background:none;border:none;cursor:pointer;color:var(--t2);padding:4px;line-height:1;font-size:1.1rem" title="Seleccionar mes">📅</button>
+          <input id="cuota-inicio-picker" type="month" onchange="document.getElementById('cuota-inicio').value=this.value;this.value=''" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;right:0;top:0">
+        </div>
         <p style="font-size:.71rem;color:var(--t3);margin-bottom:.85rem;line-height:1.5">
           El adeudo solo se contará a partir de este mes. Sin fecha de inicio, solo se cuentan los meses que hayas abierto manualmente.
         </p>
