@@ -1201,6 +1201,10 @@ textarea { resize: vertical; min-height: 70px; }
         <button class="btn bp" onclick="addVec()">+ Agregar Vecino</button>
       </div>
       <div class="sh"><h3>Vecinos Registrados</h3><span class="bge b-b" id="vec-cnt">0</span></div>
+      <div style="position:relative;margin-bottom:.75rem">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:rgba(255,255,255,.4)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="vec-search" type="text" placeholder="Buscar por nombre o casa..." oninput="filtrarVec()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:10px 14px 10px 38px;font-size:.9rem;outline:none;box-sizing:border-box">
+      </div>
       <div id="vec-list"><div class="empty"><div class="empty-ico"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg></div>Sin vecinos</div></div>
     </div>
     <div id="ap-historial" class="panel">
@@ -2985,7 +2989,7 @@ function renderVec(){
           </div>
         </div>`).join('')}
     </div>` : '';
-  return`<div class="li" style="flex-direction:column;align-items:stretch;background:rgba(13,24,40,.85);border:1px solid rgba(30,42,56,.9);border-top:2px solid #d4af37;border-radius:14px;padding:1rem;margin-bottom:.8rem">
+  return`<div class="li" data-name="${esc(r.name)}" data-house="${esc(r.house)}" style="flex-direction:column;align-items:stretch;background:rgba(13,24,40,.85);border:1px solid rgba(30,42,56,.9);border-top:2px solid #d4af37;border-radius:14px;padding:1rem;margin-bottom:.8rem">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem">
       <div class="lil">
         <div class="av ${r.mora?'ar':r.active?'ag':'ar'}">${esc(hn)}</div>
@@ -3006,6 +3010,31 @@ function renderVec(){
     </div>
     ${membersHtml}
   </div>`;}).join('');
+  filtrarVec();
+}
+function filtrarVec(){
+  const q=(document.getElementById('vec-search')?.value||'').toLowerCase().trim();
+  const items=document.querySelectorAll('#vec-list > div[data-name]');
+  let visible=0;
+  items.forEach(el=>{
+    const match=!q||el.dataset.name.toLowerCase().includes(q)||el.dataset.house.toLowerCase().includes(q);
+    el.style.display=match?'':'none';
+    if(match) visible++;
+  });
+  const list=document.getElementById('vec-list');
+  if(!list)return;
+  const existing=document.getElementById('vec-no-results');
+  if(visible===0&&q){
+    if(!existing){
+      const d=document.createElement('div');
+      d.id='vec-no-results';
+      d.style.cssText='text-align:center;color:var(--t3);padding:2rem 0;font-size:.85rem';
+      d.textContent='Sin resultados';
+      list.appendChild(d);
+    }
+  }else{
+    existing?.remove();
+  }
 }
 function editVec(i){
   const c=C();if(!c)return;
