@@ -3140,7 +3140,18 @@ function shellyOpen(pt) {
     shellyServer: 'shelly-258-eu.shelly.cloud',
     seconds:      pt.time || 5
   };
-  console.log('[shellyOpen] POST '+WORKER+'/shelly payload='+JSON.stringify(payload));
+
+  const _handleFail = () => {
+    _shellyFailCount++;
+    if(_shellyFailCount>=3){
+      _shellyOnline=false;
+      const dot=document.getElementById('shelly-status-dot');
+      const txt=document.getElementById('shelly-status-text');
+      if(dot){dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';}
+      if(txt){txt.style.color='#ef4444';txt.textContent='Portón sin conexión';}
+    }
+    // dejar correr el check de 15s programado por openPorton()
+  };
 
   fetch(`${WORKER}/shelly`, {
     method: 'POST',
@@ -3150,13 +3161,14 @@ function shellyOpen(pt) {
   .then(r => r.json())
   .then(data => {
     if(data.isok){
-      // Apertura confirmada: Shelly respondió → sabemos que está online
       _shellyFailCount=0;
       _shellyOnline=true;
       _scheduleStatusCheck(60000);
+    } else {
+      _handleFail();
     }
   })
-  .catch(()=>{});
+  .catch(_handleFail);
 }
 
 // ── ADMIN
