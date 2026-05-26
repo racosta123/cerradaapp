@@ -1010,7 +1010,7 @@ textarea { resize: vertical; min-height: 70px; }
           <div class="hmod-label">Historial</div>
           <div class="hmod-stat">Mis accesos</div>
         </div>
-        <div class="hmod" data-roles="resident" onclick="goResInvitar()">
+        <div class="hmod" data-roles="resident" onclick="openFamiliaModal()">
           <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg></div>
           <div class="hmod-label">Familia</div>
           <div class="hmod-stat" id="phms-fam">Ver miembros</div>
@@ -1873,6 +1873,36 @@ textarea { resize: vertical; min-height: 70px; }
       <button class="btn bg2" onclick="closeModal('modal-invite-fam')">Cancelar</button>
       <button class="btn bp" onclick="confirmarInviteFamiliar()">Verificar y enviar →</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL FAMILIA RESIDENTE -->
+<div class="mover" id="modal-familia-res" onclick="mbg(event,'modal-familia-res')">
+  <div class="mdl" style="padding:0;overflow:hidden;border-radius:28px 28px 20px 20px">
+
+    <!-- Header -->
+    <div style="padding:1.25rem 1.5rem 1rem;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:.8rem;background:linear-gradient(135deg,rgba(212,175,55,.07),transparent 70%)">
+      <div style="width:44px;height:44px;border-radius:13px;background:rgba(212,175,55,.13);border:1.5px solid rgba(212,175,55,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#d4af37">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:1.05rem;font-weight:800;color:#fff;letter-spacing:-.02em">Mi Familia</div>
+        <div style="font-size:.72rem;color:var(--text2);margin-top:.12rem" id="mfr-house">Casa</div>
+      </div>
+    </div>
+
+    <!-- Lista de miembros (scroll) -->
+    <div id="mfr-list" style="padding:0 1.5rem;max-height:52vh;overflow-y:auto"></div>
+
+    <!-- Footer -->
+    <div style="padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,.05);display:flex;gap:.55rem">
+      <button id="mfr-invite-btn" class="btn bb2" onclick="openFamiliaInvite()" style="flex:1;display:none;align-items:center;justify-content:center;gap:.4rem;font-size:.82rem;padding:.8rem .9rem">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"/></svg>
+        Invitar familiar
+      </button>
+      <button class="btn bg2" onclick="closeModal('modal-familia-res')" style="padding:.8rem 1.5rem;font-size:.82rem">Cerrar</button>
+    </div>
+
   </div>
 </div>
 
@@ -5038,6 +5068,88 @@ window.addEventListener('appinstalled', () => {
   toast('CerradaApp instalada');
   document.getElementById('install-banner').style.display = 'none';
 });
+
+// ═══════════════════════════════════════════════
+// MODAL FAMILIA RESIDENTE
+// ═══════════════════════════════════════════════
+
+function openFamiliaModal(){
+  const c = C(); if(!c) return;
+  const res = c.residents?.find(r => r.house === U.house);
+  if(!res) return;
+
+  const members = res.members || [];
+  const total = 1 + members.length;
+  const isHead = !U.memberIdx || U.memberIdx < 0;
+
+  // Casa / conteo
+  const houseEl = document.getElementById('mfr-house');
+  if(houseEl) houseEl.textContent = res.house + ' · ' + total + (total === 1 ? ' persona' : ' personas');
+
+  // Iniciales del nombre
+  function initials(name){
+    const p = (name||'').trim().split(' ');
+    return ((p[0]?.[0]||'') + (p[1]?.[0]||'')).toUpperCase() || '?';
+  }
+
+  // Fila de cada integrante
+  function memberRow(name, email, isCurrent, isHeadRole, statusLabel, statusColor){
+    const init = initials(name);
+    const headBadge = isHeadRole
+      ? `<span style="background:rgba(212,175,55,.15);color:#d4af37;border:1px solid rgba(212,175,55,.28);border-radius:50px;padding:1px 7px;font-size:.6rem;font-weight:800;letter-spacing:.04em;flex-shrink:0">JEFE</span>` : '';
+    const youBadge = isCurrent
+      ? `<span style="background:rgba(91,167,255,.12);color:var(--blue);border:1px solid rgba(91,167,255,.22);border-radius:50px;padding:1px 7px;font-size:.6rem;font-weight:800;flex-shrink:0">TÚ</span>` : '';
+    const statusBadge = `<span style="background:${statusColor.bg};color:${statusColor.text};border:1px solid ${statusColor.bd};border-radius:50px;padding:2px 9px;font-size:.67rem;font-weight:700;white-space:nowrap;flex-shrink:0">${esc(statusLabel)}</span>`;
+    return `<div style="display:flex;align-items:center;gap:.8rem;padding:.9rem 0;border-bottom:1px solid rgba(255,255,255,.05)">
+      <div style="width:42px;height:42px;border-radius:50%;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:800;color:#d4af37;flex-shrink:0">${esc(init)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-bottom:.22rem">${headBadge}${youBadge}
+          <span style="font-size:.88rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(name||'Sin nombre')}</span>
+        </div>
+        <div style="font-size:.72rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(email||'Sin correo registrado')}</div>
+      </div>
+      ${statusBadge}
+    </div>`;
+  }
+
+  const activeColor = {bg:'rgba(67,209,123,.1)', text:'var(--green)', bd:'rgba(67,209,123,.25)'};
+
+  // Jefe de familia (resident record)
+  let html = memberRow(res.name, res.email||'', isHead, true, 'Activo', activeColor);
+
+  // Familiares registrados
+  if(members.length === 0){
+    html += `<div style="text-align:center;padding:1.75rem 0 1.25rem">
+      <div style="margin-bottom:.6rem;opacity:.2;color:var(--text2)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+      </div>
+      <div style="font-size:.82rem;color:var(--text3)">Aún no has invitado familiares</div>
+      <div style="font-size:.72rem;color:var(--text3);margin-top:.3rem;opacity:.7">Puedes invitar hasta 4 familiares a tu casa</div>
+    </div>`;
+  } else {
+    members.forEach((m, mi) => {
+      const isCurrent = U.memberIdx === mi;
+      const isHeadRole = m.role === 'head';
+      const hasPass = !!(m.pin || m.password || m.email);
+      const status = hasPass ? 'Activo' : 'Pendiente';
+      const color = hasPass ? activeColor : {bg:'rgba(255,200,0,.08)', text:'#f4d77a', bd:'rgba(244,215,122,.25)'};
+      html += memberRow(m.name||'Familiar', m.email||'', isCurrent, isHeadRole, status, color);
+    });
+  }
+
+  document.getElementById('mfr-list').innerHTML = html;
+
+  // Botón invitar: solo si es jefe y hay espacio
+  const invBtn = document.getElementById('mfr-invite-btn');
+  if(invBtn) invBtn.style.display = isHead && members.length < 5 ? 'inline-flex' : 'none';
+
+  openModal('modal-familia-res');
+}
+
+function openFamiliaInvite(){
+  closeModal('modal-familia-res');
+  setTimeout(() => invitarFamiliar(), 160);
+}
 
 // ═══════════════════════════════════════════════
 // PANEL HOME — DASHBOARD PRINCIPAL
