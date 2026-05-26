@@ -2840,11 +2840,14 @@ async function checkShellyStatus(){
     const c=C();
     const p=(c?.portones||[])[0];
     const params=new URLSearchParams({id:p?.shellyId||'',srv:p?.shellyServer||'shelly-258-eu.shelly.cloud'});
+    console.log('[Shelly] checkShellyStatus — params:', params.toString(), '| portón:', JSON.stringify(p));
     const ctrl=new AbortController();
     const tid=setTimeout(()=>ctrl.abort(),5000);
     const r=await fetch(`${WORKER}/status?${params}`,{signal:ctrl.signal});
     clearTimeout(tid);
+    console.log('[Shelly] HTTP status:', r.status, r.ok);
     const data=await r.json();
+    console.log('[Shelly] Response data:', JSON.stringify(data));
     if(data.online){
       _shellyOnline=true;
       dot.style.background='#22c55e';dot.style.boxShadow='0 0 8px 2px rgba(34,197,94,.5)';
@@ -2853,11 +2856,13 @@ async function checkShellyStatus(){
       _shellyOnline=false;
       dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';
       txt.style.color='#ef4444';txt.textContent='Portón sin conexión';
+      console.warn('[Shelly] offline — data.online:', data.online, '| data.ok:', data.ok);
     }
   }catch(e){
     _shellyOnline=false;
     dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';
     txt.style.color='#ef4444';txt.textContent='Portón sin conexión';
+    console.error('[Shelly] Error en checkShellyStatus:', e.name, e.message);
   }
 }
 function renderGates(c,role,cid){
