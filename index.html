@@ -1204,7 +1204,10 @@ textarea { resize: vertical; min-height: 70px; }
           id="gate-res"
           class="gate-grid g1 premium-gate-grid"
         ></div>
-
+        <div id="shelly-status-wrap" style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:.65rem">
+          <div id="shelly-status-dot" style="width:12px;height:12px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px 2px rgba(34,197,94,.5);flex-shrink:0;transition:background .3s,box-shadow .3s"></div>
+          <span id="shelly-status-text" style="font-size:.72rem;color:#22c55e;font-weight:600;transition:color .3s">Portón en línea</span>
+        </div>
       </div>
       <!-- Botón invitar familiares -->
       <div
@@ -3100,8 +3103,20 @@ function shellyOpen(pt) {
   };
 
   const _setDot = (online) => {
-    if(online){ _shellyFailCount=0; _shellyOnline=true; }
-    else { _shellyFailCount++; if(_shellyFailCount>=3) _shellyOnline=false; }
+    const dot=document.getElementById('shelly-status-dot');
+    const txt=document.getElementById('shelly-status-text');
+    if(online){
+      _shellyFailCount=0; _shellyOnline=true;
+      if(dot){dot.style.background='#22c55e';dot.style.boxShadow='0 0 8px 2px rgba(34,197,94,.5)';}
+      if(txt){txt.style.color='#22c55e';txt.textContent='Portón en línea';}
+    } else {
+      _shellyFailCount++;
+      if(_shellyFailCount>=3){
+        _shellyOnline=false;
+        if(dot){dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';}
+        if(txt){txt.style.color='#ef4444';txt.textContent='Portón sin conexión';}
+      }
+    }
   };
 
   fetch(`${WORKER}/shelly`, {
