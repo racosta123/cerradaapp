@@ -3147,8 +3147,16 @@ function shellyOpen(pt) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   })
-  .then(r => r.text().then(t => console.log('[shellyOpen] response status='+r.status+' body='+t)))
-  .catch(e => console.error('[shellyOpen] fetch error',e));
+  .then(r => r.json())
+  .then(data => {
+    if(data.isok){
+      // Apertura confirmada: Shelly respondió → sabemos que está online
+      _shellyFailCount=0;
+      _shellyOnline=true;
+      _scheduleStatusCheck(60000);
+    }
+  })
+  .catch(()=>{});
 }
 
 // ── ADMIN
