@@ -2830,43 +2830,7 @@ _Solo tarda 1 minuto._`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   toast('Abriendo WhatsApp...');
 }
-async function checkShellyStatus(){
-  const dot=document.getElementById('shelly-status-dot');
-  const txt=document.getElementById('shelly-status-text');
-  if(!dot||!txt)return;
-  try{
-    const c=C();
-    const p=(c?.portones||[])[0];
-    const params=new URLSearchParams({id:p?.shellyId||'',srv:p?.shellyServer||'shelly-258-eu.shelly.cloud'});
-    const ctrl=new AbortController();
-    const tid=setTimeout(()=>ctrl.abort(),5000);
-    const r=await fetch(`${WORKER}/status?${params}`,{signal:ctrl.signal});
-    clearTimeout(tid);
-    const data=await r.json();
-    if(data.ok){
-      _shellyFailCount=0;
-      _shellyOnline=true;
-      dot.style.background='#22c55e';dot.style.boxShadow='0 0 8px 2px rgba(34,197,94,.5)';
-      txt.style.color='#22c55e';txt.textContent='Portón en línea';
-    } else {
-      _shellyFailCount++;
-      if(_shellyFailCount>=2){
-        _shellyOnline=false;
-        dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';
-        txt.style.color='#ef4444';txt.textContent='Portón sin conexión';
-      }
-    }
-  }catch(e){
-    _shellyFailCount++;
-    if(_shellyFailCount>=2){
-      _shellyOnline=false;
-      dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';
-      txt.style.color='#ef4444';txt.textContent='Portón sin conexión';
-    }
-  }
-  // Auto-reprogramar cada 90s
-  _scheduleStatusCheck(90000);
-}
+
 function renderGates(c,role,cid){
   const pts=c.portones||[];const n=pts.length;
   const el=document.getElementById(cid);if(!el)return;
@@ -2878,7 +2842,6 @@ function renderGates(c,role,cid){
     const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
     const isSuspLocal = !res||!res.active||res.mora||memberSusp;
     el.innerHTML = _gbtns(pts,role,isSuspLocal);
-    _scheduleStatusCheck(400);
     // Verificar en la nube y actualizar si cambió
     fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}`)
       .then(r=>r.json()).then(data=>{
@@ -2894,7 +2857,6 @@ function renderGates(c,role,cid){
     return;
   }
   el.innerHTML=_gbtns(pts,role,false);
-  _scheduleStatusCheck(400);
 }
 
 function _gbtns(pts,role,isSusp){
@@ -3140,11 +3102,31 @@ function shellyOpen(pt) {
     seconds:      pt.time || 5
   };
 
+  const _setDot = (online) => {
+    const dot=document.getElementById('shelly-status-dot');
+    const txt=document.getElementById('shelly-status-text');
+    if(online){
+      _shellyFailCount=0; _shellyOnline=true;
+      if(dot){dot.style.background='#22c55e';dot.style.boxShadow='0 0 8px 2px rgba(34,197,94,.5)';}
+      if(txt){txt.style.color='#22c55e';txt.textContent='Portón en línea';}
+    } else {
+      _shellyFailCount++;
+      if(_shellyFailCount>=3){
+        _shellyOnline=false;
+        if(dot){dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';}
+        if(txt){txt.style.color='#ef4444';txt.textContent='Portón sin conexión';}
+      }
+    }
+  };
+
   fetch(`${WORKER}/shelly`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
-  }).catch(()=>{});
+  })
+  .then(r => r.json())
+  .then(data => _setDot(!!(data.isok)))
+  .catch(() => _setDot(false));
 }
 
 // ── ADMIN
@@ -3523,13 +3505,8 @@ function renderAdmHist(){
   if(!hist.length){list.innerHTML=emH(ic('clipboard',52,'var(--gold)'),'Sin registros');return;}
   list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who=h.who||(r?r.name:'');const fail=h.label==='Intento fallido';return`<div class="hi"><div class="hd" style="background:${fail?'#ef4444':'var(--sky)'}"></div><div class="hinfo"><div class="hdesc">${fail?`<span style="color:#ef4444">⚠️ ${esc(h.label)} · ${esc(h.house)}${who?' — '+esc(who):''}</span>`:esc(h.label)+' · '+esc(h.house)+(who?' — '+esc(who):'')}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');
 }
-let _shellyOnline=null;
-let _shellyStatusTimer=null;
+let _shellyOnline=true;
 let _shellyFailCount=0;
-function _scheduleStatusCheck(delay=400){
-  clearTimeout(_shellyStatusTimer);
-  _shellyStatusTimer=setTimeout(checkShellyStatus,delay);
-}
 let _histUserList=[];
 function filtrarSugerenciasHist(){
   const inp=document.getElementById('hist-filter-user-input');

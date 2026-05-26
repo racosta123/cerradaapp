@@ -371,29 +371,6 @@ export default {
       }
     }
 
-    // ── Status Shelly (GET /status) — turn:off inocuo, isok confirma dispositivo alcanzable
-    if (request.method === 'GET' && url.pathname === '/status') {
-      try {
-        const id  = url.searchParams.get('id')  || SHELLY_DEVICE;
-        const srv = url.searchParams.get('srv') || 'shelly-258-eu.shelly.cloud';
-        const auth = env.SHELLY_AUTH || '';
-        const ctrl = new AbortController();
-        const tid  = setTimeout(() => ctrl.abort(), 5000);
-        const r = await fetch(`https://${srv}/device/relay/control`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ id, auth_key: auth, channel: '0', turn: 'off' }).toString(),
-          signal: ctrl.signal
-        });
-        clearTimeout(tid);
-        const data = await r.json();
-        const ok = !!(data.isok);
-        return json({ ok, online: ok });
-      } catch(e) {
-        return json({ ok: false, online: false });
-      }
-    }
-
     return json({ ok: false, error: 'Ruta no encontrada' }, 404);
   }
 };
