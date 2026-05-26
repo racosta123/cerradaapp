@@ -2628,13 +2628,16 @@ async function checkShellyStatus(){
     clearTimeout(tid);
     const data=await r.json();
     if(data.online){
+      _shellyOnline=true;
       dot.style.background='#22c55e';dot.style.boxShadow='0 0 8px 2px rgba(34,197,94,.5)';
       txt.style.color='#22c55e';txt.textContent='Portón en línea';
     } else {
+      _shellyOnline=false;
       dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';
       txt.style.color='#ef4444';txt.textContent='Portón sin conexión';
     }
   }catch(e){
+    _shellyOnline=false;
     dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';
     txt.style.color='#ef4444';txt.textContent='Portón sin conexión';
   }
@@ -2686,7 +2689,7 @@ function _gbtns(pts,role,isSusp){
 }
 function renderDevInfo(c){const el=document.getElementById('res-devinfo');if(!el)return;const pts=c.portones||[];if(!pts.length){el.innerHTML=emH(ic('plug',52,'var(--gold)'),'Sin dispositivos');return;}el.innerHTML=pts.map(p=>`<div class="li"><div class="lil"><div class="av ag ic">${ic(ICON_MAP[p.icon]||'door',18,'currentColor')}</div><div><div class="in">${esc(p.label)}</div><div class="is">${p.ip||'Sin IP configurada'} · ${p.time||10}s</div></div></div></div>`).join('');}
 function renderResFin(c){const{income,expense,mvs}=calcFin(c);document.getElementById('rf-i').textContent='$'+income.toFixed(2);document.getElementById('rf-e').textContent='$'+expense.toFixed(2);document.getElementById('rf-b').textContent='$'+(income-expense).toFixed(2);const list=document.getElementById('rf-list');if(!mvs.length){list.innerHTML=emH(ic('currency',52,'var(--gold)'),'Sin movimientos este mes');return;}list.innerHTML=mvs.slice(-20).reverse().map(m=>`<div class="hi"><div class="hd" style="background:${m.type==='income'?'var(--green)':'var(--rose)'}"></div><div class="hinfo"><div class="hdesc">${esc(m.category)}${m.desc?' — '+esc(m.desc):''}</div><div class="htime">${fd(m.ts)}</div></div><span style="font-size:.76rem;font-weight:700;color:${m.type==='income'?'var(--green)':'var(--rose)'}">${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}</span></div>`).join('');}
-function renderResHist(c){const hist=(c.history||[]).filter(h=>h.house===U?.house).slice(-30).reverse();const list=document.getElementById('rh-list');if(!hist.length){list.innerHTML=emH(ic('clipboard',52,'var(--gold)'),'Sin registros aún');return;}list.innerHTML=hist.map(h=>`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label||h.portonId)}${h.who?' · '+esc(h.who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`).join('');}
+function renderResHist(c){const hist=(c.history||[]).filter(h=>h.house===U?.house).slice(-30).reverse();const list=document.getElementById('rh-list');if(!hist.length){list.innerHTML=emH(ic('clipboard',52,'var(--gold)'),'Sin registros aún');return;}list.innerHTML=hist.map(h=>{const fail=h.label==='Intento fallido';return`<div class="hi"><div class="hd" style="background:${fail?'#ef4444':'var(--sky)'}"></div><div class="hinfo"><div class="hdesc">${fail?'⚠️ ':''} ${esc(h.label||h.portonId)}${h.who?' · '+esc(h.who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
 
 // ── GATE HOLD — Sistema estable
 const HOLD=500;
@@ -2740,6 +2743,19 @@ let lastSuspCheck = 0; // Timestamp del último check de suspensión
 
 async function openPorton(pid,role){
   const c=C();if(!c)return;
+  // Bloquear si Shelly está offline
+  if(_shellyOnline===false){
+    toastErr('⚠️ Portón sin conexión — no se puede abrir');
+    const pt=c.portones.find(p=>p.id===pid);
+    const house=role==='res'?U?.house:'[TEST]';
+    const who=U?.memberName||house||'—';
+    if(!c.history)c.history=[];
+    c.history.push({ts:new Date().toISOString(),house,portonId:pid,label:'Intento fallido',who});
+    save();
+    if(c.code) fsPush(c).catch(()=>{});
+    if(role==='res') renderResHist(c);
+    return;
+  }
   console.log('[openPorton] pid='+pid+' role='+role+' code='+(c.code||'none'));
 
   // Verificar suspensión en la nube ANTES de abrir
@@ -3239,8 +3255,9 @@ function renderAdmHist(){
   if(hastaVal) hist=hist.filter(h=>new Date(h.ts)<=new Date(hastaVal+'T23:59:59'));
   const list=document.getElementById('adm-hist');
   if(!hist.length){list.innerHTML=emH(ic('clipboard',52,'var(--gold)'),'Sin registros');return;}
-  list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who=h.who||(r?r.name:'');return`<div class="hi"><div class="hd" style="background:var(--sky)"></div><div class="hinfo"><div class="hdesc">${esc(h.label)} · ${esc(h.house)}${who?' — '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');
+  list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who=h.who||(r?r.name:'');const fail=h.label==='Intento fallido';return`<div class="hi"><div class="hd" style="background:${fail?'#ef4444':'var(--sky)'}"></div><div class="hinfo"><div class="hdesc">${fail?'⚠️ ':''} ${esc(h.label)} · ${esc(h.house)}${who?' — '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');
 }
+let _shellyOnline=null;
 let _histUserList=[];
 function filtrarSugerenciasHist(){
   const inp=document.getElementById('hist-filter-user-input');
@@ -4471,7 +4488,8 @@ async function notifyResident(c, house, title, body) {
 }
 
 function calcFin(c){const now=new Date();const mvs=(c.movements||[]).filter(m=>{const d=new Date(m.ts);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});return{income:mvs.filter(m=>m.type==='income').reduce((s,m)=>s+m.amount,0),expense:mvs.filter(m=>m.type==='expense').reduce((s,m)=>s+m.amount,0),mvs};}
-function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);}
+function toast(msg){const el=document.getElementById('toast');el.style.background='';el.style.color='';el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);}
+function toastErr(msg){const el=document.getElementById('toast');el.style.background='rgba(220,38,38,.9)';el.style.color='#fff';el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>{el.classList.remove('show');setTimeout(()=>{el.style.background='';el.style.color='';},300);},3500);}
 function openModal(id){document.getElementById(id)?.classList.add('open');}
 function closeModal(id){document.getElementById(id)?.classList.remove('open');}
 function mbg(e,id){if(e.target===document.getElementById(id))closeModal(id);}
