@@ -2850,7 +2850,7 @@ async function checkShellyStatus(){
       txt.style.color='#22c55e';txt.textContent='Portón en línea';
     } else {
       _shellyFailCount++;
-      if(_shellyFailCount>=5){
+      if(_shellyFailCount>=2){
         _shellyOnline=false;
         dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';
         txt.style.color='#ef4444';txt.textContent='Portón sin conexión';
@@ -2858,13 +2858,13 @@ async function checkShellyStatus(){
     }
   }catch(e){
     _shellyFailCount++;
-    if(_shellyFailCount>=5){
+    if(_shellyFailCount>=2){
       _shellyOnline=false;
       dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';
       txt.style.color='#ef4444';txt.textContent='Portón sin conexión';
     }
   }
-  // Auto-reprogramar cada 60s para detectar cambios de conectividad
+  // Auto-reprogramar cada 90s
   _scheduleStatusCheck(90000);
 }
 function renderGates(c,role,cid){
@@ -3029,7 +3029,6 @@ async function openPorton(pid,role){
   // Actualizar historial inmediatamente
   if(role==='res') renderResHist(c);
   shellyOpen(pt);
-  _scheduleStatusCheck(20000);
   toast(`${pt.label} abierto`);
   // Notificar a familiares
   notifyFamily(c, {house: house}, U.memberName || house, pt.label).catch(() => {});

@@ -371,7 +371,7 @@ export default {
       }
     }
 
-    // ── Status Shelly (GET /status) — consulta read-only all_status, chequea isok
+    // ── Status Shelly (GET /status) — turn:off inocuo, isok confirma dispositivo alcanzable
     if (request.method === 'GET' && url.pathname === '/status') {
       try {
         const id  = url.searchParams.get('id')  || SHELLY_DEVICE;
@@ -379,17 +379,16 @@ export default {
         const auth = env.SHELLY_AUTH || '';
         const ctrl = new AbortController();
         const tid  = setTimeout(() => ctrl.abort(), 5000);
-        const r = await fetch(`https://${srv}/device/all_status`, {
+        const r = await fetch(`https://${srv}/device/relay/control`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ id, auth_key: auth }).toString(),
+          body: new URLSearchParams({ id, auth_key: auth, channel: '0', turn: 'off' }).toString(),
           signal: ctrl.signal
         });
         clearTimeout(tid);
         const data = await r.json();
-        // isok:true = Shelly Cloud procesó el request = auth válido y dispositivo alcanzable
-        const online = !!(data.isok);
-        return json({ ok: online, online });
+        const ok = !!(data.isok);
+        return json({ ok, online: ok });
       } catch(e) {
         return json({ ok: false, online: false });
       }
