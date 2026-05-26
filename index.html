@@ -2864,6 +2864,8 @@ async function checkShellyStatus(){
     txt.style.color='#ef4444';txt.textContent='Portón sin conexión';
     console.error('[Shelly] Error en checkShellyStatus:', e.name, e.message);
   }
+  // Auto-reprogramar cada 60s para detectar cambios de conectividad
+  _scheduleStatusCheck(60000);
 }
 function renderGates(c,role,cid){
   const pts=c.portones||[];const n=pts.length;
@@ -3027,7 +3029,7 @@ async function openPorton(pid,role){
   // Actualizar historial inmediatamente
   if(role==='res') renderResHist(c);
   shellyOpen(pt);
-  _scheduleStatusCheck(8000);
+  _scheduleStatusCheck(15000);
   toast(`${pt.label} abierto`);
   // Notificar a familiares
   notifyFamily(c, {house: house}, U.memberName || house, pt.label).catch(() => {});
