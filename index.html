@@ -2876,7 +2876,7 @@ function renderGates(c,role,cid){
     const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
     const isSuspLocal = !res||!res.active||res.mora||memberSusp;
     el.innerHTML = _gbtns(pts,role,isSuspLocal);
-    setTimeout(checkShellyStatus,400);
+    _scheduleStatusCheck(400);
     // Verificar en la nube y actualizar si cambió
     fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}`)
       .then(r=>r.json()).then(data=>{
@@ -2892,7 +2892,7 @@ function renderGates(c,role,cid){
     return;
   }
   el.innerHTML=_gbtns(pts,role,false);
-  setTimeout(checkShellyStatus,400);
+  _scheduleStatusCheck(400);
 }
 
 function _gbtns(pts,role,isSusp){
@@ -3027,6 +3027,7 @@ async function openPorton(pid,role){
   // Actualizar historial inmediatamente
   if(role==='res') renderResHist(c);
   shellyOpen(pt);
+  _scheduleStatusCheck(8000);
   toast(`${pt.label} abierto`);
   // Notificar a familiares
   notifyFamily(c, {house: house}, U.memberName || house, pt.label).catch(() => {});
@@ -3525,6 +3526,11 @@ function renderAdmHist(){
   list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who=h.who||(r?r.name:'');const fail=h.label==='Intento fallido';return`<div class="hi"><div class="hd" style="background:${fail?'#ef4444':'var(--sky)'}"></div><div class="hinfo"><div class="hdesc">${fail?`<span style="color:#ef4444">⚠️ ${esc(h.label)} · ${esc(h.house)}${who?' — '+esc(who):''}</span>`:esc(h.label)+' · '+esc(h.house)+(who?' — '+esc(who):'')}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');
 }
 let _shellyOnline=null;
+let _shellyStatusTimer=null;
+function _scheduleStatusCheck(delay=400){
+  clearTimeout(_shellyStatusTimer);
+  _shellyStatusTimer=setTimeout(checkShellyStatus,delay);
+}
 let _histUserList=[];
 function filtrarSugerenciasHist(){
   const inp=document.getElementById('hist-filter-user-input');
