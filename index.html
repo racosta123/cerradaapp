@@ -1210,7 +1210,7 @@ textarea { resize: vertical; min-height: 70px; }
               style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;color:#fff;font-size:.85rem;box-sizing:border-box;outline:none"
               oninput="filtrarSugerenciasHist()" onfocus="filtrarSugerenciasHist()"
               onblur="setTimeout(()=>{const s=document.getElementById('hist-user-suggestions');if(s)s.style.display='none';},200)">
-            <div id="hist-user-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:rgba(13,24,40,.97);border:1px solid rgba(255,255,255,.12);border-radius:10px;margin-top:4px;max-height:200px;overflow-y:auto;z-index:100"></div>
+            <div id="hist-user-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:rgba(13,24,40,.98);border:1px solid rgba(255,255,255,.1);border-radius:10px;margin-top:4px;max-height:200px;overflow-y:auto;z-index:100"></div>
             <input type="hidden" id="hist-filter-user" value="">
           </div>
           <div style="display:flex;gap:.6rem">
@@ -3217,8 +3217,10 @@ function filtrarSugerenciasHist(){
   const q=inp.value.toLowerCase().trim();
   const matches=q?_histUserList.filter(u=>u.label.toLowerCase().includes(q)):_histUserList;
   if(!matches.length&&q){sug.style.display='none';return;}
-  sug.innerHTML=`<div data-val="" data-lbl="" onclick="seleccionarUsuarioHist(this)" style="padding:8px 14px;cursor:pointer;color:var(--t3);font-size:.82rem;border-bottom:1px solid rgba(255,255,255,.05)">Todos los usuarios</div>`
-    +matches.map(u=>`<div data-val="${u.value.replace(/"/g,'&quot;')}" data-lbl="${u.label.replace(/"/g,'&quot;')}" onclick="seleccionarUsuarioHist(this)" style="padding:8px 14px;cursor:pointer;font-size:.82rem"><span style="color:#fff">${esc(u.name)}</span> <span style="color:var(--t3);font-size:.75rem">${esc(u.house)}</span></div>`).join('');
+  const hoverOn="this.style.background='rgba(212,175,55,.1)';this.style.color='#d4af37'";
+  const hoverOff="this.style.background='';this.style.color=''";
+  sug.innerHTML=`<div data-val="" data-lbl="" onclick="seleccionarUsuarioHist(this)" onmouseover="${hoverOn}" onmouseout="${hoverOff}" style="padding:10px 14px;cursor:pointer;color:var(--t3);font-size:.82rem;border-bottom:1px solid rgba(255,255,255,.06);transition:.15s">Todos los usuarios</div>`
+    +matches.map(u=>`<div data-val="${u.value.replace(/"/g,'&quot;')}" data-lbl="${u.label.replace(/"/g,'&quot;')}" onclick="seleccionarUsuarioHist(this)" onmouseover="${hoverOn}" onmouseout="${hoverOff}" style="padding:10px 14px;cursor:pointer;font-size:.82rem;transition:.15s"><span style="color:#fff">${esc(u.name)}</span> <span style="color:var(--t3);font-size:.75rem;margin-left:.35rem">${esc(u.house)}</span></div>`).join('');
   sug.style.display='block';
 }
 function seleccionarUsuarioHist(el){
