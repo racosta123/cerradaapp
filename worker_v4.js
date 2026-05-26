@@ -176,8 +176,6 @@ async function sendFCMv1(token, title, body, accessToken) {
   return res.ok;
 }
 
-let _lastKnownOnline = null;
-
 export default {
   // Cron: apagar relay Shelly cada minuto como seguridad
   async scheduled(event, env, ctx) {
@@ -391,12 +389,9 @@ export default {
         clearTimeout(tid);
         const data = await r.json();
         const online = !!(data.isok);
-        _lastKnownOnline = online;
         return json({ ok: online, online });
       } catch(e) {
-        // Rate limit o error de red — devolver último estado conocido en lugar de falso negativo
-        const fallback = _lastKnownOnline ?? false;
-        return json({ ok: fallback, online: fallback });
+        return json({ ok: false, online: false });
       }
     }
 
