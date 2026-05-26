@@ -3267,8 +3267,8 @@ function renderAdmHist(){
   // Poblar lista de autocompletado
   _histUserList=[];
   res.forEach(r=>{
-    _histUserList.push({value:r.name,label:`${r.name} (${r.house})`,name:r.name,house:r.house});
-    (r.members||[]).forEach(m=>{_histUserList.push({value:m.name,label:`${m.name} — ${r.house}`,name:m.name,house:r.house});});
+    _histUserList.push({value:r.house+'::'+r.name,label:`${r.name} (${r.house})`,name:r.name,house:r.house});
+    (r.members||[]).forEach(m=>{_histUserList.push({value:r.house+'::'+m.name,label:`${m.name} — ${r.house}`,name:m.name,house:r.house});});
   });
   // Default "hasta" = hoy
   const hastaEl=document.getElementById('hist-filter-hasta');
@@ -3279,7 +3279,7 @@ function renderAdmHist(){
   const hastaVal=hastaEl?.value||'';
   // Filtrar historial
   let hist=(c.history||[]).slice().reverse();
-  if(userVal) hist=hist.filter(h=>{const who=h.who||(res.find(x=>x.house===h.house)?.name||'');return who===userVal;});
+  if(userVal){const [fh,fn]=userVal.split('::');hist=hist.filter(h=>h.house===fh&&h.who===fn);}
   if(desdeVal) hist=hist.filter(h=>new Date(h.ts)>=new Date(desdeVal));
   if(hastaVal) hist=hist.filter(h=>new Date(h.ts)<=new Date(hastaVal+'T23:59:59'));
   const list=document.getElementById('adm-hist');
@@ -3315,11 +3315,12 @@ function generarHistorialPDF(){
   const res=c.residents||[];
   // Leer filtros
   const userVal=(document.getElementById('hist-filter-user')?.value||'').trim();
+  const userLabel=userVal?(document.getElementById('hist-filter-user-input')?.value||userVal.split('::')[1]||userVal):'Todos los usuarios';
   const desdeVal=document.getElementById('hist-filter-desde')?.value||'';
   const hastaVal=document.getElementById('hist-filter-hasta')?.value||'';
   // Filtrar historial
   let hist=(c.history||[]).slice().reverse();
-  if(userVal) hist=hist.filter(h=>{const who=h.who||(res.find(x=>x.house===h.house)?.name||'');return who===userVal;});
+  if(userVal){const [fh,fn]=userVal.split('::');hist=hist.filter(h=>h.house===fh&&h.who===fn);}
   if(desdeVal) hist=hist.filter(h=>new Date(h.ts)>=new Date(desdeVal));
   if(hastaVal) hist=hist.filter(h=>new Date(h.ts)<=new Date(hastaVal+'T23:59:59'));
   // Colores
@@ -3335,7 +3336,7 @@ function generarHistorialPDF(){
   // Subheader
   doc.setFillColor(...LIGHT);doc.rect(0,28,210,16,'F');
   doc.setTextColor(...GRAY);doc.setFontSize(8);doc.setFont('helvetica','bold');
-  doc.text(`Usuario: ${userVal||'Todos'}`,14,35);
+  doc.text(`Usuario: ${userLabel}`,14,35);
   doc.text(`Período: ${desdeVal||'—'} al ${hastaVal||'—'}`,14,41);
   let y=52;
   // Cabecera tabla
