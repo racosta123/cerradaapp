@@ -371,6 +371,28 @@ export default {
       }
     }
 
+    // ── Status Shelly (GET /status)
+    if (request.method === 'GET' && url.pathname === '/status') {
+      try {
+        const id  = url.searchParams.get('id')  || SHELLY_DEVICE;
+        const srv = url.searchParams.get('srv') || 'shelly-258-eu.shelly.cloud';
+        const auth = env.SHELLY_AUTH || '';
+        const ctrl = new AbortController();
+        const tid  = setTimeout(() => ctrl.abort(), 5000);
+        const r = await fetch(`https://${srv}/device/all_status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ id, auth_key: auth }).toString(),
+          signal: ctrl.signal
+        });
+        clearTimeout(tid);
+        const data = await r.json();
+        return json({ ok: true, online: !!(data.data?.online) });
+      } catch(e) {
+        return json({ ok: true, online: false });
+      }
+    }
+
     return json({ ok: false, error: 'Ruta no encontrada' }, 404);
   }
 };

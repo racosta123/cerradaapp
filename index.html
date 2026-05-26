@@ -1075,6 +1075,10 @@ textarea { resize: vertical; min-height: 70px; }
           id="gate-res"
           class="gate-grid g1 premium-gate-grid"
         ></div>
+        <div id="shelly-status-wrap" style="display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:.65rem">
+          <div id="shelly-status-dot" style="width:12px;height:12px;border-radius:50%;background:#6b7280;flex-shrink:0;transition:background .3s,box-shadow .3s"></div>
+          <span id="shelly-status-text" style="font-size:.72rem;color:#6b7280;font-weight:600;transition:color .3s">Verificando...</span>
+        </div>
       </div>
       <!-- Botón invitar familiares -->
       <div
@@ -2608,6 +2612,33 @@ _Solo tarda 1 minuto._`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   toast('Abriendo WhatsApp...');
 }
+async function checkShellyStatus(){
+  const dot=document.getElementById('shelly-status-dot');
+  const txt=document.getElementById('shelly-status-text');
+  if(!dot||!txt)return;
+  dot.style.background='#6b7280';dot.style.boxShadow='none';
+  txt.style.color='#6b7280';txt.textContent='Verificando...';
+  try{
+    const c=C();
+    const p=(c?.portones||[])[0];
+    const params=new URLSearchParams({id:p?.shellyId||'',srv:p?.shellyServer||'shelly-258-eu.shelly.cloud'});
+    const ctrl=new AbortController();
+    const tid=setTimeout(()=>ctrl.abort(),5000);
+    const r=await fetch(`${WORKER}/status?${params}`,{signal:ctrl.signal});
+    clearTimeout(tid);
+    const data=await r.json();
+    if(data.online){
+      dot.style.background='#22c55e';dot.style.boxShadow='0 0 8px 2px rgba(34,197,94,.5)';
+      txt.style.color='#22c55e';txt.textContent='Portón en línea';
+    } else {
+      dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';
+      txt.style.color='#ef4444';txt.textContent='Portón sin conexión';
+    }
+  }catch(e){
+    dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';
+    txt.style.color='#ef4444';txt.textContent='Portón sin conexión';
+  }
+}
 function renderGates(c,role,cid){
   const pts=c.portones||[];const n=pts.length;
   const el=document.getElementById(cid);if(!el)return;
@@ -2619,6 +2650,7 @@ function renderGates(c,role,cid){
     const memberSusp=U.memberIdx>=0&&res?.members?.[U.memberIdx]?.suspended;
     const isSuspLocal = !res||!res.active||res.mora||memberSusp;
     el.innerHTML = _gbtns(pts,role,isSuspLocal);
+    setTimeout(checkShellyStatus,400);
     // Verificar en la nube y actualizar si cambió
     fetch(`https://shelly-proxy.acosta4770.workers.dev/fs?code=${c.code}`)
       .then(r=>r.json()).then(data=>{
@@ -2634,6 +2666,7 @@ function renderGates(c,role,cid){
     return;
   }
   el.innerHTML=_gbtns(pts,role,false);
+  if(role==='res') setTimeout(checkShellyStatus,400);
 }
 
 function _gbtns(pts,role,isSusp){
