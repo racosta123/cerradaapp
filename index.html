@@ -2848,7 +2848,7 @@ async function checkShellyStatus(){
     console.log('[Shelly] HTTP status:', r.status, r.ok);
     const data=await r.json();
     console.log('[Shelly] Response data:', JSON.stringify(data));
-    if(data.online){
+    if(data.ok){
       _shellyOnline=true;
       dot.style.background='#22c55e';dot.style.boxShadow='0 0 8px 2px rgba(34,197,94,.5)';
       txt.style.color='#22c55e';txt.textContent='Portón en línea';
@@ -2856,7 +2856,7 @@ async function checkShellyStatus(){
       _shellyOnline=false;
       dot.style.background='#ef4444';dot.style.boxShadow='0 0 8px 2px rgba(239,68,68,.5)';
       txt.style.color='#ef4444';txt.textContent='Portón sin conexión';
-      console.warn('[Shelly] offline — data.online:', data.online, '| data.ok:', data.ok);
+      console.warn('[Shelly] sin conexión — data:', JSON.stringify(data));
     }
   }catch(e){
     _shellyOnline=false;

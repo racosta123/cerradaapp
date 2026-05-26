@@ -371,7 +371,7 @@ export default {
       }
     }
 
-    // ── Status Shelly (GET /status)
+    // ── Status Shelly (GET /status) — prueba con turn:off (no-op) para verificar conectividad real
     if (request.method === 'GET' && url.pathname === '/status') {
       try {
         const id  = url.searchParams.get('id')  || SHELLY_DEVICE;
@@ -379,17 +379,19 @@ export default {
         const auth = env.SHELLY_AUTH || '';
         const ctrl = new AbortController();
         const tid  = setTimeout(() => ctrl.abort(), 5000);
-        const r = await fetch(`https://${srv}/device/all_status`, {
+        const body = new URLSearchParams({ id, auth_key: auth, channel: '0', turn: 'off' });
+        const r = await fetch(`https://${srv}/device/relay/control`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ id, auth_key: auth }).toString(),
+          body: body.toString(),
           signal: ctrl.signal
         });
         clearTimeout(tid);
         const data = await r.json();
-        return json({ ok: true, online: !!(data.data?.online) });
+        // Si Shelly Cloud acepta el comando → dispositivo alcanzable
+        return json({ ok: !!(data.isok), online: !!(data.isok) });
       } catch(e) {
-        return json({ ok: true, online: false });
+        return json({ ok: false, online: false });
       }
     }
 
