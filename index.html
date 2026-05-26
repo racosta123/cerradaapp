@@ -2669,7 +2669,7 @@ function renderGates(c,role,cid){
     return;
   }
   el.innerHTML=_gbtns(pts,role,false);
-  if(role==='res') setTimeout(checkShellyStatus,400);
+  setTimeout(checkShellyStatus,400);
 }
 
 function _gbtns(pts,role,isSusp){
@@ -2689,7 +2689,7 @@ function _gbtns(pts,role,isSusp){
 }
 function renderDevInfo(c){const el=document.getElementById('res-devinfo');if(!el)return;const pts=c.portones||[];if(!pts.length){el.innerHTML=emH(ic('plug',52,'var(--gold)'),'Sin dispositivos');return;}el.innerHTML=pts.map(p=>`<div class="li"><div class="lil"><div class="av ag ic">${ic(ICON_MAP[p.icon]||'door',18,'currentColor')}</div><div><div class="in">${esc(p.label)}</div><div class="is">${p.ip||'Sin IP configurada'} · ${p.time||10}s</div></div></div></div>`).join('');}
 function renderResFin(c){const{income,expense,mvs}=calcFin(c);document.getElementById('rf-i').textContent='$'+income.toFixed(2);document.getElementById('rf-e').textContent='$'+expense.toFixed(2);document.getElementById('rf-b').textContent='$'+(income-expense).toFixed(2);const list=document.getElementById('rf-list');if(!mvs.length){list.innerHTML=emH(ic('currency',52,'var(--gold)'),'Sin movimientos este mes');return;}list.innerHTML=mvs.slice(-20).reverse().map(m=>`<div class="hi"><div class="hd" style="background:${m.type==='income'?'var(--green)':'var(--rose)'}"></div><div class="hinfo"><div class="hdesc">${esc(m.category)}${m.desc?' — '+esc(m.desc):''}</div><div class="htime">${fd(m.ts)}</div></div><span style="font-size:.76rem;font-weight:700;color:${m.type==='income'?'var(--green)':'var(--rose)'}">${m.type==='income'?'+':'-'}$${m.amount.toFixed(2)}</span></div>`).join('');}
-function renderResHist(c){const hist=(c.history||[]).filter(h=>h.house===U?.house).slice(-30).reverse();const list=document.getElementById('rh-list');if(!hist.length){list.innerHTML=emH(ic('clipboard',52,'var(--gold)'),'Sin registros aún');return;}list.innerHTML=hist.map(h=>{const fail=h.label==='Intento fallido';return`<div class="hi"><div class="hd" style="background:${fail?'#ef4444':'var(--sky)'}"></div><div class="hinfo"><div class="hdesc">${fail?'⚠️ ':''} ${esc(h.label||h.portonId)}${h.who?' · '+esc(h.who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
+function renderResHist(c){const hist=(c.history||[]).filter(h=>h.house===U?.house).slice(-30).reverse();const list=document.getElementById('rh-list');if(!hist.length){list.innerHTML=emH(ic('clipboard',52,'var(--gold)'),'Sin registros aún');return;}list.innerHTML=hist.map(h=>{const fail=h.label==='Intento fallido';return`<div class="hi"><div class="hd" style="background:${fail?'#ef4444':'var(--sky)'}"></div><div class="hinfo"><div class="hdesc"${fail?' style="color:#ef4444"':''}>${fail?'⚠️ ':''} ${esc(h.label||h.portonId)}${h.who?' · '+esc(h.who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');}
 
 // ── GATE HOLD — Sistema estable
 const HOLD=500;
@@ -3255,7 +3255,7 @@ function renderAdmHist(){
   if(hastaVal) hist=hist.filter(h=>new Date(h.ts)<=new Date(hastaVal+'T23:59:59'));
   const list=document.getElementById('adm-hist');
   if(!hist.length){list.innerHTML=emH(ic('clipboard',52,'var(--gold)'),'Sin registros');return;}
-  list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who=h.who||(r?r.name:'');const fail=h.label==='Intento fallido';return`<div class="hi"><div class="hd" style="background:${fail?'#ef4444':'var(--sky)'}"></div><div class="hinfo"><div class="hdesc">${fail?'⚠️ ':''} ${esc(h.label)} · ${esc(h.house)}${who?' — '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');
+  list.innerHTML=hist.map(h=>{const r=res.find(x=>x.house===h.house);const who=h.who||(r?r.name:'');const fail=h.label==='Intento fallido';return`<div class="hi"><div class="hd" style="background:${fail?'#ef4444':'var(--sky)'}"></div><div class="hinfo"><div class="hdesc"${fail?' style="color:#ef4444"':''}>${fail?'⚠️ ':''} ${esc(h.label)} · ${esc(h.house)}${who?' — '+esc(who):''}</div><div class="htime">${fd(h.ts)}</div></div></div>`;}).join('');
 }
 let _shellyOnline=null;
 let _histUserList=[];
