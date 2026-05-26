@@ -541,6 +541,48 @@ textarea { resize: vertical; min-height: 70px; }
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
+/* ═══════════════ PANEL HOME — DASHBOARD PRINCIPAL ═══════════════ */
+.home-greeting { margin-bottom: 1.35rem; padding: .35rem 0 .1rem; }
+.home-greeting-name { font-size: 1.25rem; font-weight: 900; color: var(--text); letter-spacing: -.025em; }
+.home-greeting-sub { font-size: .78rem; color: var(--text2); margin-top: .3rem; font-weight: 500; }
+.home-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .85rem; }
+.hmod {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: .55rem;
+  transition: background .18s ease, border-color .2s ease, transform .2s ease;
+  user-select: none; touch-action: manipulation;
+  -webkit-user-select: none; -webkit-touch-callout: none;
+  animation: fadeUp .3s ease;
+}
+.hmod:hover { background: rgba(255,255,255,.09); border-color: rgba(212,175,55,.3); transform: translateY(-2px); }
+.hmod:active { transform: scale(.96) translateY(1px); background: rgba(212,175,55,.1); }
+.hmod-ico { color: #d4af37; display: flex; align-items: center; justify-content: center; margin-bottom: .1rem; }
+.hmod-label { font-size: .9rem; font-weight: 600; color: #fff; line-height: 1.2; }
+.hmod-stat { font-size: .75rem; color: var(--text3); line-height: 1.3; min-height: 1.1em; }
+/* Nav inferior unificada (solo pestaña Inicio) */
+.nav-inicio {
+  position: fixed;
+  left: 14px; right: 14px; bottom: 14px;
+  z-index: 300;
+  display: flex; justify-content: center; align-items: center;
+  padding: .65rem;
+  border-radius: 26px;
+  background: rgba(10,15,26,.88);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,.05);
+  box-shadow: 0 20px 40px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.02);
+}
+.home-back-btn {
+  background: none; border: none; color: rgba(255,255,255,.7); cursor: pointer;
+  padding: .35rem; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
+  transition: color .18s, background .18s; font-family: var(--font);
+}
+.home-back-btn:hover { color: var(--gold); background: rgba(212,175,55,.1); }
 /* ═══════════════ SCROLLBAR ═══════════════ */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-thumb { background: rgba(212,175,55,.25); border-radius: 20px; }
@@ -738,7 +780,7 @@ textarea { resize: vertical; min-height: 70px; }
 .premium-action-btn { font-size: .72rem; padding: .3rem .8rem; border-radius: 8px; border: 1px solid rgba(212,175,55,.2); background: rgba(212,175,55,.08); color: var(--gold); cursor: pointer; font-family: var(--font); font-weight: 700; }
 .premium-brand-wrap { display: flex; align-items: center; }
 .premium-content { flex: 1; padding: .9rem; padding-bottom: 7rem; }
-.premium-admin-content { flex: 1; padding: .9rem; padding-bottom: 1.5rem; }
+.premium-admin-content { flex: 1; padding: .9rem; padding-bottom: 8rem; }
 .premium-stats-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: .7rem; margin-bottom: .8rem; }
 .premium-admin-screen { display: flex; flex-direction: column; }
 /* ═══════════════ VECINO LIST ═══════════════ */
@@ -927,6 +969,107 @@ textarea { resize: vertical; min-height: 70px; }
   </div>
 </section>
 
+<!-- ═══════════════ PANEL HOME — DASHBOARD PRINCIPAL ═══════════════ -->
+<section id="scr-home" class="screen">
+  <div class="topbar premium-topbar">
+    <div class="t-brand premium-brand-wrap">
+      <div>
+        <div class="t-brand-main premium-brand-title" id="ph-cname">CerradaApp</div>
+        <div class="t-brand-sub premium-brand-sub" id="ph-role">Panel Principal</div>
+      </div>
+    </div>
+    <div class="t-right premium-top-actions">
+      <span id="ph-badge" class="premium-badge" style="display:none"></span>
+      <button id="ph-full-btn" class="btn bg2 sm" onclick="showFullScreen()" style="display:none;background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35);padding:.3rem .65rem;font-size:.74rem"></button>
+      <button class="btn bg2 sm" onclick="confirmLogoutFromHome()" style="background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35);padding:.3rem .65rem;font-size:.74rem">Salir</button>
+    </div>
+  </div>
+
+  <div class="content" style="padding-bottom:2rem">
+    <div id="panel-home">
+      <div class="home-greeting">
+        <div class="home-greeting-name" id="ph-greeting">Bienvenido</div>
+        <div class="home-greeting-sub" id="ph-sub">Selecciona un módulo para comenzar</div>
+      </div>
+
+      <div class="home-grid" id="ph-grid">
+
+        <!-- ── RESIDENTE ── -->
+        <div class="hmod" data-roles="resident" onclick="goResP('portones')">
+          <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l3 3m0 0l-3 3m3-3H2.25"/></svg></div>
+          <div class="hmod-label">Portones</div>
+          <div class="hmod-stat">Abrir acceso</div>
+        </div>
+        <div class="hmod" data-roles="resident" onclick="goResP('finanzas')">
+          <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+          <div class="hmod-label">Mi Cuenta</div>
+          <div class="hmod-stat" id="phms-cuenta">Estado de pago</div>
+        </div>
+        <div class="hmod" data-roles="resident" onclick="goResP('historial')">
+          <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+          <div class="hmod-label">Historial</div>
+          <div class="hmod-stat">Mis accesos</div>
+        </div>
+        <div class="hmod" data-roles="resident" onclick="goResInvitar()">
+          <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg></div>
+          <div class="hmod-label">Familia</div>
+          <div class="hmod-stat" id="phms-fam">Ver miembros</div>
+        </div>
+
+        <!-- ── SUBADMIN ── -->
+        <div class="hmod" data-roles="subadmin" onclick="goAdmP('portones')">
+          <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l3 3m0 0l-3 3m3-3H2.25"/></svg></div>
+          <div class="hmod-label">Portones</div>
+          <div class="hmod-stat" id="phms-porton">—</div>
+        </div>
+        <div class="hmod" data-roles="subadmin" onclick="goAdmP('vecinos')">
+          <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg></div>
+          <div class="hmod-label">Vecinos</div>
+          <div class="hmod-stat" id="phms-vecinos">0 registrados</div>
+        </div>
+        <div class="hmod" data-roles="subadmin" onclick="goAdmP('historial')">
+          <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+          <div class="hmod-label">Historial</div>
+          <div class="hmod-stat" id="phms-hist">0 hoy</div>
+        </div>
+        <div class="hmod" data-roles="subadmin" onclick="goAdmP('cuotas')">
+          <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"/></svg></div>
+          <div class="hmod-label">Cuotas</div>
+          <div class="hmod-stat" id="phms-cuotas">— pendientes</div>
+        </div>
+        <div class="hmod" data-roles="subadmin" onclick="goAdmP('finanzas')">
+          <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg></div>
+          <div class="hmod-label">Finanzas</div>
+          <div class="hmod-stat" id="phms-fin">$0 caja</div>
+        </div>
+        <div class="hmod" data-roles="subadmin" onclick="goAdmP('config')">
+          <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28zM15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+          <div class="hmod-label">Config</div>
+          <div class="hmod-stat">Ajustes</div>
+        </div>
+
+        <!-- ── MASTER ── -->
+        <div class="hmod" data-roles="master" onclick="goMstP('cerradas')">
+          <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"/></svg></div>
+          <div class="hmod-label">Cerradas</div>
+          <div class="hmod-stat" id="phms-cerradas">Gestionar</div>
+        </div>
+        <div class="hmod" data-roles="master" onclick="goMstP('negocio')">
+          <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg></div>
+          <div class="hmod-label">Negocio</div>
+          <div class="hmod-stat">Estadísticas</div>
+        </div>
+        <div class="hmod" data-roles="master" onclick="goMstP('config')">
+          <div class="hmod-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28zM15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+          <div class="hmod-label">Config</div>
+          <div class="hmod-stat">Sistema</div>
+        </div>
+
+      </div><!-- /home-grid -->
+    </div><!-- /panel-home -->
+  </div>
+</section>
+
 <!-- PANTALLA DE REGISTRO -->
 <div id="scr-register" class="screen">
   <div style="flex:1;background:linear-gradient(155deg,#c5dcf5 0%,#daeef8 35%,#fef6dc 100%);
@@ -1005,6 +1148,9 @@ textarea { resize: vertical; min-height: 70px; }
       </div>
     </div>
     <div class="t-right premium-top-actions">
+      <button class="home-back-btn" onclick="showHome()" title="Inicio" aria-label="Inicio">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+      </button>
       <span
         id="sync-res"
         class="premium-sync-indicator"
@@ -1033,33 +1179,16 @@ textarea { resize: vertical; min-height: 70px; }
       </button>
     </div>
   </div>
-  <div class="nav premium-bottom-nav">
-    <button
-      class="ntab on premium-nav-tab"
-      onclick="resP('portones',this)"
-    >
-      <span class="ic premium-nav-icon" style="margin-right:.3rem">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg>
-      </span>
-      Portones
-    </button>
-    <button
-      class="ntab premium-nav-tab"
-      onclick="resP('finanzas',this)"
-    >
-      <span class="ic premium-nav-icon" style="margin-right:.3rem">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      </span>
-      Finanzas
-    </button>
-    <button
-      class="ntab premium-nav-tab"
-      onclick="resP('historial',this)"
-    >
-      <span class="ic premium-nav-icon" style="margin-right:.3rem">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
-      </span>
-      Historial
+  <!-- nav oculta para que resP pueda activar tabs por data-panel -->
+  <div style="display:none">
+    <button class="ntab on" data-panel="portones" onclick="resP('portones',this)"></button>
+    <button class="ntab" data-panel="finanzas" onclick="resP('finanzas',this)"></button>
+    <button class="ntab" data-panel="historial" onclick="resP('historial',this)"></button>
+  </div>
+  <div class="nav-inicio">
+    <button class="ntab on" onclick="showHome()" style="display:flex;flex-direction:column;align-items:center;gap:.3rem;background:transparent;border:none;color:var(--gold);font-family:var(--font);font-size:.7rem;font-weight:700;cursor:pointer;padding:.55rem 2rem;border-radius:16px;background:radial-gradient(circle,rgba(212,175,55,.14),transparent 70%)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+      Inicio
     </button>
   </div>
   <div class="content premium-content">
@@ -1157,14 +1286,20 @@ textarea { resize: vertical; min-height: 70px; }
   <div class="topbar premium-topbar">
     <div class="t-brand premium-brand-wrap"><div><div class="t-brand-main premium-brand-title" id="adm-cname">Mi Cerrada</div><div class="t-brand-sub premium-brand-sub">Administrador</div></div></div>
     <div class="t-right premium-top-actions">
+      <button class="home-back-btn" onclick="showHome()" title="Inicio" aria-label="Inicio">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+      </button>
       <span id="sync-adm" style="display:inline-flex;align-items:center;width:18px;height:18px"></span>
       <span class="bge b-b">Sub-Admin</span>
       <button id="btn-switch-res" class="btn bg2 sm" onclick="switchToResident()" style="display:none;background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.35);padding:.3rem .65rem;font-size:.74rem">Res.</button>
       <button class="btn bg2 sm" onclick="confirmLogoutAdm()">Salir</button>
     </div>
   </div>
-  <div class="nav premium-admin-nav" style="justify-content:center">
-    <button class="ntab on premium-nav-btn" onclick="admP('home',this)" style="font-size:.88rem;letter-spacing:.01em">🏠 Inicio</button>
+  <div class="nav-inicio">
+    <button class="ntab on" onclick="showHome()" style="display:flex;flex-direction:column;align-items:center;gap:.3rem;background:radial-gradient(circle,rgba(212,175,55,.14),transparent 70%);border:none;color:var(--gold);font-family:var(--font);font-size:.7rem;font-weight:700;cursor:pointer;padding:.55rem 2rem;border-radius:16px">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+      Inicio
+    </button>
   </div>
   <div class="content premium-admin-content">
     <div id="ap-home" class="panel on" style="padding-bottom:1rem">
@@ -1422,14 +1557,27 @@ textarea { resize: vertical; min-height: 70px; }
 <div id="scr-mst" class="screen">
   <div class="topbar">
     <div class="t-brand"><div><div class="t-brand-main">CerradaApp</div><div class="t-brand-sub">Panel Maestro</div></div></div>
-    <div class="t-right"><span class="bge y-b">Master</span><button class="btn bg2 sm" onclick="confirmLogoutAdm()">Salir</button></div>
+    <div class="t-right" style="display:flex;align-items:center;gap:.45rem">
+      <button class="home-back-btn" onclick="showHome()" title="Inicio" aria-label="Inicio">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+      </button>
+      <span class="bge y-b">Master</span>
+      <button class="btn bg2 sm" onclick="confirmLogoutAdm()">Salir</button>
+    </div>
   </div>
-  <div class="nav">
-    <button class="ntab on" onclick="mstP('cerradas',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"/></svg></span>Cerradas</button>
-    <button class="ntab" onclick="mstP('negocio',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg></span>Negocio</button>
-    <button class="ntab" onclick="mstP('config',this)"><span class="ic" style="margin-right:.3rem"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></span>Config</button>
+  <!-- nav hidden — paneles accesibles desde panel-home -->
+  <div style="display:none">
+    <button class="ntab on" onclick="mstP('cerradas',this)">Cerradas</button>
+    <button class="ntab" onclick="mstP('negocio',this)">Negocio</button>
+    <button class="ntab" onclick="mstP('config',this)">Config</button>
   </div>
-  <div class="content">
+  <div class="nav-inicio">
+    <button class="ntab on" onclick="showHome()" style="display:flex;flex-direction:column;align-items:center;gap:.3rem;background:radial-gradient(circle,rgba(212,175,55,.14),transparent 70%);border:none;color:var(--gold);font-family:var(--font);font-size:.7rem;font-weight:700;cursor:pointer;padding:.55rem 2rem;border-radius:16px">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+      Inicio
+    </button>
+  </div>
+  <div class="content" style="padding-bottom:8rem">
     <div id="mp-cerradas" class="panel on">
       <div class="sh"><h3>Cerradas Registradas</h3><button class="btn bp sm" onclick="openModal('modal-nueva')">+ Nueva</button></div>
       <div id="mst-list"><div class="empty"><div class="empty-ico"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"/></svg></div>Sin cerradas</div></div>
@@ -1897,7 +2045,7 @@ function quickLogin(role){
     enterAdm(c);
   } else {
     U={role:'master'};
-    showScreen('mst');renderMstList();renderNegocio();
+    renderMstList();renderNegocio();showHome();
   }
 }
 
@@ -1977,7 +2125,7 @@ async function loginStaff(){
   if(user === (S.masterUser || 'MASTER') && pass === S.masterKey){
     U={role:'master'};
     localStorage.setItem('cerrada_session', JSON.stringify({role:'master'}));
-    showScreen('mst');renderMstList();renderNegocio();
+    renderMstList();renderNegocio();showHome();
     // Refrescar todas las cerradas conocidas desde Firestore en segundo plano
     const knownCodes=Object.keys(S.cerradas);
     if(knownCodes.length){
@@ -2546,7 +2694,7 @@ function enterRes(c, res, member) {
     }
   }
 
-  showScreen('res');
+  showHome();
   updateModeButtons();
 
   // Inicializar notificaciones FCM en segundo plano
@@ -2983,7 +3131,7 @@ async function enterAdm(c,silent=false){
   startRealtimeListener(c.code);
   updateDash();
   renderHome();
-  showScreen('adm');
+  showHome();
   updateModeButtons();
 }
 function renderHome(){
@@ -4690,7 +4838,7 @@ load();seedDemo();renderNcP();
     const { role, cerradaCode, house, memberIdx } = sess;
     if (role === 'master') {
       U = { role:'master' };
-      showScreen('mst'); renderMstList(); renderNegocio();
+      renderMstList(); renderNegocio(); showHome();
       return;
     }
     const c = S.cerradas[cerradaCode];
@@ -4890,6 +5038,123 @@ window.addEventListener('appinstalled', () => {
   toast('CerradaApp instalada');
   document.getElementById('install-banner').style.display = 'none';
 });
+
+// ═══════════════════════════════════════════════
+// PANEL HOME — DASHBOARD PRINCIPAL
+// ═══════════════════════════════════════════════
+
+function showHome(){
+  const role = U?.role || '';
+  const c = C();
+
+  // ── Topbar
+  document.getElementById('ph-cname').textContent = c?.name || 'CerradaApp';
+  const roleLabel = {resident:'Residente', subadmin:'Administrador', master:'Panel Maestro'}[role] || 'Inicio';
+  document.getElementById('ph-role').textContent = roleLabel;
+
+  // ── Badge de rol
+  const badge = document.getElementById('ph-badge');
+  const badgeText = {resident:'Residente', subadmin:'Sub-Admin', master:'Master'}[role] || '';
+  if(badge){ badge.textContent = badgeText; badge.style.display = badgeText ? 'inline-flex' : 'none'; }
+
+  // ── Botón "Ver panel completo"
+  const fullBtn = document.getElementById('ph-full-btn');
+  if(fullBtn){
+    if(role === 'resident'){ fullBtn.textContent = 'Ver cerrada →'; fullBtn.style.display = 'inline-flex'; }
+    else if(role === 'subadmin'){ fullBtn.textContent = 'Panel Admin →'; fullBtn.style.display = 'inline-flex'; }
+    else { fullBtn.style.display = 'none'; }
+  }
+
+  // ── Saludo
+  const name = U?.memberName || '';
+  document.getElementById('ph-greeting').textContent = name ? 'Hola, ' + name : 'Bienvenido';
+  document.getElementById('ph-sub').textContent = c ? c.name + ' — Selecciona un módulo' : 'Selecciona un módulo';
+
+  // ── Mostrar solo las tarjetas del rol actual
+  document.querySelectorAll('#ph-grid .hmod[data-roles]').forEach(card => {
+    card.style.display = card.dataset.roles === role ? 'flex' : 'none';
+  });
+
+  // ── Estadísticas en vivo
+  if(role === 'subadmin' && c) _phAdmStats(c);
+  if(role === 'master') _phMstStats();
+  if(role === 'resident' && c) _phResStats(c);
+
+  showScreen('home');
+}
+
+function _phAdmStats(c){
+  const res = c.residents || [];
+  const today = new Date().toDateString();
+  const mesKey = new Date().toISOString().slice(0,7);
+  const cuotasMes = c.cuotas?.[mesKey] || {};
+  const pendientes = res.filter(r => !cuotasMes[r.house]?.pagado).length;
+  const histHoy = (c.history || []).filter(h => new Date(h.ts).toDateString() === today).length;
+  const {income, expense} = calcFin(c);
+  const caja = income - expense;
+  const sv = document.getElementById('phms-vecinos'); if(sv) sv.textContent = res.length + (res.length===1?' registrado':' registrados');
+  const sh = document.getElementById('phms-hist'); if(sh) sh.textContent = histHoy + (histHoy===1?' apertura hoy':' aperturas hoy');
+  const sc = document.getElementById('phms-cuotas'); if(sc){ sc.textContent = pendientes + (pendientes===1?' pendiente':' pendientes'); sc.style.color = pendientes>0?'var(--rose)':'var(--green)'; }
+  const sf = document.getElementById('phms-fin'); if(sf){ sf.textContent = '$'+caja.toFixed(0)+' caja'; sf.style.color = caja>=0?'var(--green)':'var(--rose)'; }
+  const sp = document.getElementById('phms-porton'); if(sp) sp.textContent = c.portones?.length ? (c.portones.length+(c.portones.length===1?' portón':' portones')) : 'Sin portón';
+}
+
+function _phMstStats(){
+  const total = Object.keys(S.cerradas).length;
+  const el = document.getElementById('phms-cerradas');
+  if(el) el.textContent = total + (total===1?' cerrada':' cerradas');
+}
+
+function _phResStats(c){
+  if(!U?.house) return;
+  const mesKey = new Date().toISOString().slice(0,7);
+  const cuotasMes = c.cuotas?.[mesKey] || {};
+  const pagado = cuotasMes[U.house]?.pagado;
+  const el = document.getElementById('phms-cuenta');
+  if(el){ el.textContent = pagado ? 'Al día ✓' : 'Pago pendiente'; el.style.color = pagado ? 'var(--green)' : 'var(--rose)'; }
+  const res = c.residents?.find(r => r.house === U.house);
+  const members = res?.members || [];
+  const fel = document.getElementById('phms-fam');
+  if(fel) fel.textContent = members.length ? (members.length+(members.length===1?' miembro':' miembros')) : 'Invitar familiar';
+}
+
+function showFullScreen(){
+  const role = U?.role || '';
+  if(role === 'resident') goResP('portones');
+  else if(role === 'subadmin'){ showScreen('adm'); updateModeButtons(); admP('home', document.querySelector('#scr-adm .ntab')); }
+}
+
+function goResP(panel){
+  showScreen('res');
+  updateModeButtons();
+  const tab = document.querySelector(`#scr-res .ntab[data-panel="${panel}"]`);
+  resP(panel, tab);
+}
+
+function goAdmP(panel){
+  showScreen('adm');
+  updateModeButtons();
+  admP(panel, null);
+}
+
+function goMstP(panel){
+  showScreen('mst');
+  mstP(panel, null);
+}
+
+function goResInvitar(){
+  showScreen('res');
+  updateModeButtons();
+  const tab = document.querySelector('#scr-res .ntab[data-panel="portones"]');
+  resP('portones', tab);
+  setTimeout(() => invitarFamiliar(), 80);
+}
+
+function confirmLogoutFromHome(){
+  const role = U?.role || '';
+  if(role === 'resident') confirmLogoutRes();
+  else confirmLogoutAdm();
+}
 </script>
 </body>
 </html>
