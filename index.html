@@ -3163,6 +3163,10 @@ function shellyOpen(pt) {
     if(data.isok){
       _shellyFailCount=0;
       _shellyOnline=true;
+      const dot=document.getElementById('shelly-status-dot');
+      const txt=document.getElementById('shelly-status-text');
+      if(dot){dot.style.background='#22c55e';dot.style.boxShadow='0 0 8px 2px rgba(34,197,94,.5)';}
+      if(txt){txt.style.color='#22c55e';txt.textContent='Portón en línea';}
       _scheduleStatusCheck(60000);
     } else {
       _handleFail();
