@@ -2103,22 +2103,44 @@ async function loginResidente(){
     return null;
   }
 
-  // Siempre descargar datos frescos de Firestore antes de buscar
+  // Verificación de credenciales del lado del SERVIDOR (POST /login).
+  // Ya no se comparan pins/passwords en el navegador; se prueba cada code conocido.
   toast('Verificando...');
+  let loginCode=null, loginUser=null;
   for(const code of KNOWN_CODES){
     try{
-      const r=await fetch(`${WORKER}/fs?code=${code}`);
-      if(r.ok){const data=await r.json();if(data.ok&&data.record){S.cerradas[code]=data.record;}}
+      const resp=await fetch(`${WORKER}/login`,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ mode:'resident', code, email, pass })
+      });
+      if(resp.ok){
+        const data=await resp.json();
+        if(data.ok && data.user){ loginCode=code; loginUser=data.user; break; }
+      }
     }catch(e){}
   }
-  save();
-  let found = await buscarEnCerradas();
 
-  if(!found){showErr('m-err','Correo o contraseña incorrectos.');return;}
+  if(!loginCode){showErr('m-err','Correo o contraseña incorrectos.');return;}
 
-  const {cerrada,res,member,mi} = found;
+  // Cargar la cerrada SANEADA (sin credenciales) para los datos operativos
+  const record=await fsGet(loginCode);
+  if(record){S.cerradas[loginCode]=record;save();}
+  const cerrada=S.cerradas[loginCode];
+  if(!cerrada){showErr('m-err','No se pudo cargar la cerrada. Intenta de nuevo.');return;}
+
+  // Ubicar residente + índice de familiar por casa/email (los datos ya no traen pins)
+  const res=(cerrada.residents||[]).find(r=>r.house===loginUser.house)
+          ||(cerrada.residents||[]).find(r=>String(r.email||'').trim().toLowerCase()===email);
+  if(!res){showErr('m-err','No se pudo cargar tu casa. Intenta de nuevo.');return;}
+  let member=null, mi=-1;
+  if(String(res.email||'').trim().toLowerCase()!==email){
+    // Es un familiar: calcular su índice dentro de members[] por email
+    mi=(res.members||[]).findIndex(m=>String(m.email||'').trim().toLowerCase()===email);
+    member=mi>=0?res.members[mi]:null;
+  }
+
   // Si está suspendido, deja entrar igual — renderGates mostrará el botón rojo
-  U={role:'resident',cerradaCode:cerrada.code,house:res.house,memberIdx:mi,memberName:member?.name||res.name,email};
+  U={role:'resident',cerradaCode:cerrada.code,house:res.house,memberIdx:mi,memberName:member?.name||loginUser.name||res.name,email};
   DUAL_RES={...U};
   localStorage.setItem('cerrada_session',JSON.stringify(U));
   saveDual();
@@ -2147,37 +2169,52 @@ async function loginStaff(){
   const pass = document.getElementById('staff-pass').value.trim();
   if(!user||!pass){ showStaffErr('Completa los campos'); return; }
 
-  // ── MASTER — usuario configurable + clave maestra
-  if(user === (S.masterUser || 'MASTER') && pass === S.masterKey){
-    U={role:'master'};
-    localStorage.setItem('cerrada_session', JSON.stringify({role:'master'}));
-    renderMstList();renderNegocio();showHome();
-    // Refrescar todas las cerradas conocidas desde Firestore en segundo plano
-    const knownCodes=Object.keys(S.cerradas);
-    if(knownCodes.length){
-      Promise.all(knownCodes.map(c=>fsGet(c))).then(records=>{
-        let changed=false;
-        records.forEach(r=>{if(r&&r.code){S.cerradas[r.code]=r;changed=true;}});
-        if(changed){save();renderMstList();renderNegocio();}
-      }).catch(()=>{});
+  // ── MASTER — verificación del lado del SERVIDOR (POST /login mode:master)
+  try{
+    const rM=await fetch(`${WORKER}/login`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ mode:'master', user, pass })
+    });
+    if(rM.ok){
+      const dM=await rM.json();
+      if(dM.ok && dM.user && dM.user.role==='master'){
+        U={role:'master'};
+        localStorage.setItem('cerrada_session', JSON.stringify({role:'master'}));
+        renderMstList();renderNegocio();showHome();
+        // Refrescar todas las cerradas conocidas desde Firestore en segundo plano
+        const knownCodes=Object.keys(S.cerradas);
+        if(knownCodes.length){
+          Promise.all(knownCodes.map(c=>fsGet(c))).then(records=>{
+            let changed=false;
+            records.forEach(r=>{if(r&&r.code){S.cerradas[r.code]=r;changed=true;}});
+            if(changed){save();renderMstList();renderNegocio();}
+          }).catch(()=>{});
+        }
+        return;
+      }
     }
-    return;
-  }
+  }catch(e){}
 
-  // ── ADMIN — código de cerrada + adminPin de ESA cerrada
+  // ── ADMIN — código de cerrada + adminPin, verificación del lado del SERVIDOR
   const codeUp = user.toUpperCase();
-  if(!S.cerradas[codeUp]){
-    showStaffErr('Buscando cerrada...');
-    try {
-      const record = await fsGet(codeUp);
-      if(record){ S.cerradas[codeUp]=record; save(); }
-    } catch(e) {}
-  }
-  const cerrada = S.cerradas[codeUp];
+  showStaffErr('Verificando...');
+  let adminOk=false;
+  try{
+    const rA=await fetch(`${WORKER}/login`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ mode:'admin', code:codeUp, pass })
+    });
+    if(rA.ok){ const dA=await rA.json(); adminOk=!!(dA.ok && dA.user && dA.user.role==='admin'); }
+  }catch(e){}
+
   // Mismo mensaje para código y PIN incorrectos — no revelar qué falló
-  if(!cerrada || pass !== String(cerrada.adminPin)){
-    showStaffErr('Código o PIN incorrecto'); return;
-  }
+  if(!adminOk){ showStaffErr('Código o PIN incorrecto'); return; }
+
+  // Cargar la cerrada SANEADA (sin credenciales) para los datos operativos
+  const record = await fsGet(codeUp);
+  if(record){ S.cerradas[codeUp]=record; save(); }
+  const cerrada = S.cerradas[codeUp];
+  if(!cerrada){ showStaffErr('No se pudo cargar la cerrada. Intenta de nuevo.'); return; }
   if(cerrada.suspended){ showStaffErr('Cerrada suspendida'); return; }
   U={role:'subadmin',cerradaCode:cerrada.code};
   DUAL_ADM={...U};

@@ -30,6 +30,45 @@ function json(data, status) {
   });
 }
 
+// === Hashing de contraseñas (PBKDF2-SHA256) ===
+async function hashPassword(password) {
+  const enc = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial, 256
+  );
+  const hashArr = new Uint8Array(bits);
+  const saltHex = [...salt].map(b => b.toString(16).padStart(2, '0')).join('');
+  const hashHex = [...hashArr].map(b => b.toString(16).padStart(2, '0')).join('');
+  return `pbkdf2$100000$${saltHex}$${hashHex}`;
+}
+
+async function verifyPassword(password, stored) {
+  try {
+    const parts = stored.split('$');
+    if (parts.length !== 4 || parts[0] !== 'pbkdf2') return false;
+    const iterations = parseInt(parts[1], 10);
+    const salt = new Uint8Array(parts[2].match(/.{2}/g).map(h => parseInt(h, 16)));
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']
+    );
+    const bits = await crypto.subtle.deriveBits(
+      { name: 'PBKDF2', salt, iterations, hash: 'SHA-256' },
+      keyMaterial, 256
+    );
+    const hashArr = new Uint8Array(bits);
+    const hashHex = [...hashArr].map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex === parts[3];
+  } catch (e) {
+    return false;
+  }
+}
+
 // ── Genera un OAuth2 Access Token para cualquier scope de Google
 async function getGoogleToken(scope, env) {
   const creds = JSON.parse(env.GOOGLE_CREDENTIALS);
@@ -120,6 +159,21 @@ function objToDoc(obj) {
 }
 
 const FS_BASE = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents`;
+
+// ── Devuelve una copia profunda de la cerrada SIN credenciales (para exponer al navegador)
+function sanitizeCerrada(cerrada) {
+  const c = JSON.parse(JSON.stringify(cerrada));
+  if (Array.isArray(c.residents)) {
+    for (const r of c.residents) {
+      delete r.pin; delete r.password;
+      if (Array.isArray(r.members)) {
+        for (const m of r.members) { delete m.pin; delete m.password; }
+      }
+    }
+  }
+  if (c.adminPin) delete c.adminPin;
+  return c;
+}
 
 // ── Leer cerrada de Firestore
 async function fsRead(code, env) {
@@ -250,7 +304,7 @@ export default {
       try {
         const record = await fsRead(code, env);
         if (!record) return json({ ok: false, error: 'No encontrado' }, 404);
-        return json({ ok: true, record });
+        return json({ ok: true, record: sanitizeCerrada(record) });
       } catch(e) { return json({ ok: false, error: e.message }, 500); }
     }
 
@@ -262,6 +316,101 @@ export default {
         const ok = await fsWrite(code, data, env);
         return json({ ok });
       } catch(e) { return json({ ok: false, error: e.message }, 500); }
+    }
+
+    // ── Login server-side (POST /login) — verifica credenciales y devuelve datos mínimos
+    if (request.method === 'POST' && url.pathname === '/login') {
+      try {
+        const body = await request.json();
+        const mode = body.mode || 'resident'; // compatibilidad hacia atrás
+
+        // ── MASTER — usuario + clave maestra desde secrets
+        if (mode === 'master') {
+          const { user, pass } = body;
+          if (!user || !pass) return json({ ok: false, error: 'Faltan datos' }, 400);
+          // TODO: mover a secrets antes de producción
+          const MASTER_USER = env.MASTER_USER || 'MASTER';
+          const MASTER_KEY  = env.MASTER_KEY  || 'MASTER2025';
+          if (user === MASTER_USER && pass === MASTER_KEY) {
+            return json({ ok: true, user: { role: 'master' } });
+          }
+          return json({ ok: false, error: 'Credenciales incorrectas' }, 401);
+        }
+
+        // ── ADMIN — código de cerrada + adminPin
+        if (mode === 'admin') {
+          const { code, pass } = body;
+          if (!code || !pass) return json({ ok: false, error: 'Faltan datos' }, 400);
+
+          const cerrada = await fsRead(code, env);
+          // No revelar si la cerrada existe: mismo fallo que credenciales incorrectas
+          if (!cerrada) return json({ ok: false, error: 'Credenciales incorrectas' }, 401);
+
+          const stored = cerrada.adminPin;
+          let okPass = false;
+          if (typeof stored === 'string' && stored.startsWith('pbkdf2$')) {
+            okPass = await verifyPassword(pass, stored);
+          } else if (stored != null) {
+            okPass = pass === String(stored);
+          }
+
+          if (!okPass) return json({ ok: false, error: 'Credenciales incorrectas' }, 401);
+          return json({ ok: true, user: { role: 'admin', cerradaCode: cerrada.code || code } });
+        }
+
+        // ── RESIDENT (por defecto) — email + pass
+        const { code, email, pass } = body;
+        if (!code || !email || !pass) {
+          return json({ ok: false, error: 'Faltan datos' }, 400);
+        }
+
+        const cerrada = await fsRead(code, env);
+        // No revelar si la cerrada existe: mismo fallo que credenciales incorrectas
+        if (!cerrada) return json({ ok: false, error: 'Credenciales incorrectas' }, 401);
+
+        const wanted = String(email).trim().toLowerCase();
+
+        // Buscar coincidencia por email en residents[] y sus members[]
+        let match = null; // { user, house, role }
+        for (const res of cerrada.residents || []) {
+          if (res.email && String(res.email).trim().toLowerCase() === wanted) {
+            match = { user: res, house: res.house, role: res.role || res.rol || 'resident' };
+            break;
+          }
+          for (const m of res.members || []) {
+            if (m.email && String(m.email).trim().toLowerCase() === wanted) {
+              match = { user: m, house: res.house, role: m.role || m.rol || 'family' };
+              break;
+            }
+          }
+          if (match) break;
+        }
+
+        if (!match) return json({ ok: false, error: 'Credenciales incorrectas' }, 401);
+
+        // Verificar contraseña con compatibilidad temporal (hash pbkdf2 o texto plano legacy)
+        const stored = match.user.password ?? match.user.pin;
+        let okPass = false;
+        if (typeof stored === 'string' && stored.startsWith('pbkdf2$')) {
+          okPass = await verifyPassword(pass, stored);
+        } else if (stored != null) {
+          okPass = pass === stored;
+        }
+
+        if (!okPass) return json({ ok: false, error: 'Credenciales incorrectas' }, 401);
+
+        // Devolver SOLO datos mínimos — nunca password/pin ni la lista completa
+        return json({
+          ok: true,
+          user: {
+            name:  match.user.name,
+            email: match.user.email,
+            house: match.house,
+            role:  match.role,
+            code:  cerrada.code || code
+          }
+        });
+      } catch(e) { return json({ ok: false, error: 'Error interno' }, 500); }
     }
 
     // ── Registro de usuario (POST /register)
@@ -279,6 +428,9 @@ export default {
         if (!email.includes('@')) {
           return json({ ok: false, error: 'Correo inválido' }, 400);
         }
+
+        // Hashear el pin una sola vez — nunca se almacena en texto plano
+        const pinHash = await hashPassword(pin);
 
         // Leer cerrada actualizada de Firestore
         const cerrada = await fsRead(code, env);
@@ -318,7 +470,7 @@ export default {
           res.members.push({
             name,
             email,
-            pin,
+            pin: pinHash,
             role: 'family',
             active: true,
             suspended: false,
@@ -328,7 +480,7 @@ export default {
           // Registrar como jefe de familia
           res.name        = name;
           res.email       = email;
-          res.pin         = pin;
+          res.pin         = pinHash;
           res.pendingReg  = false;
           res.registeredAt = new Date().toISOString();
         }
