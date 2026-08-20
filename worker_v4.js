@@ -13,7 +13,7 @@
 // GOOGLE_CREDENTIALS → JSON completo de la cuenta de servicio de Google (service account key)
 // SHELLY_AUTH        → clave de autenticación de Shelly Cloud
 
-const SHELLY_DEVICE    = 'e4b063eb85a4';
+const SHELLY_DEVICE    = '34cdb07be470';
 const FIREBASE_PROJECT = 'cerradaapp-7179e';
 const ICON_URL         = 'https://racosta123.github.io/cerradaapp/icons/icon-192x192.png';
 
@@ -235,7 +235,7 @@ export default {
   async scheduled(event, env, ctx) {
     const auth = env.SHELLY_AUTH || '';
     const body = new URLSearchParams({ id: SHELLY_DEVICE, auth_key: auth, channel: '0', turn: 'off' });
-    await fetch('https://shelly-258-eu.shelly.cloud/device/relay/control', {
+    await fetch('https://shelly-274-eu.shelly.cloud/device/relay/control', {
       method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString()
     }).catch(() => {});
   },
@@ -251,7 +251,7 @@ export default {
       try {
         const { shellyId, shellyServer, seconds } = await request.json();
         const id   = shellyId   || SHELLY_DEVICE;
-        const srv  = shellyServer || 'shelly-258-eu.shelly.cloud';
+        const srv  = shellyServer || 'shelly-274-eu.shelly.cloud';
         const auth = env.SHELLY_AUTH || '';
         const sec  = Math.min(parseInt(seconds) || 5, 60);
 
@@ -272,7 +272,7 @@ export default {
       if (!id || !auth) return json({ ok: false, error: 'Faltan parametros id/auth' }, 400);
       const body = new URLSearchParams({ id, auth_key: auth, channel: '0', turn });
       try {
-        const r = await fetch('https://shelly-258-eu.shelly.cloud/device/relay/control', {
+        const r = await fetch('https://shelly-274-eu.shelly.cloud/device/relay/control', {
           method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString()
         });
         const data = await r.text();
