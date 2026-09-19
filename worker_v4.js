@@ -326,9 +326,9 @@ export default {
         if (mode === 'master') {
           const { user, pass } = body;
           if (!user || !pass) return json({ ok: false, error: 'Faltan datos' }, 400);
-          // TODO: mover a secrets antes de producción
-          const MASTER_USER = env.MASTER_USER || 'MASTER';
-          const MASTER_KEY  = env.MASTER_KEY  || 'MASTER2025';
+          const MASTER_USER = env.MASTER_USER;
+          const MASTER_KEY  = env.MASTER_KEY;
+          if (!MASTER_USER || !MASTER_KEY) return json({ ok: false, error: 'Configuración de servidor incompleta' }, 500);
           if (user === MASTER_USER && pass === MASTER_KEY) {
             return json({ ok: true, user: { role: 'master' } });
           }
