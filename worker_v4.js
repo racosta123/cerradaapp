@@ -2,8 +2,6 @@
 // GET  /?id=DEVICE&auth=KEY&turn=on|off  → Control Shelly (legacy)
 // POST /shelly  { shellyId, shellyServer, seconds }  → Control Shelly v2
 // POST /notify  { title, body, tokens[] }            → Push FCM HTTP v1
-// GET  /jb?bin=BIN&key=KEY               → Leer JSONBin
-// POST /jb      { bin, key, data }        → Escribir JSONBin
 // GET  /fs?code=CODE                     → Leer Firestore
 // POST /fs      { code, data }            → Escribir Firestore
 // POST /register { code, house, token, isFamiliar, name, email, pin } → Registrar usuario
@@ -495,32 +493,6 @@ export default {
         const ok = await fsWrite(code, cerrada, env);
         return json({ ok });
       } catch(e) { return json({ ok: false, error: e.message }, 500); }
-    }
-
-    // ── Proxy JSONBin (GET /jb)
-    if (url.pathname === '/jb') {
-      if (request.method === 'GET') {
-        const bin = url.searchParams.get('bin');
-        const key = url.searchParams.get('key');
-        if (!bin || !key) return json({ ok: false, error: 'Faltan bin/key' }, 400);
-        try {
-          const r    = await fetch(`https://api.jsonbin.io/v3/b/${bin}/latest`, { headers: { 'X-Master-Key': key } });
-          const data = await r.json();
-          return json({ ok: true, record: data.record });
-        } catch(e) { return json({ ok: false, error: e.message }, 500); }
-      }
-      if (request.method === 'POST') {
-        try {
-          const { bin, key, data } = await request.json();
-          if (!bin || !key || !data) return json({ ok: false, error: 'Faltan parametros' }, 400);
-          const r = await fetch(`https://api.jsonbin.io/v3/b/${bin}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Master-Key': key },
-            body: JSON.stringify(data)
-          });
-          return json({ ok: r.ok });
-        } catch(e) { return json({ ok: false, error: e.message }, 500); }
-      }
     }
 
     return json({ ok: false, error: 'Ruta no encontrada' }, 404);

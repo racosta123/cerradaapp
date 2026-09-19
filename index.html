@@ -2519,7 +2519,6 @@ _Si tienes algún problema contáctame._`;
   toast('Abriendo WhatsApp...');
 }
 
-// ── JSONBIN
 function setSI(r,st){const m={syncing:ic('refresh',16,'var(--gold)'),ok:ic('cloud',16,'var(--gold)'),err:ic('warning',16,'var(--rose)'),off:ic('cloud-up',16,'var(--t3)')};const el=document.getElementById('sync-'+r);if(el)el.innerHTML=m[st]||ic('cloud',16,'var(--gold)');}
 // ── NOTIFICACIONES FCM
 // vapidKey: clave pública Web Push de Firebase Console → Project Settings → Cloud Messaging → Web push certificates
@@ -3964,12 +3963,10 @@ function saveMstPortones(code){
     if(tEl) p.time=parseInt(tEl.value)||10;
   });
   save();
-  // Si tiene JSONBin, sincronizar
   if(c.code) fsPush(c);
   toast('IPs guardadas para '+c.name);
 }
 
-// ── MASTER JSONBIN
 async function loadMstFirestore(){
   const codeInput=document.getElementById('mc-fs-code');
   const msg=document.getElementById('mc-fs-msg');
@@ -4783,7 +4780,6 @@ load();seedDemo();renderNcP();
 
       let cerrada = S.cerradas[code];
       
-      // Si la cerrada no está localmente, intentar descargar desde JSONBin
       if (!cerrada) {
         toast('Cargando datos...');
         // El Bin ID y API Key están hardcodeados para SMARK-001
@@ -4795,7 +4791,6 @@ load();seedDemo();renderNcP();
       }
 
       if (cerrada) {
-        // Cerrada encontrada — intentar pull de JSONBin para datos frescos
         try {
             const record = await fsGet(code);
             if (record) { Object.assign(cerrada, record); S.cerradas[code] = cerrada; save(); }
