@@ -22,3 +22,6 @@ FS_MERGE_MODE = "log"
 FS_ID_BACKFILL = "off"
 # Global (TODAS las cerradas): "on" habilita /admin/set-pin y /admin/change-pin. Cualquier otro valor = 404.
 ADMIN_PIN_ENDPOINTS = "off"
+# Host de Shelly Cloud al que el Worker envía SIEMPRE las aperturas (POST /shelly). Se ignora lo que mande el cliente,
+# para que nadie pueda apuntar la petición a un servidor propio y recibir el secret SHELLY_AUTH.
+SHELLY_SERVER = "shelly-274-eu.shelly.cloud"

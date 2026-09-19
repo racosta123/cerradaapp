@@ -1,6 +1,5 @@
 // CerradaApp — Cloudflare Worker v5
-// GET  /?id=DEVICE&auth=KEY&turn=on|off  → Control Shelly (legacy)
-// POST /shelly  { shellyId, shellyServer, seconds }  → Control Shelly v2
+// POST /shelly  { shellyId, seconds }    → Control Shelly v2 (el servidor lo fija el Worker: SHELLY_SERVER)
 // POST /notify  { title, body, tokens[] }            → Push FCM HTTP v1
 // GET  /fs?code=CODE                     → Leer Firestore
 // POST /fs      { code, data, removed? }  → Escribir Firestore (fusión: ver fs_merge.mjs)
@@ -18,10 +17,13 @@
 // FS_MERGE_MODE       → 'enforce' activa la fusión en POST /fs para TODAS las cerradas; otro valor = solo registrar en logs
 // FS_ID_BACKFILL      → 'on' asigna/persiste ids inmutables al leer (GET /fs) y los devuelve, para TODAS las cerradas
 // ADMIN_PIN_ENDPOINTS → 'on' habilita /admin/set-pin y /admin/change-pin para TODAS las cerradas
+// SHELLY_SERVER       → host de Shelly Cloud al que /shelly envía SIEMPRE (el del cliente se ignora)
+// SESSION_SECRET      → (secret) firma de tokens de sesión; reservado para la Fase 2, aún sin uso
 
 import { processFsPost, ensureIds, setPinInDoc } from './fs_merge.mjs';
 
 const SHELLY_DEVICE    = '34cdb07be470';
+const SHELLY_SERVER_DEFAULT = 'shelly-274-eu.shelly.cloud';   // respaldo si falta la variable SHELLY_SERVER
 const FIREBASE_PROJECT = 'cerradaapp-7179e';
 const ICON_URL         = 'https://racosta123.github.io/cerradaapp/icons/icon-192x192.png';
 
@@ -327,9 +329,11 @@ export default {
     // ── Control Shelly (POST /shelly)
     if (request.method === 'POST' && url.pathname === '/shelly') {
       try {
-        const { shellyId, shellyServer, seconds } = await request.json();
+        // shellyServer (si el cliente lo manda) se IGNORA: el destino lo fija el Worker, así nadie puede
+        // apuntar la petición a un servidor propio y recibir SHELLY_AUTH.
+        const { shellyId, seconds } = await request.json();
         const id   = shellyId   || SHELLY_DEVICE;
-        const srv  = shellyServer || 'shelly-274-eu.shelly.cloud';
+        const srv  = env.SHELLY_SERVER || SHELLY_SERVER_DEFAULT;
         const auth = env.SHELLY_AUTH || '';
         const sec  = Math.min(parseInt(seconds) || 5, 60);
 
@@ -342,21 +346,8 @@ export default {
       } catch(e) { return json({ ok: false, error: e.message }, 500); }
     }
 
-    // ── Control Shelly (GET legacy)
-    if (request.method === 'GET' && url.pathname === '/') {
-      const turn = url.searchParams.get('turn') || 'on';
-      const id   = url.searchParams.get('id');
-      const auth = url.searchParams.get('auth');
-      if (!id || !auth) return json({ ok: false, error: 'Faltan parametros id/auth' }, 400);
-      const body = new URLSearchParams({ id, auth_key: auth, channel: '0', turn });
-      try {
-        const r = await fetch('https://shelly-274-eu.shelly.cloud/device/relay/control', {
-          method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString()
-        });
-        const data = await r.text();
-        return new Response(data, { headers: { ...CORS, 'Content-Type': 'application/json' } });
-      } catch(e) { return json({ ok: false, error: e.message }, 500); }
-    }
+    // (La ruta antigua GET /?id=..&auth=..&turn=.. se APAGÓ: era un proxy abierto hacia Shelly Cloud y
+    //  nada la usaba. Ahora cae en el 404 final.)
 
     // ── Push FCM HTTP v1 (POST /notify)
     if (request.method === 'POST' && url.pathname === '/notify') {
