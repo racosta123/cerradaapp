@@ -4782,7 +4782,6 @@ load();seedDemo();renderNcP();
       
       if (!cerrada) {
         toast('Cargando datos...');
-        // El Bin ID y API Key están hardcodeados para SMARK-001
         // Para otras cerradas el admin debe configurarlos
         try {
             const record = await fsGet(code);
