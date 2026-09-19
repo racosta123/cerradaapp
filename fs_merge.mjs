@@ -226,19 +226,22 @@ export function mergeCerrada(stored, incoming, removed = {}, opts = {}) {
     return list;
   };
 
+  // El ORDEN lo dicta lo guardado (una copia vieja o parcial no debe reordenar la lista);
+  // los residentes nuevos van al final, en el orden en que llegaron.
   const usedStored = new Set();
-  const outRes = [];
+  const slots = new Array(stRes.length).fill(null);
+  const fresh = [];
   for (const ir of inc.residents || []) {
     const si = findStored(stRes, ir, usedStored, true);
     if (si < 0) {
-      outRes.push(sanitizeNewResident(ir, report, genId));
+      fresh.push(sanitizeNewResident(ir, report, genId));
       report.residentsNew++;
       continue;
     }
     usedStored.add(si);
     if (removedRes.has(si)) { report.residentsRemoved++; continue; }
     report.residentsMatched++;
-    outRes.push(mergeResident(stRes[si], ir, removedMembersFor(si), report));
+    slots[si] = mergeResident(stRes[si], ir, removedMembersFor(si), report);
   }
   stRes.forEach((sr, i) => {
     if (usedStored.has(i)) return;
@@ -248,12 +251,13 @@ export function mergeCerrada(stored, incoming, removed = {}, opts = {}) {
     if (rm.length) {
       const kept = { ...sr };
       kept.members = mergeMembers(sr.members || [], [], rm, report);
-      outRes.push(kept);
+      slots[i] = kept;
     } else {
-      outRes.push(sr);
+      slots[i] = sr;
     }
     report.residentsKeptNotSent++;
   });
+  const outRes = slots.filter(Boolean).concat(fresh);
 
   out.residents = outRes;
   return { merged: out, adminPinToHash: null, report };

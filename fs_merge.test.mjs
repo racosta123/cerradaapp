@@ -380,3 +380,21 @@ test("modo 'enforce': cerrada inexistente = creación, con exists:false y adminP
   assert.equal(io.s.writes[0].doc.adminPin, 'H(4321)');
   assert.equal('pin' in io.s.writes[0].doc.residents[0], false);
 });
+
+// ─────────────────────────────── el orden de residents lo dicta lo guardado
+test('orden: una copia parcial/reordenada NO reordena a los residentes guardados; los nuevos van al final', () => {
+  const st = stored();
+  const inc = sanitized(st);
+  inc.residents = [inc.residents[2], inc.residents[0]];              // copia vieja: solo Casa 3 y Casa 1, en otro orden
+  inc.residents.push({ house: 'Casa 9', name: 'Nuevo', members: [], pendingReg: true });
+  const { merged } = mergeCerrada(st, inc, {}, { genId });
+  assert.deepEqual(merged.residents.map((r) => r.house), ['Casa 1', 'Casa 2', 'Casa 3', 'Casa 9']);
+});
+
+test('orden: un borrado explícito no altera el orden relativo del resto', () => {
+  const st = stored();
+  const inc = sanitized(st);
+  inc.residents.reverse();
+  const { merged } = mergeCerrada(st, inc, { residents: [{ id: 'r2' }] }, { genId });
+  assert.deepEqual(merged.residents.map((r) => r.house), ['Casa 1', 'Casa 3']);
+});

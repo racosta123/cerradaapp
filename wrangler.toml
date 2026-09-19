@@ -1,0 +1,24 @@
+name = "shelly-proxy"
+main = "worker_v4.js"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[triggers]
+crons = ["*/1 * * * *"]
+
+[observability]
+enabled = true
+
+# ── Interruptores de la fusión que preserva credenciales (ver fs_merge.mjs y worker_v4.js).
+#    Se declaran aquí para que `wrangler deploy` no los borre (las variables creadas solo en el dashboard se pierden).
+[vars]
+# Cerradas (códigos separados por comas, coincidencia exacta, sin comodín) donde SÍ están activos
+# la fusión en POST /fs, el backfill de ids en GET /fs y los endpoints /admin/set-pin y /admin/change-pin.
+# Fase de prueba: solo TEST-001. SMARK-001 NO debe aparecer aquí hasta aprobarlo.
+FS_ENFORCE_CODES = "TEST-001"
+# Global (TODAS las cerradas): "enforce" activa la fusión en POST /fs. Cualquier otro valor = solo registrar en logs.
+FS_MERGE_MODE = "log"
+# Global (TODAS las cerradas): "on" asigna/persiste ids inmutables al leer (GET /fs). Cualquier otro valor = apagado.
+FS_ID_BACKFILL = "off"
+# Global (TODAS las cerradas): "on" habilita /admin/set-pin y /admin/change-pin. Cualquier otro valor = 404.
+ADMIN_PIN_ENDPOINTS = "off"

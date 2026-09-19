@@ -5,17 +5,19 @@
 // GET  /fs?code=CODE                     → Leer Firestore
 // POST /fs      { code, data, removed? }  → Escribir Firestore (fusión: ver fs_merge.mjs)
 // POST /register { code, house, token, isFamiliar, name, email, pin } → Registrar usuario
-// POST /admin/set-pin    { code, adminPin, target, newPin } → PIN de residente/familiar (requiere ADMIN_PIN_ENDPOINTS=on)
-// POST /admin/change-pin { code, oldPin, newPin }           → PIN del admin           (requiere ADMIN_PIN_ENDPOINTS=on)
+// POST /admin/set-pin    { code, adminPin, target, newPin } → PIN de residente/familiar (solo cerradas activadas)
+// POST /admin/change-pin { code, oldPin, newPin }           → PIN del admin           (solo cerradas activadas)
 // Cron: cada minuto → ping Shelly
 
 // ── Secrets de Cloudflare requeridos:
 // GOOGLE_CREDENTIALS → JSON completo de la cuenta de servicio de Google (service account key)
 // SHELLY_AUTH        → clave de autenticación de Shelly Cloud
-// ── Interruptores opcionales (variables, ausentes = comportamiento anterior):
-// FS_MERGE_MODE       → 'enforce' activa la fusión en POST /fs; cualquier otro valor = solo registrar en logs
-// FS_ID_BACKFILL      → 'on' asigna/persiste ids inmutables al leer (GET /fs) y los devuelve
-// ADMIN_PIN_ENDPOINTS → 'on' habilita /admin/set-pin y /admin/change-pin
+// ── Interruptores (variables en wrangler.toml [vars]; ausentes = comportamiento anterior):
+// FS_ENFORCE_CODES    → lista de códigos separada por comas (ej. "TEST-001"). SOLO para esas cerradas quedan
+//                       ACTIVOS los tres comportamientos de abajo. Coincidencia exacta; no hay comodín.
+// FS_MERGE_MODE       → 'enforce' activa la fusión en POST /fs para TODAS las cerradas; otro valor = solo registrar en logs
+// FS_ID_BACKFILL      → 'on' asigna/persiste ids inmutables al leer (GET /fs) y los devuelve, para TODAS las cerradas
+// ADMIN_PIN_ENDPOINTS → 'on' habilita /admin/set-pin y /admin/change-pin para TODAS las cerradas
 
 import { processFsPost, ensureIds, setPinInDoc } from './fs_merge.mjs';
 
@@ -267,6 +269,16 @@ async function verifyStoredSecret(pass, stored) {
   return false;
 }
 
+// ── Activación POR CERRADA. Un código en FS_ENFORCE_CODES activa fusión, backfill y endpoints de PIN
+//    solo para esa cerrada; las demás siguen como hoy salvo que el interruptor global correspondiente esté encendido.
+function enforceListed(env, code) {
+  if (typeof code !== 'string' || !code) return false;
+  return String(env.FS_ENFORCE_CODES || '').split(',').map((s) => s.trim()).filter(Boolean).includes(code);
+}
+const mergeModeFor  = (env, code) => (env.FS_MERGE_MODE === 'enforce' || enforceListed(env, code)) ? 'enforce' : 'log';
+const backfillOnFor = (env, code) => env.FS_ID_BACKFILL === 'on' || enforceListed(env, code);
+const adminPinOnFor = (env, code) => env.ADMIN_PIN_ENDPOINTS === 'on' || enforceListed(env, code);
+
 // ── Envía una notificación FCM a UN token via HTTP v1
 async function sendFCMv1(token, title, body, accessToken) {
   const res = await fetch(
@@ -368,7 +380,7 @@ export default {
       const code = url.searchParams.get('code');
       if (!code) return json({ ok: false, error: 'Falta code' }, 400);
       try {
-        const record = env.FS_ID_BACKFILL === 'on'
+        const record = backfillOnFor(env, code)
           ? await fsReadWithIds(code, env)
           : await fsRead(code, env);
         if (!record) return json({ ok: false, error: 'No encontrado' }, 404);
@@ -382,7 +394,7 @@ export default {
         const { code, data, removed } = await request.json();
         if (!code || !data) return json({ ok: false, error: 'Faltan code/data' }, 400);
         // Por defecto ('log') la escritura es EXACTAMENTE la de siempre; solo se registra qué haría la fusión.
-        const mode = env.FS_MERGE_MODE === 'enforce' ? 'enforce' : 'log';
+        const mode = mergeModeFor(env, code);
         const result = await processFsPost(
           { code, data, removed: (removed && typeof removed === 'object') ? removed : {} },
           {
@@ -576,10 +588,13 @@ export default {
     }
 
     // ── Cambiar el PIN de un residente/familiar (POST /admin/set-pin). Valida el adminPin guardado.
-    //    Inactivo salvo ADMIN_PIN_ENDPOINTS=on.
-    if (request.method === 'POST' && url.pathname === '/admin/set-pin' && env.ADMIN_PIN_ENDPOINTS === 'on') {
+    //    Inactivo (404) salvo que la cerrada esté en FS_ENFORCE_CODES o ADMIN_PIN_ENDPOINTS='on'.
+    if (request.method === 'POST' && url.pathname === '/admin/set-pin') {
+      let body = {};
+      try { body = await request.json(); } catch (e) {}
+      if (!body || !adminPinOnFor(env, body.code)) return json({ ok: false, error: 'Ruta no encontrada' }, 404);
       try {
-        const { code, adminPin, target, newPin } = await request.json();
+        const { code, adminPin, target, newPin } = body;
         if (!code || typeof adminPin !== 'string' || !adminPin || !target || typeof target !== 'object' || typeof newPin !== 'string') {
           return json({ ok: false, error: 'Faltan datos' }, 400);
         }
@@ -600,10 +615,13 @@ export default {
       } catch(e) { return json({ ok: false, error: 'Error interno' }, 500); }
     }
 
-    // ── Cambiar el PIN del admin (POST /admin/change-pin). Inactivo salvo ADMIN_PIN_ENDPOINTS=on.
-    if (request.method === 'POST' && url.pathname === '/admin/change-pin' && env.ADMIN_PIN_ENDPOINTS === 'on') {
+    // ── Cambiar el PIN del admin (POST /admin/change-pin). Mismo criterio de activación que /admin/set-pin.
+    if (request.method === 'POST' && url.pathname === '/admin/change-pin') {
+      let body = {};
+      try { body = await request.json(); } catch (e) {}
+      if (!body || !adminPinOnFor(env, body.code)) return json({ ok: false, error: 'Ruta no encontrada' }, 404);
       try {
-        const { code, oldPin, newPin } = await request.json();
+        const { code, oldPin, newPin } = body;
         if (!code || typeof oldPin !== 'string' || !oldPin || typeof newPin !== 'string') {
           return json({ ok: false, error: 'Faltan datos' }, 400);
         }

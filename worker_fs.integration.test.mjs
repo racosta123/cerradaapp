@@ -244,3 +244,71 @@ test('/admin/change-pin: valida el PIN actual y el nuevo (hasheado) sirve para /
   assert.equal((await call(store, {}, 'POST', '/login', { mode: 'admin', code: 'T-001', pass: '7777' })).data.ok, true);
   assert.equal((await call(store, {}, 'POST', '/login', { mode: 'admin', code: 'T-001', pass: '1234' })).status, 401);
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ALLOWLIST POR CERRADA: FS_ENFORCE_CODES activa los tres comportamientos SOLO para los códigos listados.
+const ENF = { FS_ENFORCE_CODES: 'TEST-001' };
+const seedAs = (code) => ({ ...seed(), code });
+
+test('allowlist: el MISMO push sin pin protege a la cerrada listada y deja igual a la no listada', async () => {
+  const store = makeStore(); store.put('TEST-001', seedAs('TEST-001')); store.put('SMARK-001', seedAs('SMARK-001'));
+  await call(store, ENF, 'POST', '/fs', { code: 'TEST-001', data: sanitizedPush(seedAs('TEST-001')) });
+  await call(store, ENF, 'POST', '/fs', { code: 'SMARK-001', data: sanitizedPush(seedAs('SMARK-001')) });
+  const t = store.get('TEST-001'), s = store.get('SMARK-001');
+  assert.equal(t.residents[0].pin, 'PLANO-ANA');                       // listada: fusión activa
+  assert.equal(t.adminPin, '1234');
+  assert.equal(s.residents[0].pin, undefined);                         // NO listada: comportamiento de siempre
+  const patches = store.log.filter((x) => x.method === 'PATCH');
+  assert.equal(patches.find((p) => p.code === 'TEST-001').guarded, true);
+  assert.equal(patches.find((p) => p.code === 'SMARK-001').guarded, false);   // sin precondición = igual que hoy
+});
+
+test('allowlist: el backfill de ids solo actúa (y escribe) en la cerrada listada', async () => {
+  const store = makeStore(); store.put('TEST-001', seedAs('TEST-001')); store.put('SMARK-001', seedAs('SMARK-001'));
+  const rs = await call(store, ENF, 'GET', '/fs?code=SMARK-001');
+  assert.equal(rs.data.record.residents[0].id, undefined);
+  assert.equal(store.log.length, 0);                                    // un GET de la no listada NO escribe
+  const rt = await call(store, ENF, 'GET', '/fs?code=TEST-001');
+  assert.ok(rt.data.record.residents.every((x) => x.id));
+  assert.equal(store.log.filter((x) => x.code === 'TEST-001').length, 1);
+  assert.equal(store.log.filter((x) => x.code === 'SMARK-001').length, 0);
+});
+
+test('allowlist: los endpoints de PIN responden 404 para la no listada aunque el adminPin sea correcto', async () => {
+  const store = makeStore(); store.put('TEST-001', seedAs('TEST-001')); store.put('SMARK-001', seedAs('SMARK-001'));
+  const ok = await call(store, ENF, 'POST', '/admin/set-pin', { code: 'TEST-001', adminPin: '1234', target: { email: 'ana@x.com' }, newPin: '5555' });
+  assert.equal(ok.status, 200);
+  const no1 = await call(store, ENF, 'POST', '/admin/set-pin', { code: 'SMARK-001', adminPin: '1234', target: { email: 'ana@x.com' }, newPin: '5555' });
+  const no2 = await call(store, ENF, 'POST', '/admin/change-pin', { code: 'SMARK-001', oldPin: '1234', newPin: '7777' });
+  assert.equal(no1.status, 404); assert.equal(no2.status, 404);
+  assert.equal(store.get('SMARK-001').adminPin, '1234');                // intacta
+  assert.equal(store.get('SMARK-001').residents[0].pin, 'PLANO-ANA');
+  assert.equal(store.log.filter((x) => x.code === 'SMARK-001').length, 0);
+});
+
+test('allowlist: apagados con cuerpo vacío / JSON inválido / código ausente = 404 (igual que antes)', async () => {
+  const store = makeStore(); store.put('TEST-001', seedAs('TEST-001'));
+  for (const path of ['/admin/set-pin', '/admin/change-pin']) {
+    assert.equal((await call(store, ENF, 'POST', path, {})).status, 404);
+    assert.equal((await call(store, ENF, 'POST', path, { code: 'OTRA' })).status, 404);
+    assert.equal((await call(store, {}, 'POST', path, { code: 'TEST-001', adminPin: '1234' })).status, 404);   // sin FS_ENFORCE_CODES
+  }
+});
+
+test('allowlist: coincidencia EXACTA (sin comodín, sin minúsculas, con espacios y varios códigos)', async () => {
+  const store = makeStore(); store.put('TEST-001', seedAs('TEST-001')); store.put('test-001', seedAs('test-001')); store.put('TEST-0010', seedAs('TEST-0010'));
+  const env = { FS_ENFORCE_CODES: ' OTRA ,TEST-001, ' };
+  for (const c of ['TEST-001']) assert.equal((await call(store, env, 'GET', `/fs?code=${c}`)).data.record.residents[0].id !== undefined, true);
+  for (const c of ['test-001', 'TEST-0010']) assert.equal((await call(store, env, 'GET', `/fs?code=${c}`)).data.record.residents[0].id, undefined);
+  const star = { FS_ENFORCE_CODES: '*' };
+  assert.equal((await call(store, star, 'GET', '/fs?code=TEST-0010')).data.record.residents[0].id, undefined);   // '*' NO es comodín
+});
+
+test('los interruptores globales siguen funcionando y son independientes del allowlist', async () => {
+  const store = makeStore(); store.put('SMARK-001', seedAs('SMARK-001'));
+  const r = await call(store, { FS_ID_BACKFILL: 'on' }, 'GET', '/fs?code=SMARK-001');
+  assert.ok(r.data.record.residents[0].id);                             // el global sí aplica a todas
+  const store2 = makeStore(); store2.put('SMARK-001', seedAs('SMARK-001'));
+  await call(store2, { FS_MERGE_MODE: 'enforce' }, 'POST', '/fs', { code: 'SMARK-001', data: sanitizedPush(seedAs('SMARK-001')) });
+  assert.equal(store2.get('SMARK-001').residents[0].pin, 'PLANO-ANA');
+});
