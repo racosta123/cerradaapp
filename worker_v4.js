@@ -3,13 +3,21 @@
 // POST /shelly  { shellyId, shellyServer, seconds }  → Control Shelly v2
 // POST /notify  { title, body, tokens[] }            → Push FCM HTTP v1
 // GET  /fs?code=CODE                     → Leer Firestore
-// POST /fs      { code, data }            → Escribir Firestore
+// POST /fs      { code, data, removed? }  → Escribir Firestore (fusión: ver fs_merge.mjs)
 // POST /register { code, house, token, isFamiliar, name, email, pin } → Registrar usuario
+// POST /admin/set-pin    { code, adminPin, target, newPin } → PIN de residente/familiar (requiere ADMIN_PIN_ENDPOINTS=on)
+// POST /admin/change-pin { code, oldPin, newPin }           → PIN del admin           (requiere ADMIN_PIN_ENDPOINTS=on)
 // Cron: cada minuto → ping Shelly
 
 // ── Secrets de Cloudflare requeridos:
 // GOOGLE_CREDENTIALS → JSON completo de la cuenta de servicio de Google (service account key)
 // SHELLY_AUTH        → clave de autenticación de Shelly Cloud
+// ── Interruptores opcionales (variables, ausentes = comportamiento anterior):
+// FS_MERGE_MODE       → 'enforce' activa la fusión en POST /fs; cualquier otro valor = solo registrar en logs
+// FS_ID_BACKFILL      → 'on' asigna/persiste ids inmutables al leer (GET /fs) y los devuelve
+// ADMIN_PIN_ENDPOINTS → 'on' habilita /admin/set-pin y /admin/change-pin
+
+import { processFsPost, ensureIds, setPinInDoc } from './fs_merge.mjs';
 
 const SHELLY_DEVICE    = '34cdb07be470';
 const FIREBASE_PROJECT = 'cerradaapp-7179e';
@@ -170,6 +178,7 @@ function sanitizeCerrada(cerrada) {
     }
   }
   if (c.adminPin) delete c.adminPin;
+  if (Array.isArray(c.residents)) for (const r of c.residents) delete r.lastInviteConsumed;
   return c;
 }
 
@@ -197,6 +206,65 @@ async function fsWrite(code, data, env) {
     body: JSON.stringify(objToDoc(data))
   });
   return r.ok;
+}
+
+// ── Lee la cerrada junto con su updateTime (para escribir con precondición)
+async function fsReadMeta(code, env) {
+  const token = await getGoogleToken('https://www.googleapis.com/auth/datastore', env);
+  const r = await fetch(`${FS_BASE}/cerradas/${encodeURIComponent(code)}`, {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  if (!r.ok) return null;
+  const doc = await r.json();
+  if (!doc.fields) return null;
+  return { doc: docToObj(doc), updateTime: doc.updateTime };
+}
+
+// ── Escritura con precondición: { updateTime } (el documento no cambió) o { exists:false } (creación).
+//    conflict=true si otro proceso modificó el documento en medio.
+async function fsWriteGuarded(code, data, env, pre) {
+  const token = await getGoogleToken('https://www.googleapis.com/auth/datastore', env);
+  let qs = '';
+  if (pre && pre.updateTime) qs = `?currentDocument.updateTime=${encodeURIComponent(pre.updateTime)}`;
+  else if (pre && pre.exists === false) qs = '?currentDocument.exists=false';
+  const r = await fetch(`${FS_BASE}/cerradas/${encodeURIComponent(code)}${qs}`, {
+    method: 'PATCH',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(objToDoc(data))
+  });
+  if (r.ok) return { ok: true, conflict: false };
+  let status = '';
+  try { status = (await r.json()).error?.status || ''; } catch (e) {}
+  const conflict = r.status === 409 || r.status === 412 || ['FAILED_PRECONDITION', 'ABORTED', 'ALREADY_EXISTS'].includes(status);
+  return { ok: false, conflict };
+}
+
+// ── Lee la cerrada asegurando que residents/members tengan id inmutable (backfill perezoso).
+//    Solo devuelve ids que quedaron PERSISTIDOS; si no se pudo escribir, cae a la lectura normal.
+async function fsReadWithIds(code, env) {
+  for (let i = 0; i < 2; i++) {
+    const meta = await fsReadMeta(code, env);
+    if (!meta) return null;
+    if (ensureIds(meta.doc) === 0) return meta.doc;
+    const w = await fsWriteGuarded(code, meta.doc, env, { updateTime: meta.updateTime });
+    if (w.ok) return meta.doc;
+    if (!w.conflict) break;
+  }
+  return fsRead(code, env);
+}
+
+// ── Comparación de secretos: hash pbkdf2 o texto plano legacy (compat. con /login admin)
+function safeEqual(a, b) {
+  a = String(a); b = String(b);
+  if (a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+}
+async function verifyStoredSecret(pass, stored) {
+  if (typeof stored === 'string' && stored.startsWith('pbkdf2$')) return verifyPassword(pass, stored);
+  if (stored != null) return safeEqual(pass, stored);
+  return false;
 }
 
 // ── Envía una notificación FCM a UN token via HTTP v1
@@ -300,7 +368,9 @@ export default {
       const code = url.searchParams.get('code');
       if (!code) return json({ ok: false, error: 'Falta code' }, 400);
       try {
-        const record = await fsRead(code, env);
+        const record = env.FS_ID_BACKFILL === 'on'
+          ? await fsReadWithIds(code, env)
+          : await fsRead(code, env);
         if (!record) return json({ ok: false, error: 'No encontrado' }, 404);
         return json({ ok: true, record: sanitizeCerrada(record) });
       } catch(e) { return json({ ok: false, error: e.message }, 500); }
@@ -309,10 +379,20 @@ export default {
     // ── Escribir Firestore (POST /fs)
     if (request.method === 'POST' && url.pathname === '/fs') {
       try {
-        const { code, data } = await request.json();
+        const { code, data, removed } = await request.json();
         if (!code || !data) return json({ ok: false, error: 'Faltan code/data' }, 400);
-        const ok = await fsWrite(code, data, env);
-        return json({ ok });
+        // Por defecto ('log') la escritura es EXACTAMENTE la de siempre; solo se registra qué haría la fusión.
+        const mode = env.FS_MERGE_MODE === 'enforce' ? 'enforce' : 'log';
+        const result = await processFsPost(
+          { code, data, removed: (removed && typeof removed === 'object') ? removed : {} },
+          {
+            read:         (c) => fsReadMeta(c, env),
+            writeRaw:     (c, d) => fsWrite(c, d, env),
+            writeGuarded: (c, d, pre) => fsWriteGuarded(c, d, env, pre)
+          },
+          { mode, log: (e) => console.log(JSON.stringify(e)), hashPin: hashPassword }
+        );
+        return json({ ok: result.ok });
       } catch(e) { return json({ ok: false, error: e.message }, 500); }
     }
 
@@ -493,6 +573,53 @@ export default {
         const ok = await fsWrite(code, cerrada, env);
         return json({ ok });
       } catch(e) { return json({ ok: false, error: e.message }, 500); }
+    }
+
+    // ── Cambiar el PIN de un residente/familiar (POST /admin/set-pin). Valida el adminPin guardado.
+    //    Inactivo salvo ADMIN_PIN_ENDPOINTS=on.
+    if (request.method === 'POST' && url.pathname === '/admin/set-pin' && env.ADMIN_PIN_ENDPOINTS === 'on') {
+      try {
+        const { code, adminPin, target, newPin } = await request.json();
+        if (!code || typeof adminPin !== 'string' || !adminPin || !target || typeof target !== 'object' || typeof newPin !== 'string') {
+          return json({ ok: false, error: 'Faltan datos' }, 400);
+        }
+        if (!/^\d{4,8}$/.test(newPin)) return json({ ok: false, error: 'PIN inválido (4 a 8 dígitos)' }, 400);
+        for (let i = 0; i < 3; i++) {
+          const meta = await fsReadMeta(code, env);
+          // mismo fallo para cerrada inexistente y adminPin incorrecto
+          if (!meta || !(await verifyStoredSecret(adminPin, meta.doc.adminPin))) {
+            return json({ ok: false, error: 'Credenciales incorrectas' }, 401);
+          }
+          const r = setPinInDoc(meta.doc, target, await hashPassword(newPin));
+          if (!r.ok) return json({ ok: false, error: r.error }, r.error === 'not_registered' ? 409 : 404);
+          const w = await fsWriteGuarded(code, r.doc, env, { updateTime: meta.updateTime });
+          if (w.ok) return json({ ok: true });
+          if (!w.conflict) return json({ ok: false, error: 'No se pudo guardar' }, 500);
+        }
+        return json({ ok: false, error: 'Conflicto, reintenta' }, 409);
+      } catch(e) { return json({ ok: false, error: 'Error interno' }, 500); }
+    }
+
+    // ── Cambiar el PIN del admin (POST /admin/change-pin). Inactivo salvo ADMIN_PIN_ENDPOINTS=on.
+    if (request.method === 'POST' && url.pathname === '/admin/change-pin' && env.ADMIN_PIN_ENDPOINTS === 'on') {
+      try {
+        const { code, oldPin, newPin } = await request.json();
+        if (!code || typeof oldPin !== 'string' || !oldPin || typeof newPin !== 'string') {
+          return json({ ok: false, error: 'Faltan datos' }, 400);
+        }
+        if (!/^\d{4,12}$/.test(newPin)) return json({ ok: false, error: 'PIN inválido (4 a 12 dígitos)' }, 400);
+        for (let i = 0; i < 3; i++) {
+          const meta = await fsReadMeta(code, env);
+          if (!meta || !(await verifyStoredSecret(oldPin, meta.doc.adminPin))) {
+            return json({ ok: false, error: 'Credenciales incorrectas' }, 401);
+          }
+          const doc = { ...meta.doc, adminPin: await hashPassword(newPin) };
+          const w = await fsWriteGuarded(code, doc, env, { updateTime: meta.updateTime });
+          if (w.ok) return json({ ok: true });
+          if (!w.conflict) return json({ ok: false, error: 'No se pudo guardar' }, 500);
+        }
+        return json({ ok: false, error: 'Conflicto, reintenta' }, 409);
+      } catch(e) { return json({ ok: false, error: 'Error interno' }, 500); }
     }
 
     return json({ ok: false, error: 'Ruta no encontrada' }, 404);
